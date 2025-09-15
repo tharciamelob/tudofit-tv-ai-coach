@@ -8,10 +8,13 @@ extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
 [functions.generate-workout]
-verify_jwt = true
+verify_jwt = false
 
 [functions.generate-nutrition]
-verify_jwt = true
+verify_jwt = false
+
+[functions.chat-conversation]
+verify_jwt = false
 
 [db]
 port = 54322

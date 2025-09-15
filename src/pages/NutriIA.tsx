@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
-import { NutritionQuestionnaireForm } from "@/components/NutritionQuestionnaireForm";
+import { ChatInterface } from "@/components/ChatInterface";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   Utensils, 
@@ -13,7 +13,8 @@ import {
   ChefHat,
   Apple,
   Beef,
-  Fish
+  Fish,
+  MessageCircle
 } from "lucide-react";
 
 const readyMealPlans = [
@@ -52,13 +53,13 @@ const readyMealPlans = [
 ];
 
 export default function NutriIA() {
-  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const { user } = useAuth();
 
-  const handleQuestionnaireComplete = (plan: any) => {
+  const handlePlanGenerated = (plan: any) => {
     setGeneratedPlan(plan);
-    setShowQuestionnaire(false);
+    setShowChat(false);
   };
 
   if (!user) {
@@ -75,12 +76,17 @@ export default function NutriIA() {
     );
   }
 
-  if (showQuestionnaire) {
+  if (showChat) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <main className="container mx-auto px-4 py-8">
-          <NutritionQuestionnaireForm onComplete={handleQuestionnaireComplete} />
+          <div className="mb-4">
+            <Button variant="outline" onClick={() => setShowChat(false)}>
+              ← Voltar
+            </Button>
+          </div>
+          <ChatInterface chatType="nutrition" onPlanGenerated={handlePlanGenerated} />
         </main>
       </div>
     );
@@ -211,8 +217,9 @@ export default function NutriIA() {
               </div>
               
               <div className="text-center">
-                <Button size="lg" className="px-8" onClick={() => setShowQuestionnaire(true)}>
-                  Criar Meu Cardápio
+                <Button size="lg" className="px-8 gap-2" onClick={() => setShowChat(true)}>
+                  <MessageCircle className="h-5 w-5" />
+                  Conversar com Nutri IA
                 </Button>
               </div>
             </CardContent>

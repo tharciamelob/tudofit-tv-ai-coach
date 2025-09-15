@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Target, Clock, Dumbbell } from "lucide-react";
+import { Brain, Target, Clock, Dumbbell, MessageCircle } from "lucide-react";
 import Header from "@/components/Header";
-import { PersonalQuestionnaireForm } from "@/components/PersonalQuestionnaireForm";
+import { ChatInterface } from "@/components/ChatInterface";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function PersonalIA() {
-  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const { user } = useAuth();
 
-  const handleQuestionnaireComplete = (plan: any) => {
+  const handlePlanGenerated = (plan: any) => {
     setGeneratedPlan(plan);
-    setShowQuestionnaire(false);
+    setShowChat(false);
   };
 
   if (!user) {
@@ -30,12 +30,17 @@ export default function PersonalIA() {
     );
   }
 
-  if (showQuestionnaire) {
+  if (showChat) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <main className="container mx-auto px-4 py-8">
-          <PersonalQuestionnaireForm onComplete={handleQuestionnaireComplete} />
+          <div className="mb-4">
+            <Button variant="outline" onClick={() => setShowChat(false)}>
+              ← Voltar
+            </Button>
+          </div>
+          <ChatInterface chatType="personal" onPlanGenerated={handlePlanGenerated} />
         </main>
       </div>
     );
@@ -135,11 +140,11 @@ export default function PersonalIA() {
           <Card>
             <CardHeader className="text-center">
               <Dumbbell className="h-12 w-12 text-primary mx-auto mb-2" />
-              <CardTitle>Equipamentos Disponíveis</CardTitle>
+              <CardTitle>Sem Equipamentos</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-center">
-                Treinos adaptados aos equipamentos que você possui, desde peso corporal até academia completa.
+                Treinos com peso corporal, yoga e pilates. Não precisa de equipamentos para começar!
               </p>
             </CardContent>
           </Card>
@@ -147,14 +152,15 @@ export default function PersonalIA() {
 
         <Card className="max-w-2xl mx-auto mb-8">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Crie seu treino personalizado</CardTitle>
+            <CardTitle className="text-2xl">Converse com seu Personal IA</CardTitle>
             <CardDescription>
-              Responda algumas perguntas e nossa IA criará um plano de treino perfeito para você
+              Converse naturalmente com nossa IA e ela criará um plano de treino perfeito para você, incluindo exercícios sem equipamentos, yoga e pilates
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <Button size="lg" className="px-8" onClick={() => setShowQuestionnaire(true)}>
-              Iniciar Questionário
+            <Button size="lg" className="px-8 gap-2" onClick={() => setShowChat(true)}>
+              <MessageCircle className="h-5 w-5" />
+              Iniciar Conversa
             </Button>
           </CardContent>
         </Card>
