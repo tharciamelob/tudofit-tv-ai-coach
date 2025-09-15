@@ -1,12 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Play, Clock, Route, Footprints, Flame, Calendar, TrendingUp } from 'lucide-react';
+import { WalkingTracker } from '@/components/WalkingTracker';
+import { MapPin, Play, Clock, Route, Footprints, Flame, Calendar, TrendingUp, ArrowLeft } from 'lucide-react';
+import { useWalkingHistory } from '@/hooks/useWalkingHistory';
 
 const Walking = () => {
-  const recentWalks = [
+  const [showTracker, setShowTracker] = useState(false);
+  const { history, weekStats, formatDistance, formatDuration, formatPace } = useWalkingHistory();
+  
+  const recentWalks = history.slice(0, 3).map(walk => {
+    const date = new Date(walk.start_time);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    let dateLabel = date.toLocaleDateString('pt-BR');
+    if (date.toDateString() === today.toDateString()) {
+      dateLabel = 'Hoje';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      dateLabel = 'Ontem';
+    }
+    
+    return {
+      date: dateLabel,
+      time: date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      distance: formatDistance(walk.distance_meters || 0),
+      duration: formatDuration(walk.start_time, walk.end_time),
+      calories: walk.calories_burned || 0,
+      pace: formatPace(walk.average_pace)
+    };
+  });
+
+  // Dados padrão se não há histórico
+  const defaultRecentWalks = [
     {
       date: 'Hoje',
       time: '07:30',
@@ -32,6 +61,29 @@ const Walking = () => {
       pace: '10:14 /km'
     }
   ];
+
+  if (showTracker) {
+    return (
+      <div className="min-h-screen bg-black">
+        <Header />
+        
+        <main className="container mx-auto px-4 pt-20 pb-8">
+          <div className="mb-6">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowTracker(false)}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
+            </Button>
+          </div>
+          
+          <WalkingTracker />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black">
@@ -60,7 +112,7 @@ const Walking = () => {
                 <p className="text-muted-foreground mb-6">
                   Rastreamento GPS com métricas em tempo real
                 </p>
-                <Button size="lg" className="btn-hero px-8">
+                <Button size="lg" className="btn-hero px-8" onClick={() => setShowTracker(true)}>
                   <Play className="h-5 w-5 mr-2" />
                   Começar Agora
                 </Button>
@@ -73,7 +125,7 @@ const Walking = () => {
             <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
               <CardContent className="p-4 text-center">
                 <Route className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                <p className="text-2xl font-bold">12.3 km</p>
+                <p className="text-2xl font-bold">{weekStats.distance.toFixed(1)} km</p>
                 <p className="text-sm text-muted-foreground">Esta semana</p>
               </CardContent>
             </Card>
@@ -81,7 +133,7 @@ const Walking = () => {
             <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
               <CardContent className="p-4 text-center">
                 <Clock className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                <p className="text-2xl font-bold">2h 15m</p>
+                <p className="text-2xl font-bold">{Math.floor(weekStats.time / 60)}h {Math.round(weekStats.time % 60)}m</p>
                 <p className="text-sm text-muted-foreground">Tempo total</p>
               </CardContent>
             </Card>
@@ -89,7 +141,7 @@ const Walking = () => {
             <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
               <CardContent className="p-4 text-center">
                 <Flame className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                <p className="text-2xl font-bold">650</p>
+                <p className="text-2xl font-bold">{weekStats.calories}</p>
                 <p className="text-sm text-muted-foreground">Calorias</p>
               </CardContent>
             </Card>
@@ -97,7 +149,7 @@ const Walking = () => {
             <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
               <CardContent className="p-4 text-center">
                 <Footprints className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-                <p className="text-2xl font-bold">16.2K</p>
+                <p className="text-2xl font-bold">{weekStats.steps.toLocaleString()}</p>
                 <p className="text-sm text-muted-foreground">Passos</p>
               </CardContent>
             </Card>
@@ -114,7 +166,7 @@ const Walking = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentWalks.map((walk, index) => (
+                  {(recentWalks.length > 0 ? recentWalks : defaultRecentWalks).map((walk, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div>
                         <div className="flex items-center space-x-2 mb-1">
@@ -151,17 +203,17 @@ const Walking = () => {
               <CardContent>
                 <div className="space-y-6">
                   <div className="text-center">
-                    <p className="text-3xl font-bold text-primary">47.8 km</p>
+                    <p className="text-3xl font-bold text-primary">{weekStats.distance.toFixed(1)} km</p>
                     <p className="text-sm text-muted-foreground">Distância percorrida</p>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
-                      <p className="text-xl font-semibold">15</p>
+                      <p className="text-xl font-semibold">{weekStats.sessions}</p>
                       <p className="text-sm text-muted-foreground">Caminhadas</p>
                     </div>
                     <div>
-                      <p className="text-xl font-semibold">8h 45m</p>
+                      <p className="text-xl font-semibold">{Math.floor(weekStats.time / 60)}h {Math.round(weekStats.time % 60)}m</p>
                       <p className="text-sm text-muted-foreground">Tempo ativo</p>
                     </div>
                   </div>
@@ -169,10 +221,13 @@ const Walking = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Meta mensal: 60 km</span>
-                      <span className="text-primary">79%</span>
+                      <span className="text-primary">{Math.round((weekStats.distance * 4 / 60) * 100)}%</span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">
-                      <div className="bg-gradient-to-r from-primary to-primary-glow h-2 rounded-full" style={{width: '79%'}}></div>
+                      <div 
+                        className="bg-gradient-to-r from-primary to-primary-glow h-2 rounded-full" 
+                        style={{width: `${Math.min(Math.round((weekStats.distance * 4 / 60) * 100), 100)}%`}}
+                      ></div>
                     </div>
                   </div>
                 </div>

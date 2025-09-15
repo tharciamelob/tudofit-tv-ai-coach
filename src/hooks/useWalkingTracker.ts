@@ -219,16 +219,17 @@ export const useWalkingTracker = () => {
 
       // Salvar no banco de dados
       const { error } = await supabase
-        .from('walking_sessions')
+        .from('walk_sessions')
         .insert({
           user_id: user.id,
           start_time: new Date(finalSession.startTime).toISOString(),
           end_time: new Date(finalSession.endTime!).toISOString(),
-          distance_km: finalSession.distance,
-          duration_seconds: finalSession.duration,
+          distance_meters: finalSession.distance * 1000, // Converter km para metros
           calories_burned: finalSession.calories,
-          average_pace_min_per_km: finalSession.averagePace,
-          route_data: finalSession.route
+          average_pace: finalSession.averagePace,
+          route_data: finalSession.route as any, // Type assertion para JSON
+          is_completed: true,
+          steps: Math.round(finalSession.distance * 1000 * 1.3) // Estimativa de passos
         });
 
       if (error) throw error;

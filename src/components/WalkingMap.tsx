@@ -15,8 +15,9 @@ interface WalkingMapProps {
   isTracking: boolean;
 }
 
-// TEMPORÁRIO: Token público do Mapbox para demonstração
-// IMPORTANTE: Em produção, este token deve ser obtido via secrets do Supabase
+// IMPORTANTE: Token temporário para demonstração
+// Para produção, você deve obter seu próprio token em https://mapbox.com/
+// e adicioná-lo como secret no Supabase: https://supabase.com/dashboard/project/czbepdrjixrqrxeyfagc/settings/functions
 const MAPBOX_TOKEN = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
 
 export const WalkingMap: React.FC<WalkingMapProps> = ({ 

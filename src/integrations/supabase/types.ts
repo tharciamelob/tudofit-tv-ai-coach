@@ -292,6 +292,48 @@ export type Database = {
         }
         Relationships: []
       }
+      walking_sessions: {
+        Row: {
+          average_pace_min_per_km: number
+          calories_burned: number
+          created_at: string
+          distance_km: number
+          duration_seconds: number
+          end_time: string | null
+          id: string
+          route_data: Json | null
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          average_pace_min_per_km?: number
+          calories_burned?: number
+          created_at?: string
+          distance_km?: number
+          duration_seconds?: number
+          end_time?: string | null
+          id?: string
+          route_data?: Json | null
+          start_time: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          average_pace_min_per_km?: number
+          calories_burned?: number
+          created_at?: string
+          distance_km?: number
+          duration_seconds?: number
+          end_time?: string | null
+          id?: string
+          route_data?: Json | null
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       water_tracking: {
         Row: {
           amount_ml: number
