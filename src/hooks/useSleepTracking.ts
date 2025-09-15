@@ -55,7 +55,7 @@ export const useSleepTracking = () => {
           bedtime: bedtime.toISOString(),
           wake_time: wakeTime.toISOString(),
           sleep_quality: sleepData.quality,
-          sleep_duration: `${Math.floor(duration / (1000 * 60 * 60))} hours ${Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60))} minutes`
+          sleep_duration: `${Math.floor(duration / 1000)} seconds`
         });
 
       if (error) throw error;

@@ -437,6 +437,59 @@ const Index = () => {
           rating: 4.5
         }
       ]
+    },
+    {
+      title: "Calistenia",
+      workouts: [
+        {
+          id: "calistenia1",
+          title: "Calistenia Básica - Fundamentos",
+          duration: "25 min",
+          calories: "200 cal",
+          difficulty: "Iniciante" as const,
+          rating: 4.7
+        },
+        {
+          id: "calistenia2",
+          title: "Flexões e Variações",
+          duration: "20 min",
+          calories: "180 cal",
+          difficulty: "Iniciante" as const,
+          rating: 4.8
+        },
+        {
+          id: "calistenia3",
+          title: "Barras e Pull-ups",
+          duration: "30 min",
+          calories: "250 cal",
+          difficulty: "Intermediário" as const,
+          rating: 4.9
+        },
+        {
+          id: "calistenia4",
+          title: "Handstand e Equilíbrios",
+          duration: "35 min",
+          calories: "220 cal",
+          difficulty: "Avançado" as const,
+          rating: 4.6
+        },
+        {
+          id: "calistenia5",
+          title: "Treino de Força Completo",
+          duration: "45 min",
+          calories: "320 cal",
+          difficulty: "Intermediário" as const,
+          rating: 4.8
+        },
+        {
+          id: "calistenia6",
+          title: "Muscle-ups e Movimentos Avançados",
+          duration: "40 min",
+          calories: "350 cal",
+          difficulty: "Avançado" as const,
+          rating: 4.7
+        }
+      ]
     }
   ];
 
