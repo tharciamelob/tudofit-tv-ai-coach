@@ -11,6 +11,8 @@ const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
+console.log('Edge Function iniciada - OpenAI Key:', openAIApiKey ? 'OK' : 'MISSING');
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -18,8 +20,21 @@ serve(async (req) => {
 
   try {
     const { message, conversationHistory, chatType, userId } = await req.json();
+    console.log('Dados recebidos:', { chatType, userId, messageLength: message?.length });
     
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+
+    // Verificar se OpenAI API key existe
+    if (!openAIApiKey) {
+      console.error('OpenAI API key não encontrada');
+      return new Response(JSON.stringify({ 
+        error: "OpenAI API key não configurada",
+        message: "Por favor, configure a chave da API do OpenAI."
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Obter informações do usuário
     const { data: profile } = await supabase
@@ -97,6 +112,7 @@ Se você já coletou informações suficientes e o usuário confirma que quer ge
       let planData;
       if (chatType === 'personal') {
         // Gerar plano de treino
+        console.log('Gerando workout com OpenAI...');
         const workoutResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -104,7 +120,7 @@ Se você já coletou informações suficientes e o usuário confirma que quer ge
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o',
+            model: 'gpt-4o-mini',
             messages: [
               {
                 role: 'system',
@@ -133,7 +149,7 @@ Formato JSON:
             "reps": "12-15",
             "rest": "60s",
             "instructions": "Instruções detalhadas",
-            "equipment": "Sem equipamento" // ou equipamento necessário
+            "equipment": "Sem equipamento"
           }
         ]
       }
@@ -148,7 +164,13 @@ Formato JSON:
           }),
         });
 
+        if (!workoutResponse.ok) {
+          console.error('Erro na resposta da OpenAI:', workoutResponse.status, await workoutResponse.text());
+          throw new Error(`OpenAI API error: ${workoutResponse.status}`);
+        }
+
         const workoutData = await workoutResponse.json();
+        console.log('Resposta OpenAI recebida');
         planData = JSON.parse(workoutData.choices[0].message.content);
 
         // Salvar no banco
@@ -164,6 +186,7 @@ Formato JSON:
         planData = savedPlan;
       } else {
         // Gerar plano nutricional
+        console.log('Gerando nutrition com OpenAI...');
         const nutritionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -171,7 +194,7 @@ Formato JSON:
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o',
+            model: 'gpt-4o-mini',
             messages: [
               {
                 role: 'system',
@@ -219,7 +242,13 @@ Formato JSON:
           }),
         });
 
+        if (!nutritionResponse.ok) {
+          console.error('Erro na resposta da OpenAI:', nutritionResponse.status, await nutritionResponse.text());
+          throw new Error(`OpenAI API error: ${nutritionResponse.status}`);
+        }
+
         const nutritionData = await nutritionResponse.json();
+        console.log('Resposta OpenAI recebida');
         planData = JSON.parse(nutritionData.choices[0].message.content);
 
         // Salvar no banco
@@ -245,6 +274,7 @@ Formato JSON:
     }
 
     // Continuar conversa
+    console.log('Enviando conversa para OpenAI...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -252,7 +282,7 @@ Formato JSON:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: `${systemPrompt}\n\n${responseContext}` },
           ...conversationHistory,
@@ -263,12 +293,14 @@ Formato JSON:
       }),
     });
 
-    const data = await response.json();
-    
     if (!response.ok) {
+      console.error('Erro na resposta da OpenAI:', response.status, await response.text());
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
+    const data = await response.json();
+    console.log('Conversa processada com sucesso');
+    
     const aiResponse = data.choices[0].message.content;
 
     return new Response(JSON.stringify({
