@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
+import ContinueWatching from "@/components/ContinueWatching";
 import WorkoutCarousel from "@/components/WorkoutCarousel";
 
 const Index = () => {
@@ -162,20 +163,19 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <HeroSection />
+      <ContinueWatching />
       
-      <main className="pt-16">
-        <HeroSection />
-        
-        <div className="container mx-auto px-4 py-12">
-          {workoutCategories.map((category, index) => (
-            <WorkoutCarousel 
-              key={index}
-              title={category.title}
-              workouts={category.workouts}
-            />
-          ))}
-        </div>
-      </main>
+      {/* Workout Categories */}
+      <div className="pb-8">
+        {workoutCategories.map((category, index) => (
+          <WorkoutCarousel
+            key={index}
+            title={category.title}
+            workouts={category.workouts}
+          />
+        ))}
+      </div>
     </div>
   );
 };

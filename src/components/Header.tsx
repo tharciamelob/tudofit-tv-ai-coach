@@ -4,108 +4,98 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const Header = () => {
-  const [activeTab, setActiveTab] = useState("treinos");
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("Início");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const tabs = [
-    { id: "treinos", label: "Treinos" },
-    { id: "personal", label: "Personal IA" },
-    { id: "nutri", label: "Nutri IA" },
-    { id: "monitorar", label: "Monitorar" },
-    { id: "refeicoes", label: "Refeições" },
-    { id: "caminhada", label: "Caminhada" },
-    { id: "perfil", label: "Perfil" }
+    "Início",
+    "Caminhada", 
+    "Personal IA",
+    "Nutrição",
+    "Monitoramento"
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-8">
-            <h1 className="text-2xl font-bold text-primary">TudoFit TV</h1>
-            
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-6">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`text-sm font-medium transition-colors duration-200 hover:text-primary ${
-                    activeTab === tab.id 
-                      ? "text-primary border-b-2 border-primary pb-1" 
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
+          <div className="flex items-center space-x-2">
+            <div className="text-2xl font-bold text-primary">TudoFit TV</div>
           </div>
 
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-8">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`text-sm font-medium transition-colors hover:text-foreground ${
+                  activeTab === tab
+                    ? "text-foreground"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </nav>
+
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input 
+              <Input
                 placeholder="Buscar treinos..."
-                className="pl-10 w-64 bg-secondary/50 border-border focus:border-primary"
+                className="pl-10 w-64 bg-background/20 border-muted text-foreground placeholder:text-muted-foreground"
               />
             </div>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-              <Bell className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon" className="text-foreground hover:text-foreground">
               <User className="h-5 w-5" />
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden p-2 text-foreground"
           >
             <Menu className="h-6 w-6" />
-          </Button>
+          </button>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-border animate-fade-in">
-            <nav className="flex flex-col space-y-3">
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden py-4 border-t border-border">
+            <nav className="flex flex-col space-y-4">
               {tabs.map((tab) => (
                 <button
-                  key={tab.id}
+                  key={tab}
                   onClick={() => {
-                    setActiveTab(tab.id);
-                    setIsMenuOpen(false);
+                    setActiveTab(tab);
+                    setIsMobileMenuOpen(false);
                   }}
-                  className={`text-left px-2 py-2 text-sm font-medium transition-colors duration-200 hover:text-primary ${
-                    activeTab === tab.id ? "text-primary" : "text-muted-foreground"
+                  className={`text-left text-sm font-medium transition-colors hover:text-foreground ${
+                    activeTab === tab
+                      ? "text-foreground"
+                      : "text-muted-foreground"
                   }`}
                 >
-                  {tab.label}
+                  {tab}
                 </button>
               ))}
             </nav>
-            <div className="mt-4 pt-4 border-t border-border">
-              <div className="relative mb-3">
+            <div className="flex items-center space-x-4 mt-4 pt-4 border-t border-border">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input 
+                <Input
                   placeholder="Buscar treinos..."
-                  className="pl-10 bg-secondary/50 border-border"
+                  className="pl-10 bg-background/20 border-muted text-foreground placeholder:text-muted-foreground"
                 />
               </div>
-              <div className="flex items-center justify-center space-x-4">
-                <Button variant="ghost" size="icon" className="text-muted-foreground">
-                  <Bell className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-muted-foreground">
-                  <User className="h-5 w-5" />
-                </Button>
-              </div>
+              <Button variant="ghost" size="icon" className="text-foreground hover:text-foreground">
+                <User className="h-5 w-5" />
+              </Button>
             </div>
           </div>
         )}

@@ -1,77 +1,57 @@
-import { Play, Star, Clock } from "lucide-react";
+import { Play, Plus, Star, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import heroWorkout from "@/assets/hero-workout.jpg";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-[80vh] flex items-center overflow-hidden">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/90 to-transparent z-10" />
+    <section className="relative min-h-screen flex items-center overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${heroWorkout})` }}
+      />
       
-      {/* Background Image Placeholder */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/30 to-background opacity-80" />
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-background/20 z-10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent z-10" />
       
       <div className="container mx-auto px-4 relative z-20">
-        <div className="max-w-2xl">
-          <div className="flex items-center space-x-2 mb-4 animate-slide-in">
-            <div className="flex items-center space-x-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-              ))}
-            </div>
-            <span className="text-sm text-muted-foreground">#1 App de Fitness no Brasil</span>
-          </div>
-          
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight animate-fade-in">
-            Transforme seu corpo com treinos e cardápios{" "}
-            <span className="text-primary">guiados por IA</span>
+        <div className="max-w-3xl pt-16">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            Transforme seu{" "}
+            <span className="text-primary">corpo</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed animate-fade-in">
-            Tudo em um só lugar: treinos personalizados, nutrição inteligente, 
-            monitoramento completo e muito mais. Sua jornada fitness começa aqui.
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed max-w-2xl">
+            Séries de treinos profissionais, cardápios personalizados e 
+            acompanhamento completo da sua evolução.
           </p>
 
-          {/* Promo Banner */}
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8 animate-glow">
-            <div className="flex items-center space-x-3">
-              <div className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
-                LANÇAMENTO
-              </div>
-              <div>
-                <p className="text-lg font-semibold text-primary">
-                  R$ 9,99 no primeiro mês
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  De R$ 99,99 por apenas R$ 9,99. Experimente tudo sem limites!
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 animate-slide-in">
-            <Button className="btn-hero group">
-              <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-              Começar agora
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg font-semibold">
+              <Play className="mr-2 h-5 w-5" fill="currentColor" />
+              Começar Agora
             </Button>
-            <Button variant="outline" className="border-border hover:bg-secondary/50">
-              <Clock className="mr-2 h-4 w-4" />
-              Ver demonstração
+            <Button variant="outline" className="border-foreground/30 bg-background/20 hover:bg-background/40 text-foreground px-8 py-3 text-lg font-semibold backdrop-blur-sm">
+              <Plus className="mr-2 h-5 w-5" />
+              Minha Lista
             </Button>
           </div>
 
-          {/* Stats */}
-          <div className="flex items-center space-x-8 mt-8 text-sm text-muted-foreground">
-            <div>
-              <span className="text-2xl font-bold text-foreground">500+</span>
-              <p>Treinos disponíveis</p>
+          {/* Stats Badges */}
+          <div className="flex flex-wrap items-center gap-6 text-sm">
+            <div className="flex items-center space-x-2">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <span className="text-foreground font-medium">4.8/5</span>
             </div>
-            <div>
-              <span className="text-2xl font-bold text-foreground">50k+</span>
-             <p>Usuários ativos</p>
+            <div className="flex items-center space-x-2">
+              <Users className="h-4 w-4 text-foreground" />
+              <span className="text-foreground font-medium">50k+ usuários</span>
             </div>
-            <div>
-              <span className="text-2xl font-bold text-foreground">98%</span>
-              <p>Satisfação</p>
+            <div className="flex items-center space-x-2">
+              <Clock className="h-4 w-4 text-foreground" />
+              <span className="text-foreground font-medium">Acesso ilimitado</span>
             </div>
           </div>
         </div>
