@@ -53,7 +53,7 @@ export default function Monitoring() {
         {/* Cards de acompanhamento diário */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Hidratação */}
-          <Card>
+          <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div>
                 <CardTitle className="text-xl flex items-center gap-2">
@@ -82,7 +82,7 @@ export default function Monitoring() {
           </Card>
 
           {/* Qualidade do Sono */}
-          <Card>
+          <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div>
                 <CardTitle className="text-xl flex items-center gap-2">
@@ -134,7 +134,7 @@ export default function Monitoring() {
         {/* Progresso Semanal */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Hidratação Semanal */}
-          <Card>
+          <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
@@ -163,7 +163,7 @@ export default function Monitoring() {
           </Card>
 
           {/* Sono Semanal */}
-          <Card>
+          <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
@@ -202,7 +202,7 @@ export default function Monitoring() {
         </div>
 
         {/* Resumo Semanal */}
-        <Card>
+        <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
           <CardHeader>
             <CardTitle>Resumo da Semana</CardTitle>
             <CardDescription>Seus principais indicadores de saúde</CardDescription>

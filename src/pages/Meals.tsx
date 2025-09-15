@@ -52,7 +52,7 @@ const Meals = () => {
           </div>
 
           {/* Resumo Diário */}
-          <Card className="card-netflix mb-8">
+          <Card className="mb-8 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <PieChart className="h-5 w-5 mr-2" />
@@ -131,7 +131,7 @@ const Meals = () => {
           <div className="grid md:grid-cols-3 gap-6">
             {/* Refeições de Hoje */}
             <div className="md:col-span-2">
-              <Card className="card-netflix">
+              <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -205,7 +205,7 @@ const Meals = () => {
 
             {/* Ações Rápidas */}
             <div>
-              <Card className="card-netflix mb-6">
+              <Card className="mb-6 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                 <CardHeader>
                   <CardTitle>Adicionar Refeição</CardTitle>
                 </CardHeader>
@@ -222,7 +222,7 @@ const Meals = () => {
               </Card>
 
               {/* Histórico Semanal */}
-              <Card className="card-netflix">
+              <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                 <CardHeader>
                   <CardTitle>Histórico Semanal</CardTitle>
                 </CardHeader>

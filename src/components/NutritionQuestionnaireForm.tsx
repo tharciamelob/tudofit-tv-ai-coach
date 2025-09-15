@@ -69,7 +69,7 @@ export const NutritionQuestionnaireForm = ({ onComplete }: { onComplete: (plan: 
   const prevStep = () => setStep(prev => prev - 1);
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-2xl mx-auto bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
       <CardHeader>
         <CardTitle>Questionário Nutri IA - Etapa {step}/4</CardTitle>
       </CardHeader>

@@ -182,7 +182,7 @@ export default function PersonalIA() {
 
         {/* Main CTA Section */}
         <div className="bg-gradient-to-r from-muted/20 via-background to-muted/20 p-8 rounded-3xl mb-16">
-          <Card className="max-w-4xl mx-auto border-0 shadow-xl bg-gradient-to-br from-card via-card to-muted/10">
+            <Card className="max-w-4xl mx-auto border-0 shadow-xl bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20">
             <CardHeader className="text-center pb-6">
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="p-3 rounded-xl bg-primary/10">

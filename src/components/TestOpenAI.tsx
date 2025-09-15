@@ -42,7 +42,7 @@ export const TestOpenAI = () => {
   };
 
   return (
-    <Card className="max-w-2xl mx-auto mt-8">
+    <Card className="max-w-2xl mx-auto mt-8 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <AlertCircle className="h-5 w-5 text-orange-500" />
