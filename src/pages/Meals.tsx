@@ -20,7 +20,7 @@ const Meals = () => {
     return (
       <div className="min-h-screen bg-black">
         <Header />
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 pt-20 pb-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Faça login para acessar o Diário Alimentar</h1>
             <p className="text-muted-foreground">Você precisa estar logado para registrar suas refeições.</p>

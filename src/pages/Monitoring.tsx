@@ -21,7 +21,7 @@ export default function Monitoring() {
     return (
       <div className="min-h-screen bg-black">
         <Header />
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 pt-20 pb-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold mb-4">Faça login para acessar o Monitoramento</h1>
             <p className="text-muted-foreground">Você precisa estar logado para acompanhar sua hidratação e sono.</p>
@@ -87,7 +87,7 @@ export default function Monitoring() {
     <div className="min-h-screen bg-black">
       <Header />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 pt-20 pb-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Monitoramento</h1>
           <p className="text-muted-foreground">Acompanhe sua hidratação e qualidade do sono para uma vida mais saudável</p>

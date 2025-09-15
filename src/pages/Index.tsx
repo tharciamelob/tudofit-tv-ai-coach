@@ -163,7 +163,7 @@ const Index = () => {
       ]
     },
     {
-      title: "Série para ganho de massa",
+      title: "Série para ganho de massa muscular",
       workouts: [
         {
           id: "5",
@@ -444,35 +444,37 @@ const Index = () => {
     <div className="min-h-screen bg-black app-container">
       <Header />
       
-      <HeroSection />
-      <ContinueWatching />
-      
-      {/* Hero Section with CTA for non-logged users */}
-      {!user && (
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center bg-gradient-to-r from-primary/10 to-primary-glow/10 rounded-lg p-8">
-            <h2 className="text-2xl font-bold mb-4">Comece sua jornada fitness hoje!</h2>
-            <p className="text-muted-foreground mb-6">
-              Acesse sua conta para desbloquear treinos personalizados, cardápios IA e muito mais.
-            </p>
-            <Link to="/auth">
-              <Button size="lg" className="btn-hero">
-                Entrar / Cadastrar - R$ 9,99 primeiro mês
-              </Button>
-            </Link>
+      <div className="pt-20">
+        <HeroSection />
+        <ContinueWatching />
+        
+        {/* Hero Section with CTA for non-logged users */}
+        {!user && (
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center bg-gradient-to-r from-primary/10 to-primary-glow/10 rounded-lg p-8">
+              <h2 className="text-2xl font-bold mb-4">Comece sua jornada fitness hoje!</h2>
+              <p className="text-muted-foreground mb-6">
+                Acesse sua conta para desbloquear treinos personalizados, cardápios IA e muito mais.
+              </p>
+              <Link to="/auth">
+                <Button size="lg" className="btn-hero">
+                  Entrar / Cadastrar - R$ 9,99 primeiro mês
+                </Button>
+              </Link>
+            </div>
           </div>
+        )}
+        
+        {/* Workout Categories */}
+        <div className="pb-8">
+          {workoutCategories.map((category, index) => (
+            <WorkoutCarousel
+              key={index}
+              title={category.title}
+              workouts={category.workouts}
+            />
+          ))}
         </div>
-      )}
-      
-      {/* Workout Categories */}
-      <div className="pb-8">
-        {workoutCategories.map((category, index) => (
-          <WorkoutCarousel
-            key={index}
-            title={category.title}
-            workouts={category.workouts}
-          />
-        ))}
       </div>
     </div>
   );

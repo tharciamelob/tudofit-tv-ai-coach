@@ -439,7 +439,7 @@ export default function NutriIA() {
     return (
         <div className="min-h-screen bg-black app-container">
           <Header />
-          <main className="container mx-auto px-4 py-8">
+          <main className="container mx-auto px-4 pt-20 pb-8">
             <div className="text-center">
               <h1 className="text-2xl font-bold mb-4">Faça login para acessar o Nutri IA</h1>
               <p className="text-muted-foreground">Você precisa estar logado para criar planos nutricionais personalizados.</p>
@@ -453,7 +453,7 @@ export default function NutriIA() {
     return (
       <div className="min-h-screen bg-black app-container">
         <Header />
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 pt-20 pb-8">
           <div className="mb-4">
             <Button variant="outline" onClick={() => setShowChat(false)}>
               ← Voltar
@@ -469,7 +469,7 @@ export default function NutriIA() {
     return (
       <div className="min-h-screen bg-black">
         <Header />
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 pt-20 pb-8">
           <Card className="max-w-6xl mx-auto bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl text-center">{(generatedPlan as any).plan_data.plan_name}</CardTitle>
@@ -547,7 +547,7 @@ export default function NutriIA() {
     <div className="min-h-screen bg-black">
       <Header />
       
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 pt-20 pb-12">
         {/* Hero Section */}
         <div className="text-center mb-16 relative">
           <div className="absolute inset-0 -z-10">
