@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
+import MealPlanModal from "@/components/MealPlanModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   Utensils, 
@@ -19,47 +20,102 @@ import {
 
 const readyMealPlans = [
   {
-    title: "Plano Emagrecimento",
-    description: "Cardápio balanceado para perda de peso saudável",
+    title: "Emagrecimento - 5 Dias",
+    description: "Cardápio balanceado para perda de peso saudável com 5 dias completos",
     icon: Target,
     calories: "1500-1800 kcal/dia",
-    duration: "4 semanas",
-    badge: "Popular"
+    duration: "5 dias completos",
+    badge: "Popular",
+    days: 5,
+    meals: {
+      "Dia 1": [
+        { type: "Café da manhã", foods: ["Aveia com banana e canela", "Café sem açúcar"], calories: 320 },
+        { type: "Lanche", foods: ["1 maçã média"], calories: 80 },
+        { type: "Almoço", foods: ["Peito de frango grelhado", "Salada verde", "Arroz integral (3 col.)"], calories: 450 },
+        { type: "Lanche", foods: ["Iogurte natural com chia"], calories: 150 },
+        { type: "Jantar", foods: ["Salmão grelhado", "Brócolis refogado", "Batata doce pequena"], calories: 400 }
+      ],
+      "Dia 2": [
+        { type: "Café da manhã", foods: ["Ovos mexidos (2 unid.)", "Pão integral", "Abacate"], calories: 380 },
+        { type: "Lanche", foods: ["Castanhas do Pará (5 unid.)"], calories: 100 },
+        { type: "Almoço", foods: ["Tilápia grelhada", "Quinoa", "Abobrinha refogada"], calories: 420 },
+        { type: "Lanche", foods: ["Vitamina de frutas vermelhas"], calories: 120 },
+        { type: "Jantar", foods: ["Peito de peru", "Salada de rúcula", "Inhame cozido"], calories: 380 }
+      ]
+    }
   },
   {
-    title: "Plano Ganho de Massa",
-    description: "Alto valor proteico para hipertrofia muscular",
+    title: "Ganho de Massa - 5 Dias",
+    description: "Alto valor proteico para hipertrofia muscular com 5 dias completos",
     icon: Beef,
     calories: "2500-3000 kcal/dia",
-    duration: "6 semanas",
-    badge: "Novo"
+    duration: "5 dias completos",
+    badge: "Novo",
+    days: 5,
+    meals: {
+      "Dia 1": [
+        { type: "Café da manhã", foods: ["Panqueca de aveia com whey", "Banana", "Pasta de amendoim"], calories: 550 },
+        { type: "Lanche", foods: ["Sanduíche de peito de peru", "Suco de laranja"], calories: 400 },
+        { type: "Almoço", foods: ["Carne bovina magra", "Arroz integral", "Feijão", "Salada"], calories: 700 },
+        { type: "Lanche pré-treino", foods: ["Banana com aveia"], calories: 200 },
+        { type: "Pós-treino", foods: ["Whey protein", "Água de coco"], calories: 180 },
+        { type: "Jantar", foods: ["Frango grelhado", "Batata doce", "Vegetais"], calories: 600 }
+      ]
+    }
   },
   {
-    title: "Plano Vegetariano",
-    description: "Nutrição completamente à base de plantas",
+    title: "Vegetariano - 5 Dias",
+    description: "Nutrição completamente à base de plantas com 5 dias completos",
     icon: Apple,
     calories: "1800-2200 kcal/dia",
-    duration: "4 semanas",
-    badge: "Sustentável"
+    duration: "5 dias completos",
+    badge: "Sustentável",
+    days: 5,
+    meals: {
+      "Dia 1": [
+        { type: "Café da manhã", foods: ["Smoothie de espinafre e frutas", "Granola caseira"], calories: 350 },
+        { type: "Lanche", foods: ["Hummus com cenoura"], calories: 150 },
+        { type: "Almoço", foods: ["Grão-de-bico refogado", "Quinoa", "Salada colorida"], calories: 500 },
+        { type: "Lanche", foods: ["Frutas secas e nozes"], calories: 200 },
+        { type: "Jantar", foods: ["Tofu grelhado", "Arroz integral", "Brócolis"], calories: 450 }
+      ]
+    }
   },
   {
-    title: "Plano Low Carb",
-    description: "Baixo carboidrato, alto em proteínas e gorduras boas",
+    title: "Low Carb - 5 Dias",
+    description: "Baixo carboidrato, alto em proteínas e gorduras boas com 5 dias completos",
     icon: Fish,
     calories: "1600-2000 kcal/dia",
-    duration: "8 semanas",
-    badge: "Eficaz"
+    duration: "5 dias completos",
+    badge: "Eficaz",
+    days: 5,
+    meals: {
+      "Dia 1": [
+        { type: "Café da manhã", foods: ["Ovos com bacon", "Abacate", "Café com óleo de coco"], calories: 450 },
+        { type: "Lanche", foods: ["Castanhas variadas"], calories: 150 },
+        { type: "Almoço", foods: ["Salmão grelhado", "Salada verde", "Azeite extra virgem"], calories: 500 },
+        { type: "Lanche", foods: ["Queijo coalho grelhado"], calories: 200 },
+        { type: "Jantar", foods: ["Frango com pele", "Aspargos", "Manteiga"], calories: 520 }
+      ]
+    }
   }
 ];
 
 export default function NutriIA() {
   const [showChat, setShowChat] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [showPlanModal, setShowPlanModal] = useState(false);
   const { user } = useAuth();
 
   const handlePlanGenerated = (plan: any) => {
     setGeneratedPlan(plan);
     setShowChat(false);
+  };
+
+  const handleViewPlan = (plan: any) => {
+    setSelectedPlan(plan);
+    setShowPlanModal(true);
   };
 
   if (!user) {
@@ -271,8 +327,8 @@ export default function NutriIA() {
                       <span className="font-medium">{plan.duration}</span>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Ver Detalhes
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => handleViewPlan(plan)}>
+                    Ver Cardápio de {plan.days} Dias
                   </Button>
                 </CardContent>
               </Card>
@@ -280,6 +336,12 @@ export default function NutriIA() {
           </div>
         </div>
       </main>
+      
+      <MealPlanModal 
+        isOpen={showPlanModal}
+        onClose={() => setShowPlanModal(false)}
+        plan={selectedPlan}
+      />
     </div>
   );
 }

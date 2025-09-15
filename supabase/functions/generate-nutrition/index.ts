@@ -46,7 +46,9 @@ serve(async (req) => {
     const goal = profile?.fitness_goal || questionnaire.nutrition_goal;
     
     const prompt = `
-    Crie um plano nutricional de 7 dias baseado nos seguintes dados:
+    Você é uma NUTRICIONISTA ESPECIALISTA CRN com 15 anos de experiência. Crie um plano nutricional detalhado de 7 dias baseado nos seguintes dados:
+    
+    DADOS DO CLIENTE:
     - Objetivo nutricional: ${questionnaire.nutrition_goal}
     - Objetivo fitness: ${goal}
     - Peso: ${weight}kg
@@ -55,6 +57,14 @@ serve(async (req) => {
     - Preferências alimentares: ${preferences}
     - Restrições alimentares: ${restrictions}
     - Alergias: ${allergies}
+
+    INSTRUÇÕES IMPORTANTES:
+    - Calcule calorias e macros com precisão nutricional
+    - Inclua preparos detalhados e substitutos
+    - Balanceie micronutrientes essenciais
+    - Considere índice glicêmico e timing nutricional
+    - Use alimentos brasileiros e sazonais
+    - Varie proteínas, cores e texturas
 
     Retorne APENAS um JSON válido no seguinte formato:
     {

@@ -45,31 +45,105 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
-    // Determinar se devemos gerar um plano (versão simplificada)
+    // Analisar se o usuário está pronto para gerar um plano
     const shouldGeneratePlan = conversationHistory && conversationHistory.length >= 4 && 
       (message.toLowerCase().includes('sim') || 
        message.toLowerCase().includes('gerar') || 
-       message.toLowerCase().includes('criar'));
+       message.toLowerCase().includes('criar') ||
+       message.toLowerCase().includes('pronto') ||
+       message.toLowerCase().includes('vamos') ||
+       (message.toLowerCase().includes('quero') && message.toLowerCase().includes('plano')));
 
     console.log('Should generate plan:', shouldGeneratePlan);
 
     if (shouldGeneratePlan) {
       console.log('Generating plan...');
-      return new Response(JSON.stringify({
-        message: `Perfeito! Vou criar seu plano personalizado agora. (Em desenvolvimento)`,
-        shouldGeneratePlan: true,
-        planData: { plan_data: { plan_name: "Plano Teste", description: "Plano em desenvolvimento" } }
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      
+      try {
+        // Gerar plano através das edge functions específicas
+        const functionName = chatType === 'nutrition' ? 'generate-nutrition' : 'generate-workout';
+        
+        // Criar dados básicos do questionário a partir da conversa
+        const questionnaireData = {
+          user_id: userId,
+          created_at: new Date().toISOString(),
+          // Para nutrição
+          ...(chatType === 'nutrition' && {
+            nutrition_goal: 'emagrecimento', // padrão
+            meals_per_day: 5,
+            food_preferences: [],
+            food_restrictions: [],
+            allergies: []
+          }),
+          // Para personal
+          ...(chatType === 'personal' && {
+            fitness_goal: 'perda_de_peso', // padrão
+            current_activity: 'sedentario',
+            experience_level: 'iniciante',
+            available_time: 60,
+            equipment_access: 'nenhum'
+          })
+        };
+
+        // Salvar questionário primeiro
+        const tableName = chatType === 'nutrition' ? 'nutrition_questionnaire' : 'personal_questionnaire';
+        const { data: questionnaire, error: qError } = await supabase
+          .from(tableName)
+          .insert(questionnaireData)
+          .select()
+          .single();
+
+        if (qError) {
+          console.error('Erro ao salvar questionário:', qError);
+          throw new Error('Erro ao processar dados do questionário');
+        }
+
+        // Gerar plano via edge function
+        const { data: planResult, error: planError } = await supabase.functions.invoke(functionName, {
+          body: { questionnaireId: questionnaire.id }
+        });
+
+        if (planError) {
+          console.error('Erro ao gerar plano:', planError);
+          throw new Error('Erro ao gerar plano personalizado');
+        }
+
+        return new Response(JSON.stringify({
+          message: `Perfeito! Seu plano personalizado foi criado com sucesso!`,
+          shouldGeneratePlan: true,
+          planData: planResult.plan
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      } catch (error: any) {
+        console.error('Erro na geração do plano:', error);
+        return new Response(JSON.stringify({
+          message: `Ocorreu um erro ao gerar seu plano. Vamos tentar novamente em um momento.`,
+          shouldGeneratePlan: false,
+          error: error.message
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // Conversa simples com OpenAI
     console.log('Making OpenAI request...');
     
     const systemPrompt = chatType === 'personal' 
-      ? "Você é um personal trainer virtual amigável. Faça perguntas para entender os objetivos do usuário."
-      : "Você é uma nutricionista virtual amigável. Faça perguntas para entender os objetivos nutricionais do usuário.";
+      ? `Você é um Personal Trainer especialista com mais de 10 anos de experiência. Seja profissional, motivador e faça perguntas específicas sobre:
+         - Objetivos (emagrecimento, ganho de massa, condicionamento)
+         - Nível de experiência e limitações físicas
+         - Tempo disponível e equipamentos
+         - Preferências de exercícios
+         Após coletar informações suficientes, sugira criar o plano personalizado.`
+      : `Você é uma Nutricionista especialista CRN com vasta experiência. Seja profissional, empática e faça perguntas específicas sobre:
+         - Objetivos nutricionais e peso atual
+         - Restrições alimentares e alergias
+         - Preferências culinárias e rotina
+         - Número de refeições desejadas
+         Após coletar informações suficientes, sugira criar o cardápio personalizado.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

@@ -31,18 +31,40 @@ serve(async (req) => {
       throw new Error('Questionário não encontrado');
     }
 
+    // Buscar dados do perfil do usuário
+    const { data: profile, error: pError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', questionnaire.user_id)
+      .single();
+
     // Construir prompt baseado nos dados
-    const equipmentList = questionnaire.available_equipment?.join(', ') || 'nenhum equipamento';
+    const equipmentList = questionnaire.equipment_access || 'nenhum equipamento';
     const restrictions = questionnaire.physical_restrictions || 'nenhuma restrição';
+    const weight = profile?.weight || 'não informado';
+    const height = profile?.height || 'não informado';
     
     const prompt = `
-    Crie um plano de treino personalizado baseado nos seguintes dados:
+    Você é um PERSONAL TRAINER ESPECIALISTA CREF com 15 anos de experiência em treinamento físico. Crie um plano de treino detalhado de 7 dias baseado nos seguintes dados:
+    
+    DADOS DO CLIENTE:
     - Objetivo: ${questionnaire.fitness_goal}
-    - Nível: ${questionnaire.fitness_level}
+    - Nível de experiência: ${questionnaire.experience_level}
+    - Atividade atual: ${questionnaire.current_activity}
     - Tempo disponível: ${questionnaire.available_time} minutos por treino
-    - Frequência semanal: ${questionnaire.weekly_frequency}x por semana
     - Equipamentos disponíveis: ${equipmentList}
     - Restrições físicas: ${restrictions}
+    - Peso: ${weight}kg
+    - Altura: ${height}cm
+
+    INSTRUÇÕES IMPORTANTES:
+    - Periodização adequada com progressão
+    - Exercícios seguros e eficazes para o nível
+    - Variação de estímulos (força, resistência, flexibilidade)
+    - Aquecimento e alongamento obrigatórios
+    - Adaptações para equipamentos disponíveis
+    - Tempo de descanso adequado entre séries
+    - Progressão gradual ao longo da semana
 
     Retorne APENAS um JSON válido no seguinte formato:
     {
@@ -77,7 +99,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'Você é um personal trainer especializado. Sempre retorne apenas JSON válido, sem texto adicional.'
+            content: 'Você é um PERSONAL TRAINER ESPECIALISTA CREF com vasta experiência. Sempre retorne apenas JSON válido, sem texto adicional.'
           },
           {
             role: 'user',
