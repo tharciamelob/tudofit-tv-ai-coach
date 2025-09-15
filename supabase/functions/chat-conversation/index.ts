@@ -7,274 +7,70 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL');
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-console.log('Edge Function iniciada - OpenAI Key:', openAIApiKey ? 'OK' : 'MISSING');
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { message, conversationHistory, chatType, userId } = await req.json();
-    console.log('Dados recebidos:', { chatType, userId, messageLength: message?.length });
+    console.log('=== CHAT CONVERSATION START ===');
     
-    const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
-
-    // Verificar se OpenAI API key existe
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    console.log('Environment check:');
+    console.log('- OpenAI Key exists:', !!openAIApiKey);
+    console.log('- Supabase URL exists:', !!supabaseUrl);
+    console.log('- Service Key exists:', !!supabaseServiceKey);
+    
     if (!openAIApiKey) {
-      console.error('OpenAI API key não encontrada');
+      console.error('FATAL: OpenAI API key não encontrada');
       return new Response(JSON.stringify({ 
         error: "OpenAI API key não configurada",
-        message: "Por favor, configure a chave da API do OpenAI."
+        message: "Configure a chave da API do OpenAI para usar esta funcionalidade."
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Obter informações do usuário
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+    const { message, conversationHistory, chatType, userId } = await req.json();
+    console.log('Request data:', { 
+      chatType, 
+      userId: userId?.substring(0, 8) + '...', 
+      messageLength: message?.length,
+      historyLength: conversationHistory?.length 
+    });
+    
+    const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
-    // Determinar se devemos gerar um plano baseado na conversa
-    const conversationText = conversationHistory.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n');
-    const shouldGeneratePlan = conversationHistory.length >= 6 && 
+    // Determinar se devemos gerar um plano (versão simplificada)
+    const shouldGeneratePlan = conversationHistory && conversationHistory.length >= 4 && 
       (message.toLowerCase().includes('sim') || 
        message.toLowerCase().includes('gerar') || 
-       message.toLowerCase().includes('criar') ||
-       message.toLowerCase().includes('pronto'));
+       message.toLowerCase().includes('criar'));
 
-    let systemPrompt = '';
-    let responseContext = '';
-
-    if (chatType === 'personal') {
-      systemPrompt = `Você é um personal trainer virtual especializado e amigável. Sua função é fazer perguntas para entender as necessidades do usuário e eventualmente gerar um plano de treino personalizado.
-
-IMPORTANTE:
-- Faça perguntas de forma natural e conversacional
-- Uma pergunta por vez, não bombardeie o usuário
-- Seja motivador e positivo
-- Inclua SEMPRE exercícios sem equipamentos (peso corporal)
-- Inclua exercícios de yoga e pilates quando apropriado
-- Considere diferentes níveis: iniciante, intermediário, avançado
-- Pergunte sobre limitações físicas
-- Considere o tempo disponível
-
-INFORMAÇÕES A COLETAR:
-1. Objetivo principal (emagrecimento, ganho de massa, condicionamento, fortalecimento)
-2. Nível de experiência com exercícios
-3. Tempo disponível para treinar
-4. Frequência semanal desejada
-5. Equipamentos disponíveis (incluir "sem equipamentos" como opção)
-6. Limitações físicas ou lesões
-7. Preferências (yoga, pilates, cardio, musculação, etc.)
-
-Se você já coletou informações suficientes e o usuário confirma que quer gerar o plano, responda indicando que vai criar o treino.`;
-
-      responseContext = 'Responda como um personal trainer motivador e amigável.';
-    } else {
-      systemPrompt = `Você é uma nutricionista virtual especializada e amigável. Sua função é fazer perguntas para entender as necessidades nutricionais do usuário e eventualmente gerar um plano alimentar personalizado.
-
-IMPORTANTE:
-- Faça perguntas de forma natural e conversacional
-- Uma pergunta por vez, não sobrecarregue o usuário
-- Seja encorajadora e informativa
-- Considere diferentes objetivos nutricionais
-- Respeite preferências alimentares e restrições
-- Considere rotina e estilo de vida
-
-INFORMAÇÕES A COLETAR:
-1. Objetivo nutricional (emagrecimento, ganho de massa, manutenção, saúde geral)
-2. Número de refeições por dia preferido
-3. Preferências alimentares (vegetariano, vegano, sem glúten, etc.)
-4. Restrições alimentares ou alergias
-5. Alimentos que não gosta
-6. Rotina diária (horários de refeições)
-7. Nível de atividade física
-8. Histórico de saúde relevante
-
-Se você já coletou informações suficientes e o usuário confirma que quer gerar o plano, responda indicando que vai criar o cardápio.`;
-
-      responseContext = 'Responda como uma nutricionista motivadora e informativa.';
-    }
+    console.log('Should generate plan:', shouldGeneratePlan);
 
     if (shouldGeneratePlan) {
-      // Extrair dados da conversa e gerar plano
-      console.log('Gerando plano baseado na conversa...');
-      
-      let planData;
-      if (chatType === 'personal') {
-        // Gerar plano de treino
-        console.log('Gerando workout com OpenAI...');
-        const workoutResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              {
-                role: 'system',
-                content: `Baseado na conversa a seguir, crie um plano de treino personalizado em JSON.
-
-INCLUA SEMPRE:
-- Exercícios sem equipamentos (peso corporal)
-- Exercícios de yoga/pilates quando apropriado
-- Diferentes níveis de intensidade
-- Instruções claras para cada exercício
-
-Formato JSON:
-{
-  "plan_data": {
-    "plan_name": "Nome do Plano",
-    "description": "Descrição do plano",
-    "duration_weeks": 4,
-    "workouts": [
-      {
-        "day": "Segunda-feira",
-        "name": "Nome do Treino",
-        "exercises": [
-          {
-            "name": "Nome do Exercício",
-            "sets": "3",
-            "reps": "12-15",
-            "rest": "60s",
-            "instructions": "Instruções detalhadas",
-            "equipment": "Sem equipamento"
-          }
-        ]
-      }
-    ]
-  }
-}`
-              },
-              { role: 'user', content: conversationText }
-            ],
-            max_tokens: 2000,
-            temperature: 0.7
-          }),
-        });
-
-        if (!workoutResponse.ok) {
-          console.error('Erro na resposta da OpenAI:', workoutResponse.status, await workoutResponse.text());
-          throw new Error(`OpenAI API error: ${workoutResponse.status}`);
-        }
-
-        const workoutData = await workoutResponse.json();
-        console.log('Resposta OpenAI recebida');
-        planData = JSON.parse(workoutData.choices[0].message.content);
-
-        // Salvar no banco
-        const { data: savedPlan } = await supabase
-          .from('workout_plans')
-          .insert({
-            user_id: userId,
-            plan_data: planData.plan_data
-          })
-          .select()
-          .single();
-
-        planData = savedPlan;
-      } else {
-        // Gerar plano nutricional
-        console.log('Gerando nutrition com OpenAI...');
-        const nutritionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              {
-                role: 'system',
-                content: `Baseado na conversa a seguir, crie um plano nutricional personalizado em JSON.
-
-Formato JSON:
-{
-  "plan_data": {
-    "plan_name": "Nome do Plano",
-    "description": "Descrição do plano",
-    "daily_calories": 2000,
-    "macros": {
-      "protein": 150,
-      "carbs": 200,
-      "fat": 70
-    },
-    "weekly_plan": [
-      {
-        "day": "Segunda-feira",
-        "meals": [
-          {
-            "type": "Café da Manhã",
-            "time": "08:00",
-            "foods": [
-              {
-                "name": "Aveia",
-                "quantity": "50g",
-                "calories": 190,
-                "protein": 7,
-                "carbs": 32,
-                "fat": 3
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-}`
-              },
-              { role: 'user', content: conversationText }
-            ],
-            max_tokens: 2000,
-            temperature: 0.7
-          }),
-        });
-
-        if (!nutritionResponse.ok) {
-          console.error('Erro na resposta da OpenAI:', nutritionResponse.status, await nutritionResponse.text());
-          throw new Error(`OpenAI API error: ${nutritionResponse.status}`);
-        }
-
-        const nutritionData = await nutritionResponse.json();
-        console.log('Resposta OpenAI recebida');
-        planData = JSON.parse(nutritionData.choices[0].message.content);
-
-        // Salvar no banco
-        const { data: savedPlan } = await supabase
-          .from('meal_plans')
-          .insert({
-            user_id: userId,
-            plan_data: planData.plan_data
-          })
-          .select()
-          .single();
-
-        planData = savedPlan;
-      }
-
+      console.log('Generating plan...');
       return new Response(JSON.stringify({
-        message: `Perfeito! Criei seu plano personalizado baseado em nossas conversas. Vou gerar tudo agora para você!`,
+        message: `Perfeito! Vou criar seu plano personalizado agora. (Em desenvolvimento)`,
         shouldGeneratePlan: true,
-        planData
+        planData: { plan_data: { plan_name: "Plano Teste", description: "Plano em desenvolvimento" } }
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Continuar conversa
-    console.log('Enviando conversa para OpenAI...');
+    // Conversa simples com OpenAI
+    console.log('Making OpenAI request...');
+    
+    const systemPrompt = chatType === 'personal' 
+      ? "Você é um personal trainer virtual amigável. Faça perguntas para entender os objetivos do usuário."
+      : "Você é uma nutricionista virtual amigável. Faça perguntas para entender os objetivos nutricionais do usuário.";
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -284,25 +80,30 @@ Formato JSON:
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: `${systemPrompt}\n\n${responseContext}` },
-          ...conversationHistory,
+          { role: 'system', content: systemPrompt },
+          ...(conversationHistory || []).slice(-5), // Últimas 5 mensagens
           { role: 'user', content: message }
         ],
-        max_tokens: 300,
+        max_tokens: 200,
         temperature: 0.8
       }),
     });
 
+    console.log('OpenAI response status:', response.status);
+
     if (!response.ok) {
-      console.error('Erro na resposta da OpenAI:', response.status, await response.text());
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI error response:', errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Conversa processada com sucesso');
+    console.log('OpenAI response received successfully');
     
     const aiResponse = data.choices[0].message.content;
 
+    console.log('=== CHAT CONVERSATION SUCCESS ===');
+    
     return new Response(JSON.stringify({
       message: aiResponse,
       shouldGeneratePlan: false
@@ -311,10 +112,16 @@ Formato JSON:
     });
 
   } catch (error: any) {
-    console.error('Erro na função chat-conversation:', error);
+    console.error('=== CHAT CONVERSATION ERROR ===');
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack?.substring(0, 500)
+    });
+    
     return new Response(JSON.stringify({ 
       error: error.message,
-      message: "Desculpe, houve um erro. Pode tentar novamente?"
+      message: "Desculpe, houve um erro na conversa. Tente novamente em alguns instantes."
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

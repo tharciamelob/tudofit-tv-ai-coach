@@ -18,21 +18,22 @@ export default function PersonalIA() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Faça login para acessar o Personal IA</h1>
-            <p className="text-muted-foreground">Você precisa estar logado para criar treinos personalizados.</p>
-          </div>
-        </main>
-      </div>
+    <div className="min-h-screen bg-background app-container">
+      <Header />
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Faça login para acessar o Personal IA</h1>
+          <p className="text-muted-foreground">Você precisa estar logado para criar treinos personalizados.</p>
+        </div>
+      </main>
+    </div>
     );
   }
 
   if (showChat) {
     return (
-      <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background app-container">
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="mb-4">
@@ -98,7 +99,7 @@ export default function PersonalIA() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background app-container">
       <Header />
       
       <main className="container mx-auto px-4 py-8">
