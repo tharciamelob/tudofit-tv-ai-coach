@@ -64,6 +64,40 @@ export const useWaterTracking = () => {
     }
   };
 
+  const updateDailyGoal = async (newGoal: number) => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      // Update goal in database by inserting a new record with current date and 0 amount
+      const today = new Date().toISOString().split('T')[0];
+      const { error } = await supabase
+        .from('water_tracking')
+        .insert({
+          user_id: user.id,
+          amount_ml: 0,
+          daily_goal_ml: newGoal,
+          date: today
+        });
+
+      if (error) throw error;
+
+      setDailyGoal(newGoal);
+      toast({
+        title: "Meta atualizada!",
+        description: `Sua nova meta diária é ${newGoal}ml.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao atualizar meta",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchTodayWater();
   }, [user]);
@@ -73,6 +107,7 @@ export const useWaterTracking = () => {
     dailyGoal,
     loading,
     addWater,
+    updateDailyGoal,
     progress: Math.min((todayWater / dailyGoal) * 100, 100)
   };
 };

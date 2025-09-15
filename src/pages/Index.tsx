@@ -165,7 +165,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background app-container">
+    <div className="min-h-screen bg-black app-container">
       <Header />
       
       <HeroSection />

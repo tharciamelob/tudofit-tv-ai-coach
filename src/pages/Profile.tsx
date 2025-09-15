@@ -14,7 +14,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
       <Header />
       
       <main className="container mx-auto px-4 pt-20 pb-8">

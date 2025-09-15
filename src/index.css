@@ -94,13 +94,13 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-sans;
-    background: var(--gradient-hero);
+    background: #000000;
     min-height: 100vh;
   }
   
   /* Global App Layout - Dark Netflix Style */
   .app-container {
-    background: var(--gradient-hero);
+    background: #000000;
     min-height: 100vh;
   }
   

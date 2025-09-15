@@ -437,7 +437,7 @@ export default function NutriIA() {
 
   if (!user) {
     return (
-        <div className="min-h-screen bg-background app-container">
+        <div className="min-h-screen bg-black app-container">
           <Header />
           <main className="container mx-auto px-4 py-8">
             <div className="text-center">
@@ -451,7 +451,7 @@ export default function NutriIA() {
 
   if (showChat) {
     return (
-      <div className="min-h-screen bg-background app-container">
+      <div className="min-h-screen bg-black app-container">
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="mb-4">
@@ -467,7 +467,7 @@ export default function NutriIA() {
 
   if (generatedPlan) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-black">
         <Header />
         <main className="container mx-auto px-4 py-8">
           <Card className="max-w-6xl mx-auto">
@@ -544,7 +544,7 @@ export default function NutriIA() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-muted/20">
+    <div className="min-h-screen bg-black">
       <Header />
       
       <main className="container mx-auto px-4 py-12">
