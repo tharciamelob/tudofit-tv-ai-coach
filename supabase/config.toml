@@ -1,1 +1,58 @@
 project_id = "czbepdrjixrqrxeyfagc"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[functions.generate-workout]
+verify_jwt = true
+
+[functions.generate-nutrition]
+verify_jwt = true
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1:54321"
+
+[inbound_smtp]
+enabled = false
+port = 54325
+pool_size = 10
+
+[storage]
+enabled = true
+port = 54324
+file_size_limit = "50MiB"
+image_transformation.enabled = true
+
+[auth]
+enabled = true
+port = 54324
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["https://127.0.0.1:3000"]
+jwt_expiry = 3600
+enable_signup = true
+enable_email_confirmations = false
+enable_email_change_confirmations = true
+enable_phone_confirmations = false
+enable_phone_change_confirmations = true
+
+[edge_runtime]
+enabled = true
+port = 54326
+ip_version = "ipv4"
+
+[analytics]
+enabled = false
+port = 54327
+vector_port = 54328
+gw_port = 54329
