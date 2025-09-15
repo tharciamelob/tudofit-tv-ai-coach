@@ -1,9 +1,13 @@
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import ContinueWatching from "@/components/ContinueWatching";
 import WorkoutCarousel from "@/components/WorkoutCarousel";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
+  const { user } = useAuth();
   // Mock data for workout categories
   const workoutCategories = [
     {
@@ -163,8 +167,26 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      
       <HeroSection />
       <ContinueWatching />
+      
+      {/* Hero Section with CTA for non-logged users */}
+      {!user && (
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center bg-gradient-to-r from-primary/10 to-primary-glow/10 rounded-lg p-8">
+            <h2 className="text-2xl font-bold mb-4">Comece sua jornada fitness hoje!</h2>
+            <p className="text-muted-foreground mb-6">
+              Acesse sua conta para desbloquear treinos personalizados, cardápios IA e muito mais.
+            </p>
+            <Link to="/auth">
+              <Button size="lg" className="btn-hero">
+                Entrar / Cadastrar - R$ 9,99 primeiro mês
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
       
       {/* Workout Categories */}
       <div className="pb-8">
