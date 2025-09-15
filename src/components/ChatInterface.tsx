@@ -105,17 +105,17 @@ export const ChatInterface = ({ chatType, onPlanGenerated }: ChatInterfaceProps)
   };
 
   return (
-    <Card className="h-[70vh] flex flex-col max-w-4xl mx-auto">
-      <CardHeader className="pb-4">
+    <Card className="h-[70vh] flex flex-col max-w-4xl mx-auto bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
+      <CardHeader className="pb-4 border-b border-white/10">
         <CardTitle className="flex items-center gap-2">
           <Bot className="h-6 w-6 text-primary" />
           {chatType === 'personal' ? 'Personal IA Assistant' : 'Nutri IA Assistant'}
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 px-6">
-          <div className="space-y-4 pb-4">
+      <CardContent className="flex-1 flex flex-col p-0 bg-gradient-to-b from-black via-black to-slate-800">
+        <ScrollArea className="flex-1 px-6 bg-gradient-to-b from-black via-black to-slate-800">
+          <div className="space-y-4 pb-4 bg-gradient-to-b from-black via-black to-slate-800">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -132,10 +132,10 @@ export const ChatInterface = ({ chatType, onPlanGenerated }: ChatInterfaceProps)
                 )}
                 
                 <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
+                  className={`max-w-[80%] p-4 rounded-lg border transition-all duration-300 ${
                     message.type === 'user'
-                      ? 'bg-primary text-primary-foreground ml-auto'
-                      : 'bg-muted'
+                      ? 'bg-primary text-primary-foreground ml-auto border-primary/20 shadow-lg'
+                      : 'bg-gradient-to-br from-slate-800 to-slate-900 border-white/10 shadow-lg backdrop-blur-sm'
                   }`}
                 >
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -166,9 +166,9 @@ export const ChatInterface = ({ chatType, onPlanGenerated }: ChatInterfaceProps)
                     <Bot className="h-4 w-4 text-primary-foreground" />
                   </div>
                 </div>
-                <div className="bg-muted p-3 rounded-lg">
+                <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 p-4 rounded-lg shadow-lg backdrop-blur-sm">
                   <div className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     <span className="text-sm">
                       {isGeneratingPlan ? 'Gerando seu plano personalizado...' : 'Digitando...'}
                     </span>
@@ -180,7 +180,7 @@ export const ChatInterface = ({ chatType, onPlanGenerated }: ChatInterfaceProps)
           <div ref={messagesEndRef} />
         </ScrollArea>
         
-        <div className="border-t p-4">
+        <div className="border-t border-white/10 p-4 bg-gradient-to-b from-black via-black to-slate-800">
           <div className="flex gap-2">
             <Input
               value={inputValue}
@@ -188,12 +188,13 @@ export const ChatInterface = ({ chatType, onPlanGenerated }: ChatInterfaceProps)
               onKeyPress={handleKeyPress}
               placeholder={`Digite sua mensagem...`}
               disabled={isLoading || isGeneratingPlan}
-              className="flex-1"
+              className="flex-1 bg-slate-800/50 border-white/20 focus:border-primary/50 text-white placeholder:text-gray-400"
             />
             <Button
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || isLoading || isGeneratingPlan}
               size="icon"
+              className="bg-primary hover:bg-primary/90 shadow-lg"
             >
               <Send className="h-4 w-4" />
             </Button>
