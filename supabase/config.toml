@@ -16,6 +16,9 @@ verify_jwt = false
 [functions.chat-conversation]
 verify_jwt = false
 
+[functions.test-openai]
+verify_jwt = false
+
 [db]
 port = 54322
 shadow_port = 54320

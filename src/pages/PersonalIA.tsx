@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Brain, Target, Clock, Dumbbell, MessageCircle } from "lucide-react";
 import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
+import { TestOpenAI } from "@/components/TestOpenAI";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function PersonalIA() {
@@ -176,6 +177,8 @@ export default function PersonalIA() {
             </p>
           </CardContent>
         </Card>
+        
+        <TestOpenAI />
       </main>
     </div>
   );
