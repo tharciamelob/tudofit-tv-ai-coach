@@ -32,7 +32,7 @@ const WorkoutCard = ({
   return (
     <div className="card-netflix group cursor-pointer min-w-[280px] md:min-w-[320px]">
       {/* Thumbnail */}
-      <div className="relative aspect-video bg-gradient-to-br from-primary/20 to-accent/30 overflow-hidden">
+      <div className="relative aspect-video bg-black overflow-hidden border border-white/10">
         {thumbnail ? (
           <img 
             src={thumbnail} 
