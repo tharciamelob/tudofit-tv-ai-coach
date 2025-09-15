@@ -40,6 +40,49 @@ export default function Monitoring() {
     return duration;
   };
 
+  const getWaterAnalysis = (progress: number) => {
+    if (progress >= 100) {
+      return <p className="text-sm text-green-500 font-medium">✅ Excelente! Meta atingida!</p>;
+    } else if (progress >= 80) {
+      return <p className="text-sm text-blue-500 font-medium">🎯 Quase lá! Continue bebendo água.</p>;
+    } else if (progress >= 50) {
+      return <p className="text-sm text-yellow-500 font-medium">⚠️ Metade do caminho. Mantenha o ritmo!</p>;
+    } else {
+      return <p className="text-sm text-red-500 font-medium">💧 Beba mais água! Você precisa se hidratar.</p>;
+    }
+  };
+
+  const getSleepAnalysis = (sleepData: any) => {
+    const duration = sleepData.sleep_duration;
+    const quality = sleepData.sleep_quality;
+    
+    // Extrai horas da duração
+    const match = duration?.match(/(\d+)\s*hours?/);
+    const hours = match ? parseInt(match[1]) : 0;
+    
+    let message = "";
+    let color = "";
+    
+    if (hours >= 7 && hours <= 9 && quality >= 4) {
+      message = "😴 Sono perfeito! Qualidade e duração ideais.";
+      color = "text-green-500";
+    } else if (hours >= 6 && hours <= 10 && quality >= 3) {
+      message = "🌙 Bom sono! Dentro do recomendado.";
+      color = "text-blue-500";
+    } else if (hours < 6) {
+      message = "⏰ Durma mais! Você precisa de pelo menos 7-9h.";
+      color = "text-red-500";
+    } else if (hours > 9) {
+      message = "🛌 Muito sono pode indicar fadiga. Consulte um médico.";
+      color = "text-yellow-500";
+    } else if (quality < 3) {
+      message = "💤 Qualidade baixa. Revise sua rotina noturna.";
+      color = "text-orange-500";
+    }
+    
+    return <p className={`text-sm font-medium ${color} mt-2`}>{message}</p>;
+  };
+
   return (
     <div className="min-h-screen bg-black">
       <Header />
@@ -74,9 +117,12 @@ export default function Monitoring() {
                   <span className="text-muted-foreground">de {(dailyGoal / 1000).toFixed(1)}L</span>
                 </div>
                 <Progress value={progress} className="h-2" />
-                <p className="text-sm text-muted-foreground">
-                  Você está {Math.round(progress)}% do caminho para sua meta diária!
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Você está {Math.round(progress)}% do caminho para sua meta diária!
+                  </p>
+                  {getWaterAnalysis(progress)}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -119,6 +165,7 @@ export default function Monitoring() {
                       <p>Dormiu às: {new Date(todaySleep.bedtime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                       <p>Acordou às: {new Date(todaySleep.wake_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
+                    {getSleepAnalysis(todaySleep)}
                   </>
                 ) : (
                   <div className="text-center py-4">

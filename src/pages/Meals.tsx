@@ -1,38 +1,53 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Utensils, Plus, Camera, Calendar, PieChart } from 'lucide-react';
+import { Utensils, Plus, Camera, Calendar, PieChart, Trash2 } from 'lucide-react';
+import { MealRegistrationModal } from '@/components/MealRegistrationModal';
+import { useFoodDiary } from '@/hooks/useFoodDiary';
+import { useAuth } from '@/contexts/AuthContext';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const Meals = () => {
-  const todayMeals = [
-    {
-      type: 'Café da Manhã',
-      time: '08:00',
-      foods: ['Aveia com frutas', 'Café com leite'],
-      calories: 350,
-      protein: 15,
-      carbs: 45,
-      fat: 8
-    },
-    {
-      type: 'Almoço',
-      time: '12:30',
-      foods: ['Peito de frango grelhado', 'Arroz integral', 'Brócolis'],
-      calories: 520,
-      protein: 40,
-      carbs: 35,
-      fat: 12
-    }
-  ];
+  const [modalOpen, setModalOpen] = useState(false);
+  const { user } = useAuth();
+  const { todayMeals, loading, deleteMeal, calculateDailyTotals } = useFoodDiary();
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Faça login para acessar o Diário Alimentar</h1>
+            <p className="text-muted-foreground">Você precisa estar logado para registrar suas refeições.</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const dailyTotals = calculateDailyTotals();
   const dailyGoals = {
-    calories: { current: 870, target: 2200 },
-    protein: { current: 55, target: 120 },
-    carbs: { current: 80, target: 250 },
-    fat: { current: 20, target: 70 }
+    calories: { current: dailyTotals.calories, target: 2200 },
+    protein: { current: dailyTotals.protein, target: 120 },
+    carbs: { current: dailyTotals.carbs, target: 250 },
+    fat: { current: dailyTotals.fat, target: 70 }
+  };
+
+  const formatMealType = (type: string) => {
+    const types: { [key: string]: string } = {
+      'cafe-da-manha': 'Café da Manhã',
+      'lanche-manha': 'Lanche da Manhã',
+      'almoco': 'Almoço',
+      'lanche-tarde': 'Lanche da Tarde',
+      'jantar': 'Jantar',
+      'ceia': 'Ceia'
+    };
+    return types[type] || type;
   };
 
   return (
@@ -138,7 +153,7 @@ const Meals = () => {
                       <Calendar className="h-5 w-5 mr-2" />
                       Refeições de Hoje
                     </div>
-                    <Button size="sm">
+                    <Button size="sm" onClick={() => setModalOpen(true)}>
                       <Plus className="h-4 w-4 mr-1" />
                       Adicionar
                     </Button>
@@ -146,31 +161,52 @@ const Meals = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {todayMeals.map((meal, index) => (
-                      <div key={index} className="border-l-4 border-primary pl-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
-                            <h3 className="font-semibold">{meal.type}</h3>
-                            <p className="text-sm text-muted-foreground">{meal.time}</p>
-                          </div>
-                          <Badge variant="outline">
-                            {meal.calories} kcal
-                          </Badge>
-                        </div>
-                        <div className="mb-3">
-                          {meal.foods.map((food, foodIndex) => (
-                            <p key={foodIndex} className="text-sm text-muted-foreground">
-                              • {food}
-                            </p>
-                          ))}
-                        </div>
-                        <div className="flex space-x-4 text-xs">
-                          <span className="text-blue-500">P: {meal.protein}g</span>
-                          <span className="text-green-500">C: {meal.carbs}g</span>
-                          <span className="text-yellow-500">G: {meal.fat}g</span>
-                        </div>
+                    {todayMeals.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Utensils className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                        <p className="text-muted-foreground mb-4">Nenhuma refeição registrada hoje</p>
+                        <Button onClick={() => setModalOpen(true)}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Registrar primeira refeição
+                        </Button>
                       </div>
-                    ))}
+                    ) : (
+                      todayMeals.map((meal) => (
+                        <div key={meal.id} className="border-l-4 border-primary pl-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <h3 className="font-semibold">{formatMealType(meal.meal_type)}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {format(new Date(meal.created_at), 'HH:mm', { locale: ptBR })}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline">
+                                {meal.calories || 0} kcal
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteMeal(meal.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="mb-3">
+                            <p className="text-sm text-muted-foreground">
+                              • {meal.food_name} ({meal.quantity}{meal.unit})
+                            </p>
+                          </div>
+                          <div className="flex space-x-4 text-xs">
+                            <span className="text-blue-500">P: {meal.protein || 0}g</span>
+                            <span className="text-green-500">C: {meal.carbs || 0}g</span>
+                            <span className="text-yellow-500">G: {meal.fat || 0}g</span>
+                          </div>
+                        </div>
+                      ))
+                    )}
 
                     {/* Próximas Refeições */}
                     <div className="space-y-3 mt-6 pt-6 border-t">
@@ -210,11 +246,19 @@ const Meals = () => {
                   <CardTitle>Adicionar Refeição</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => setModalOpen(true)}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
-                    Buscar alimento
+                    Adicionar alimento
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => setModalOpen(true)}
+                  >
                     <Camera className="h-4 w-4 mr-2" />
                     Foto do prato
                   </Button>
@@ -229,13 +273,13 @@ const Meals = () => {
                 <CardContent>
                   <div className="space-y-3">
                     {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((day, index) => {
-                      const calories = [2150, 2080, 1950, 2200, 2100, 1800, 870];
+                      const calories = [2150, 2080, 1950, 2200, 2100, 1800, dailyTotals.calories];
                       const isToday = index === 6;
                       return (
                         <div key={day} className={`flex items-center justify-between p-2 rounded ${isToday ? 'bg-primary/10' : ''}`}>
                           <span className="text-sm font-medium">{day}</span>
                           <span className={`text-sm ${isToday ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
-                            {calories[index]} kcal
+                            {Math.round(calories[index])} kcal
                           </span>
                         </div>
                       );
@@ -246,6 +290,11 @@ const Meals = () => {
             </div>
           </div>
         </div>
+
+        <MealRegistrationModal 
+          open={modalOpen} 
+          onOpenChange={setModalOpen} 
+        />
       </main>
     </div>
   );
