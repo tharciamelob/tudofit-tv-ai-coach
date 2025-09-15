@@ -46,7 +46,7 @@ const ContinueWatching = () => {
         {continueItems.map((item) => (
           <div
             key={item.id}
-            className="group relative bg-card rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer"
+            className="group relative bg-gradient-to-b from-black via-black to-slate-800 border border-white/10 shadow-xl rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer"
           >
             {/* Thumbnail */}
             <div className="relative aspect-video">

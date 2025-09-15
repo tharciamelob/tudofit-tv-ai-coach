@@ -54,7 +54,7 @@ export default function PersonalIA() {
       <div className="min-h-screen bg-black">
         <Header />
         <main className="container mx-auto px-4 py-8">
-          <Card className="max-w-4xl mx-auto">
+          <Card className="max-w-4xl mx-auto bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl text-center">{(generatedPlan as any).plan_data.plan_name}</CardTitle>
               <CardDescription className="text-center">{(generatedPlan as any).plan_data.description}</CardDescription>
@@ -62,7 +62,7 @@ export default function PersonalIA() {
             <CardContent>
               <div className="space-y-6">
                 {(generatedPlan as any).plan_data.workouts?.map((workout: any, index: number) => (
-                  <Card key={index}>
+                  <Card key={index} className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                     <CardHeader>
                       <CardTitle className="text-lg">{workout.day} - {workout.name}</CardTitle>
                     </CardHeader>
@@ -137,7 +137,7 @@ export default function PersonalIA() {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-card via-card to-muted/10 group hover:shadow-2xl transition-all duration-500">
+          <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500">
             <CardHeader className="text-center pb-4">
               <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
                 <Target className="h-12 w-12 text-primary" />
@@ -151,7 +151,7 @@ export default function PersonalIA() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-card via-card to-muted/10 group hover:shadow-2xl transition-all duration-500">
+          <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500">
             <CardHeader className="text-center pb-4">
               <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
                 <Clock className="h-12 w-12 text-primary" />
@@ -165,7 +165,7 @@ export default function PersonalIA() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-card via-card to-muted/10 group hover:shadow-2xl transition-all duration-500">
+          <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500">
             <CardHeader className="text-center pb-4">
               <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
                 <Dumbbell className="h-12 w-12 text-primary" />
@@ -238,7 +238,7 @@ export default function PersonalIA() {
         </div>
 
         {/* Saved Workouts */}
-        <Card className="max-w-4xl mx-auto border-0 shadow-xl bg-gradient-to-br from-card via-card to-muted/10">
+        <Card className="max-w-4xl mx-auto border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl text-foreground">Seus Treinos Personalizados</CardTitle>
             <CardDescription>Histórico de treinos criados especialmente para você</CardDescription>

@@ -32,7 +32,7 @@ const Profile = () => {
           <div className="grid md:grid-cols-3 gap-6">
             {/* Informações do Usuário */}
             <div className="md:col-span-2">
-              <Card className="card-netflix mb-6">
+              <Card className="mb-6 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -77,7 +77,7 @@ const Profile = () => {
               </Card>
 
               {/* Estatísticas */}
-              <Card className="card-netflix">
+              <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                 <CardHeader>
                   <CardTitle>Suas Estatísticas</CardTitle>
                 </CardHeader>
@@ -107,7 +107,7 @@ const Profile = () => {
             {/* Sidebar */}
             <div>
               {/* Status da Assinatura */}
-              <Card className="card-netflix mb-6">
+              <Card className="mb-6 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Crown className="h-5 w-5 mr-2 text-yellow-500" />
@@ -143,7 +143,7 @@ const Profile = () => {
               </Card>
 
               {/* Ações da Conta */}
-              <Card className="card-netflix">
+              <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                 <CardHeader>
                   <CardTitle>Configurações</CardTitle>
                 </CardHeader>
@@ -172,7 +172,7 @@ const Profile = () => {
           </div>
 
           {/* Planos e Benefícios */}
-          <Card className="card-netflix mt-6">
+          <Card className="mt-6 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
             <CardHeader>
               <CardTitle>Benefícios do seu plano</CardTitle>
             </CardHeader>

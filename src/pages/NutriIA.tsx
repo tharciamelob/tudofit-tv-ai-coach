@@ -470,7 +470,7 @@ export default function NutriIA() {
       <div className="min-h-screen bg-black">
         <Header />
         <main className="container mx-auto px-4 py-8">
-          <Card className="max-w-6xl mx-auto">
+          <Card className="max-w-6xl mx-auto bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl text-center">{(generatedPlan as any).plan_data.plan_name}</CardTitle>
               <CardDescription className="text-center">{(generatedPlan as any).plan_data.description}</CardDescription>
@@ -492,7 +492,7 @@ export default function NutriIA() {
             <CardContent>
               <div className="space-y-6">
                 {(generatedPlan as any).plan_data.weekly_plan?.map((day: any, index: number) => (
-                  <Card key={index}>
+                  <Card key={index} className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                     <CardHeader>
                       <CardTitle className="text-lg">{day.day}</CardTitle>
                     </CardHeader>
@@ -580,7 +580,7 @@ export default function NutriIA() {
 
         <div className="grid lg:grid-cols-3 gap-8 mb-16">
           {/* Cardápio Personalizado */}
-          <Card className="lg:col-span-2 border-0 shadow-xl bg-gradient-to-br from-card via-card to-muted/10">
+          <Card className="lg:col-span-2 border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10">
             <CardHeader className="pb-8">
               <div className="flex items-center gap-4 mb-4">
                 <div className="p-3 rounded-xl bg-primary/10">
@@ -641,7 +641,7 @@ export default function NutriIA() {
           </Card>
 
           {/* Planejamento Semanal */}
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-card via-card to-muted/10">
+          <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10">
             <CardHeader className="pb-6">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 rounded-lg bg-primary/10">
@@ -683,7 +683,7 @@ export default function NutriIA() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {readyMealPlans.map((plan) => (
-              <Card key={plan.title} className="relative group hover:shadow-2xl transition-all duration-500 border-0 bg-gradient-to-br from-card via-card to-muted/10 hover:scale-105">
+              <Card key={plan.title} className="relative group hover:shadow-2xl transition-all duration-500 border-0 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 hover:scale-105">
                 <CardHeader className="text-center pb-4">
                   {plan.badge && (
                     <Badge className="absolute top-4 right-4 z-10 shadow-lg" variant="secondary">

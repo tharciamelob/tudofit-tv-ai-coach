@@ -50,7 +50,7 @@ const Walking = () => {
           </div>
 
           {/* Botão Iniciar Caminhada */}
-          <Card className="card-netflix mb-8">
+          <Card className="mb-8 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
             <CardContent className="p-8">
               <div className="text-center">
                 <div className="bg-gradient-to-br from-primary to-primary-glow rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
@@ -70,7 +70,7 @@ const Walking = () => {
 
           {/* Estatísticas da Semana */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <Card className="card-netflix">
+            <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
               <CardContent className="p-4 text-center">
                 <Route className="h-8 w-8 text-blue-500 mx-auto mb-2" />
                 <p className="text-2xl font-bold">12.3 km</p>
@@ -78,7 +78,7 @@ const Walking = () => {
               </CardContent>
             </Card>
             
-            <Card className="card-netflix">
+            <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
               <CardContent className="p-4 text-center">
                 <Clock className="h-8 w-8 text-green-500 mx-auto mb-2" />
                 <p className="text-2xl font-bold">2h 15m</p>
@@ -86,7 +86,7 @@ const Walking = () => {
               </CardContent>
             </Card>
             
-            <Card className="card-netflix">
+            <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
               <CardContent className="p-4 text-center">
                 <Flame className="h-8 w-8 text-red-500 mx-auto mb-2" />
                 <p className="text-2xl font-bold">650</p>
@@ -94,7 +94,7 @@ const Walking = () => {
               </CardContent>
             </Card>
             
-            <Card className="card-netflix">
+            <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
               <CardContent className="p-4 text-center">
                 <Footprints className="h-8 w-8 text-purple-500 mx-auto mb-2" />
                 <p className="text-2xl font-bold">16.2K</p>
@@ -105,7 +105,7 @@ const Walking = () => {
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Histórico de Caminhadas */}
-            <Card className="card-netflix">
+            <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Calendar className="h-5 w-5 mr-2" />
@@ -141,7 +141,7 @@ const Walking = () => {
             </Card>
 
             {/* Progresso Mensal */}
-            <Card className="card-netflix">
+            <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <TrendingUp className="h-5 w-5 mr-2" />
@@ -181,7 +181,7 @@ const Walking = () => {
           </div>
 
           {/* Recursos da Caminhada */}
-          <Card className="card-netflix mt-6">
+          <Card className="mt-6 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
             <CardHeader>
               <CardTitle>Recursos Disponíveis</CardTitle>
             </CardHeader>
