@@ -29,18 +29,155 @@ const readyMealPlans = [
     days: 5,
     meals: {
       "Dia 1": [
-        { type: "Café da manhã", foods: ["Aveia com banana e canela", "Café sem açúcar"], calories: 320 },
-        { type: "Lanche", foods: ["1 maçã média"], calories: 80 },
-        { type: "Almoço", foods: ["Peito de frango grelhado", "Salada verde", "Arroz integral (3 col.)"], calories: 450 },
-        { type: "Lanche", foods: ["Iogurte natural com chia"], calories: 150 },
-        { type: "Jantar", foods: ["Salmão grelhado", "Brócolis refogado", "Batata doce pequena"], calories: 400 }
+        { 
+          type: "Café da manhã", 
+          time: "07:00",
+          foods: [
+            "Aveia em flocos - 40g",
+            "Banana nanica - 1 unidade média (100g)",
+            "Canela em pó - 1 colher de chá",
+            "Café sem açúcar - 1 xícara"
+          ], 
+          calories: 320 
+        },
+        { 
+          type: "Lanche da manhã", 
+          time: "10:00",
+          foods: ["Maçã vermelha - 1 unidade média (150g)"], 
+          calories: 80 
+        },
+        { 
+          type: "Almoço", 
+          time: "12:30",
+          foods: [
+            "Peito de frango grelhado - 120g",
+            "Salada verde (alface, rúcula, pepino) - 100g",
+            "Azeite extra virgem - 1 colher de chá",
+            "Arroz integral cozido - 3 colheres de sopa (60g)"
+          ], 
+          calories: 450 
+        },
+        { 
+          type: "Lanche da tarde", 
+          time: "15:30",
+          foods: [
+            "Iogurte natural integral - 150g",
+            "Semente de chia - 1 colher de sopa"
+          ], 
+          calories: 150 
+        },
+        { 
+          type: "Jantar", 
+          time: "19:00",
+          foods: [
+            "Salmão grelhado - 100g",
+            "Brócolis refogado - 150g",
+            "Batata doce cozida - 1 unidade pequena (80g)",
+            "Azeite para tempero - 1 colher de chá"
+          ], 
+          calories: 400 
+        }
       ],
       "Dia 2": [
-        { type: "Café da manhã", foods: ["Ovos mexidos (2 unid.)", "Pão integral", "Abacate"], calories: 380 },
-        { type: "Lanche", foods: ["Castanhas do Pará (5 unid.)"], calories: 100 },
-        { type: "Almoço", foods: ["Tilápia grelhada", "Quinoa", "Abobrinha refogada"], calories: 420 },
-        { type: "Lanche", foods: ["Vitamina de frutas vermelhas"], calories: 120 },
-        { type: "Jantar", foods: ["Peito de peru", "Salada de rúcula", "Inhame cozido"], calories: 380 }
+        { 
+          type: "Café da manhã", 
+          time: "07:00",
+          foods: [
+            "Ovos mexidos - 2 unidades grandes",
+            "Pão integral - 1 fatia (25g)",
+            "Abacate - 1/4 de unidade (50g)",
+            "Café sem açúcar - 1 xícara"
+          ], 
+          calories: 380 
+        },
+        { 
+          type: "Lanche da manhã", 
+          time: "10:00",
+          foods: ["Castanhas do Pará - 5 unidades (10g)"], 
+          calories: 100 
+        },
+        { 
+          type: "Almoço", 
+          time: "12:30",
+          foods: [
+            "Tilápia grelhada - 120g",
+            "Quinoa cozida - 4 colheres de sopa (80g)",
+            "Abobrinha refogada - 100g",
+            "Temperos e azeite - 1 colher de chá"
+          ], 
+          calories: 420 
+        },
+        { 
+          type: "Lanche da tarde", 
+          time: "15:30",
+          foods: [
+            "Vitamina: Frutas vermelhas - 100g",
+            "Leite desnatado - 200ml",
+            "Mel - 1 colher de chá"
+          ], 
+          calories: 120 
+        },
+        { 
+          type: "Jantar", 
+          time: "19:00",
+          foods: [
+            "Peito de peru fatias - 100g",
+            "Salada de rúcula e tomate - 100g",
+            "Inhame cozido - 1 unidade média (100g)",
+            "Azeite para tempero - 1 colher de chá"
+          ], 
+          calories: 380 
+        }
+      ],
+      "Dia 3": [
+        { 
+          type: "Café da manhã", 
+          time: "07:00",
+          foods: [
+            "Tapioca - 2 colheres de sopa (40g)",
+            "Queijo cottage - 3 colheres de sopa (60g)",
+            "Tomate cereja - 5 unidades",
+            "Chá verde - 1 xícara"
+          ], 
+          calories: 300 
+        },
+        { 
+          type: "Lanche da manhã", 
+          time: "10:00",
+          foods: ["Pêra - 1 unidade média (150g)"], 
+          calories: 90 
+        },
+        { 
+          type: "Almoço", 
+          time: "12:30",
+          foods: [
+            "Carne bovina magra (patinho) - 100g",
+            "Salada colorida (beterraba, cenoura, alface) - 120g",
+            "Arroz integral - 3 colheres de sopa (60g)",
+            "Feijão carioca - 2 colheres de sopa (40g)"
+          ], 
+          calories: 480 
+        },
+        { 
+          type: "Lanche da tarde", 
+          time: "15:30",
+          foods: [
+            "Água de coco - 200ml",
+            "Amendoim torrado - 15 unidades"
+          ], 
+          calories: 140 
+        },
+        { 
+          type: "Jantar", 
+          time: "19:00",
+          foods: [
+            "Linguado grelhado - 120g",
+            "Espinafre refogado - 100g",
+            "Abóbora cozida - 100g",
+            "Azeite para tempero - 1 colher de chá"
+          ], 
+          calories: 350 
+        }
       ]
     }
   },
@@ -54,12 +191,101 @@ const readyMealPlans = [
     days: 5,
     meals: {
       "Dia 1": [
-        { type: "Café da manhã", foods: ["Panqueca de aveia com whey", "Banana", "Pasta de amendoim"], calories: 550 },
-        { type: "Lanche", foods: ["Sanduíche de peito de peru", "Suco de laranja"], calories: 400 },
-        { type: "Almoço", foods: ["Carne bovina magra", "Arroz integral", "Feijão", "Salada"], calories: 700 },
-        { type: "Lanche pré-treino", foods: ["Banana com aveia"], calories: 200 },
-        { type: "Pós-treino", foods: ["Whey protein", "Água de coco"], calories: 180 },
-        { type: "Jantar", foods: ["Frango grelhado", "Batata doce", "Vegetais"], calories: 600 }
+        { 
+          type: "Café da manhã", 
+          time: "07:00",
+          foods: [
+            "Panqueca de aveia: Aveia - 60g, Whey protein - 30g, Ovo - 1 unidade",
+            "Banana prata - 1 unidade grande (120g)",
+            "Pasta de amendoim integral - 2 colheres de sopa (32g)",
+            "Café com leite - 200ml"
+          ], 
+          calories: 650 
+        },
+        { 
+          type: "Lanche da manhã", 
+          time: "10:00",
+          foods: [
+            "Sanduíche: Pão integral - 2 fatias (50g)",
+            "Peito de peru - 60g",
+            "Queijo minas - 2 fatias (40g)",
+            "Suco de laranja natural - 200ml"
+          ], 
+          calories: 450 
+        },
+        { 
+          type: "Almoço", 
+          time: "12:30",
+          foods: [
+            "Carne bovina magra (alcatra) - 150g",
+            "Arroz integral cozido - 6 colheres de sopa (120g)",
+            "Feijão preto - 4 colheres de sopa (80g)",
+            "Salada mista - 100g com azeite - 1 colher de sopa"
+          ], 
+          calories: 800 
+        },
+        { 
+          type: "Lanche pré-treino", 
+          time: "15:00",
+          foods: [
+            "Banana nanica - 1 unidade média (100g)",
+            "Aveia em flocos - 3 colheres de sopa (30g)"
+          ], 
+          calories: 220 
+        },
+        { 
+          type: "Pós-treino", 
+          time: "17:30",
+          foods: [
+            "Whey protein - 40g",
+            "Água de coco - 300ml",
+            "Mel - 1 colher de sopa"
+          ], 
+          calories: 250 
+        },
+        { 
+          type: "Jantar", 
+          time: "19:30",
+          foods: [
+            "Frango grelhado - 150g",
+            "Batata doce assada - 1 unidade grande (150g)",
+            "Vegetais refogados (brócolis, cenoura) - 150g",
+            "Azeite para tempero - 1 colher de sopa"
+          ], 
+          calories: 680 
+        }
+      ],
+      "Dia 2": [
+        { 
+          type: "Café da manhã", 
+          time: "07:00",
+          foods: [
+            "Vitamina: Leite integral - 300ml, Banana - 1 unidade, Aveia - 40g",
+            "Granola caseira - 3 colheres de sopa (45g)",
+            "Mel - 1 colher de sobremesa"
+          ], 
+          calories: 620 
+        },
+        { 
+          type: "Lanche da manhã", 
+          time: "10:00",
+          foods: [
+            "Mix de oleaginosas (castanhas, nozes, amêndoas) - 30g",
+            "Água - 200ml"
+          ], 
+          calories: 180 
+        },
+        { 
+          type: "Almoço", 
+          time: "12:30",
+          foods: [
+            "Peixe (robalo) grelhado - 150g",
+            "Quinoa cozida - 6 colheres de sopa (120g)",
+            "Grão-de-bico refogado - 4 colheres de sopa (80g)",
+            "Salada verde - 100g com azeite - 1 colher de sopa"
+          ], 
+          calories: 750 
+        }
       ]
     }
   },
@@ -73,11 +299,59 @@ const readyMealPlans = [
     days: 5,
     meals: {
       "Dia 1": [
-        { type: "Café da manhã", foods: ["Smoothie de espinafre e frutas", "Granola caseira"], calories: 350 },
-        { type: "Lanche", foods: ["Hummus com cenoura"], calories: 150 },
-        { type: "Almoço", foods: ["Grão-de-bico refogado", "Quinoa", "Salada colorida"], calories: 500 },
-        { type: "Lanche", foods: ["Frutas secas e nozes"], calories: 200 },
-        { type: "Jantar", foods: ["Tofu grelhado", "Arroz integral", "Brócolis"], calories: 450 }
+        { 
+          type: "Café da manhã", 
+          time: "07:00",
+          foods: [
+            "Smoothie: Espinafre fresco - 50g",
+            "Banana - 1 unidade (100g)",
+            "Manga - 100g",
+            "Leite de amêndoas - 200ml",
+            "Granola caseira - 3 colheres de sopa (45g)"
+          ], 
+          calories: 380 
+        },
+        { 
+          type: "Lanche da manhã", 
+          time: "10:00",
+          foods: [
+            "Hummus caseiro - 3 colheres de sopa (60g)",
+            "Cenoura baby - 100g"
+          ], 
+          calories: 160 
+        },
+        { 
+          type: "Almoço", 
+          time: "12:30",
+          foods: [
+            "Grão-de-bico refogado com temperos - 6 colheres de sopa (120g)",
+            "Quinoa cozida - 4 colheres de sopa (80g)",
+            "Salada colorida (rúcula, tomate, pepino, beterraba) - 150g",
+            "Azeite extra virgem - 1 colher de sopa",
+            "Tahine - 1 colher de sobremesa"
+          ], 
+          calories: 520 
+        },
+        { 
+          type: "Lanche da tarde", 
+          time: "15:30",
+          foods: [
+            "Mix de frutas secas (tâmaras, figo, damasco) - 40g",
+            "Nozes - 6 unidades (18g)"
+          ], 
+          calories: 220 
+        },
+        { 
+          type: "Jantar", 
+          time: "19:00",
+          foods: [
+            "Tofu grelhado temperado - 120g",
+            "Arroz integral cozido - 4 colheres de sopa (80g)",
+            "Brócolis refogado com alho - 150g",
+            "Azeite para tempero - 1 colher de chá"
+          ], 
+          calories: 480 
+        }
       ]
     }
   },
@@ -91,11 +365,54 @@ const readyMealPlans = [
     days: 5,
     meals: {
       "Dia 1": [
-        { type: "Café da manhã", foods: ["Ovos com bacon", "Abacate", "Café com óleo de coco"], calories: 450 },
-        { type: "Lanche", foods: ["Castanhas variadas"], calories: 150 },
-        { type: "Almoço", foods: ["Salmão grelhado", "Salada verde", "Azeite extra virgem"], calories: 500 },
-        { type: "Lanche", foods: ["Queijo coalho grelhado"], calories: 200 },
-        { type: "Jantar", foods: ["Frango com pele", "Aspargos", "Manteiga"], calories: 520 }
+        { 
+          type: "Café da manhã", 
+          time: "07:00",
+          foods: [
+            "Ovos mexidos - 3 unidades grandes",
+            "Bacon - 2 fatias médias (30g)",
+            "Abacate - 1/2 unidade (100g)",
+            "Café com óleo de coco - 1 xícara + 1 colher de sobremesa"
+          ], 
+          calories: 520 
+        },
+        { 
+          type: "Lanche da manhã", 
+          time: "10:00",
+          foods: ["Castanhas mistas (nozes, amêndoas, castanha do pará) - 25g"], 
+          calories: 160 
+        },
+        { 
+          type: "Almoço", 
+          time: "12:30",
+          foods: [
+            "Salmão grelhado - 150g",
+            "Salada verde extensa (alface, rúcula, espinafre) - 200g",
+            "Azeite extra virgem - 2 colheres de sopa",
+            "Queijo feta - 40g"
+          ], 
+          calories: 580 
+        },
+        { 
+          type: "Lanche da tarde", 
+          time: "15:30",
+          foods: [
+            "Queijo coalho grelhado - 80g",
+            "Azeitonas verdes - 10 unidades"
+          ], 
+          calories: 240 
+        },
+        { 
+          type: "Jantar", 
+          time: "19:00",
+          foods: [
+            "Frango com pele assado - 150g",
+            "Aspargos grelhados - 150g",
+            "Manteiga ghee para tempero - 1 colher de sopa",
+            "Salada de folhas verdes - 100g"
+          ], 
+          calories: 560 
+        }
       ]
     }
   }
@@ -227,73 +544,128 @@ export default function NutriIA() {
   }
 
   return (
-    <div className="min-h-screen bg-background app-container">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-muted/20">
       <Header />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <div className="flex justify-center mb-4">
-            <ChefHat className="h-16 w-16 text-primary" />
+      <main className="container mx-auto px-4 py-12">
+        {/* Hero Section */}
+        <div className="text-center mb-16 relative">
+          <div className="absolute inset-0 -z-10">
+            <div className="w-full h-full bg-gradient-to-r from-primary/5 via-transparent to-primary/5 rounded-3xl"></div>
           </div>
-          <h1 className="text-4xl font-bold text-foreground mb-4">Nutri IA</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Transforme sua alimentação com planos nutricionais personalizados criados por inteligência artificial.
+          <div className="flex justify-center mb-6">
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 shadow-lg">
+              <ChefHat className="h-20 w-20 text-primary" />
+            </div>
+          </div>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-6">
+            Nutri IA
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            Transforme sua alimentação com planos nutricionais personalizados criados por 
+            <span className="text-primary font-semibold"> inteligência artificial especializada</span> em nutrição.
           </p>
+          <div className="flex justify-center gap-4 mt-8">
+            <Badge variant="outline" className="px-4 py-2 text-sm font-medium">
+              CRN Especialista
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-sm font-medium">
+              Cardápios Personalizados
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 text-sm font-medium">
+              Nutrição Baseada em Evidências
+            </Badge>
+          </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8 mb-16">
           {/* Cardápio Personalizado */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <div className="flex items-center gap-3 mb-2">
-                <Utensils className="h-8 w-8 text-primary" />
-                <CardTitle className="text-2xl">Cardápio Personalizado</CardTitle>
+          <Card className="lg:col-span-2 border-0 shadow-xl bg-gradient-to-br from-card via-card to-muted/10">
+            <CardHeader className="pb-8">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 rounded-xl bg-primary/10">
+                  <Utensils className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-3xl text-foreground">Cardápio Personalizado</CardTitle>
+                  <p className="text-muted-foreground mt-1">Nutrição científica adaptada ao seu perfil</p>
+                </div>
               </div>
-              <CardDescription>
-                Nossa IA cria um plano nutricional único baseado no seu perfil, objetivos e preferências alimentares.
+              <CardDescription className="text-base leading-relaxed">
+                Nossa IA especialista em nutrição cria um plano alimentar único, baseado em seus objetivos, 
+                preferências, restrições e necessidades metabólicas individuais.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <Target className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">Objetivos Específicos</h3>
-                  <p className="text-sm text-muted-foreground">Emagrecimento, ganho de massa ou manutenção</p>
+            <CardContent className="space-y-8">
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="text-center p-6 bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl border border-border/40">
+                  <div className="p-3 rounded-xl bg-primary/10 w-fit mx-auto mb-4">
+                    <Target className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="font-bold mb-2 text-foreground">Objetivos Específicos</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Emagrecimento, ganho de massa ou manutenção com base científica
+                  </p>
                 </div>
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <Apple className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">Preferências</h3>
-                  <p className="text-sm text-muted-foreground">Vegetariano, vegano, sem glúten e mais</p>
+                <div className="text-center p-6 bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl border border-border/40">
+                  <div className="p-3 rounded-xl bg-primary/10 w-fit mx-auto mb-4">
+                    <Apple className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="font-bold mb-2 text-foreground">Preferências Respeitadas</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Vegetariano, vegano, sem glúten, low carb e todas as suas restrições
+                  </p>
                 </div>
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <Clock className="h-8 w-8 text-primary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">Rotina Adaptada</h3>
-                  <p className="text-sm text-muted-foreground">Horários e refeições que cabem na sua vida</p>
+                <div className="text-center p-6 bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl border border-border/40">
+                  <div className="p-3 rounded-xl bg-primary/10 w-fit mx-auto mb-4">
+                    <Clock className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="font-bold mb-2 text-foreground">Rotina Adaptada</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Horários flexíveis e refeições que se encaixam na sua vida
+                  </p>
                 </div>
               </div>
               
-              <div className="text-center">
-                <Button size="lg" className="px-8 gap-2" onClick={() => setShowChat(true)}>
+              <div className="text-center bg-gradient-to-r from-primary/5 to-primary/10 p-8 rounded-2xl border border-primary/20">
+                <h3 className="text-xl font-bold mb-3 text-foreground">Converse com sua Nutricionista IA</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  Inicie uma conversa personalizada para criar seu plano nutricional ideal
+                </p>
+                <Button size="lg" className="px-8 gap-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300" onClick={() => setShowChat(true)}>
                   <MessageCircle className="h-5 w-5" />
-                  Conversar com Nutri IA
+                  Iniciar Consulta Nutricional
                 </Button>
               </div>
             </CardContent>
           </Card>
 
           {/* Planejamento Semanal */}
-          <Card>
-            <CardHeader>
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-card via-card to-muted/10">
+            <CardHeader className="pb-6">
               <div className="flex items-center gap-3 mb-2">
-                <Calendar className="h-6 w-6 text-primary" />
-                <CardTitle>Planejamento Semanal</CardTitle>
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Calendar className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Planejamento Semanal</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Organize suas refeições para toda a semana com listas de compras automatizadas.
-              </p>
-              <Button variant="outline" className="w-full">
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  <span className="text-sm text-foreground/90">Lista de compras automatizada</span>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  <span className="text-sm text-foreground/90">Prep das refeições otimizado</span>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  <span className="text-sm text-foreground/90">Controle de macronutrientes</span>
+                </div>
+              </div>
+              <Button variant="outline" className="w-full hover:bg-primary/5 transition-colors">
                 Ver Calendário Nutricional
               </Button>
             </CardContent>
@@ -301,34 +673,49 @@ export default function NutriIA() {
         </div>
 
         {/* Cardápios Prontos */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-center mb-8">Cardápios Prontos</h2>
+        <div className="bg-gradient-to-r from-muted/20 via-background to-muted/20 p-8 rounded-3xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">Cardápios Prontos Especializados</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Planos nutricionais de <span className="text-primary font-semibold">5 dias completos</span> com quantidades precisas, 
+              desenvolvidos por especialistas em nutrição
+            </p>
+          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {readyMealPlans.map((plan) => (
-              <Card key={plan.title} className="relative">
-                <CardHeader className="text-center">
+              <Card key={plan.title} className="relative group hover:shadow-2xl transition-all duration-500 border-0 bg-gradient-to-br from-card via-card to-muted/10 hover:scale-105">
+                <CardHeader className="text-center pb-4">
                   {plan.badge && (
-                    <Badge className="absolute top-4 right-4" variant="secondary">
+                    <Badge className="absolute top-4 right-4 z-10 shadow-lg" variant="secondary">
                       {plan.badge}
                     </Badge>
                   )}
-                  <plan.icon className="h-12 w-12 text-primary mx-auto mb-2" />
-                  <CardTitle className="text-lg">{plan.title}</CardTitle>
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
+                    <plan.icon className="h-12 w-12 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl text-foreground group-hover:text-primary transition-colors">
+                    {plan.title}
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-muted-foreground text-sm">{plan.description}</p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Calorias:</span>
-                      <span className="font-medium">{plan.calories}</span>
+                <CardContent className="space-y-4">
+                  <p className="text-muted-foreground text-sm leading-relaxed">{plan.description}</p>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between items-center p-2 bg-muted/30 rounded-lg">
+                      <span className="text-muted-foreground font-medium">Calorias:</span>
+                      <span className="font-bold text-primary">{plan.calories}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Duração:</span>
-                      <span className="font-medium">{plan.duration}</span>
+                    <div className="flex justify-between items-center p-2 bg-muted/30 rounded-lg">
+                      <span className="text-muted-foreground font-medium">Duração:</span>
+                      <span className="font-bold text-foreground">{plan.duration}</span>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" className="w-full" onClick={() => handleViewPlan(plan)}>
-                    Ver Cardápio de {plan.days} Dias
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shadow-sm hover:shadow-md" 
+                    onClick={() => handleViewPlan(plan)}
+                  >
+                    Ver Cardápio Detalhado
                   </Button>
                 </CardContent>
               </Card>
