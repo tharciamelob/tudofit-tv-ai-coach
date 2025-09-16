@@ -8,6 +8,8 @@ import MealPlanModal from "@/components/MealPlanModal";
 import { MealRegistrationModal } from "@/components/MealRegistrationModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFoodDiary } from "@/hooks/useFoodDiary";
+import { usePDFGeneration } from "@/hooks/usePDFGeneration";
+import { PDFSuggestionCard } from "@/components/PDFSuggestionCard";
 import { 
   Utensils, 
   Clock, 
@@ -19,7 +21,8 @@ import {
   Fish,
   MessageCircle,
   Camera,
-  Plus
+  Plus,
+  FileDown
 } from "lucide-react";
 
 const readyMealPlans = [
@@ -430,6 +433,7 @@ export default function NutriIA() {
   const [showMealModal, setShowMealModal] = useState(false);
   const { user } = useAuth();
   const { todayMeals, calculateDailyTotals } = useFoodDiary();
+  const { generateNutritionPDF, isGenerating } = usePDFGeneration();
 
   const handlePlanGenerated = (plan: any) => {
     setGeneratedPlan(plan);
@@ -496,6 +500,13 @@ export default function NutriIA() {
               </div>
             </CardHeader>
             <CardContent>
+              <PDFSuggestionCard
+                contentType="nutrition"
+                content={(generatedPlan as any).plan_data}
+                onGeneratePDF={() => generateNutritionPDF((generatedPlan as any).plan_data)}
+                isGenerating={isGenerating}
+              />
+              
               <div className="space-y-6">
                 {(generatedPlan as any).plan_data.weekly_plan?.map((day: any, index: number) => (
                   <Card key={index} className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
@@ -535,6 +546,14 @@ export default function NutriIA() {
               </div>
               
               <div className="flex gap-4 mt-6 justify-center">
+                <Button 
+                  onClick={() => generateNutritionPDF((generatedPlan as any).plan_data)}
+                  disabled={isGenerating}
+                  className="gap-2"
+                >
+                  <FileDown className="h-4 w-4" />
+                  {isGenerating ? "Gerando PDF..." : "Baixar PDF"}
+                </Button>
                 <Button onClick={() => setGeneratedPlan(null)}>
                   Gerar Novo Plano
                 </Button>

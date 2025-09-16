@@ -2,16 +2,19 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Target, Clock, Dumbbell, MessageCircle, Zap, Shield, TrendingUp } from "lucide-react";
+import { Brain, Target, Clock, Dumbbell, MessageCircle, Zap, Shield, TrendingUp, FileDown } from "lucide-react";
 import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
 import { TestOpenAI } from "@/components/TestOpenAI";
+import { PDFSuggestionCard } from "@/components/PDFSuggestionCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 
 export default function PersonalIA() {
   const [showChat, setShowChat] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const { user } = useAuth();
+  const { generateWorkoutPDF, isGenerating } = usePDFGeneration();
 
   const handlePlanGenerated = (plan: any) => {
     setGeneratedPlan(plan);
@@ -60,6 +63,13 @@ export default function PersonalIA() {
               <CardDescription className="text-center">{(generatedPlan as any).plan_data.description}</CardDescription>
             </CardHeader>
             <CardContent>
+              <PDFSuggestionCard
+                contentType="workout"
+                content={(generatedPlan as any).plan_data}
+                onGeneratePDF={() => generateWorkoutPDF((generatedPlan as any).plan_data)}
+                isGenerating={isGenerating}
+              />
+              
               <div className="space-y-6">
                 {(generatedPlan as any).plan_data.workouts?.map((workout: any, index: number) => (
                   <Card key={index} className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
@@ -86,6 +96,14 @@ export default function PersonalIA() {
               </div>
               
               <div className="flex gap-4 mt-6 justify-center">
+                <Button 
+                  onClick={() => generateWorkoutPDF((generatedPlan as any).plan_data)}
+                  disabled={isGenerating}
+                  className="gap-2"
+                >
+                  <FileDown className="h-4 w-4" />
+                  {isGenerating ? "Gerando PDF..." : "Baixar PDF"}
+                </Button>
                 <Button onClick={() => setGeneratedPlan(null)}>
                   Gerar Novo Treino
                 </Button>
