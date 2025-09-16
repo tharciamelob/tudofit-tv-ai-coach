@@ -7,9 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, Plus, Search, X } from "lucide-react";
+import { Camera, Plus, Search, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useFoodDiary } from "@/hooks/useFoodDiary";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface MealRegistrationModalProps {
   open: boolean;
@@ -34,20 +36,97 @@ export const MealRegistrationModal: React.FC<MealRegistrationModalProps> = ({
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
   const [currentFood, setCurrentFood] = useState<Partial<FoodItem>>({});
   const [photo, setPhoto] = useState<File | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { addMeal, loading } = useFoodDiary();
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const handlePhotoCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (file && user) {
       setPhoto(file);
-      toast({
-        title: "Foto capturada!",
-        description: "Foto do prato adicionada com sucesso."
-      });
+      setAnalysisError(null);
+      
+      try {
+        setIsAnalyzing(true);
+        
+        // Upload photo to Supabase Storage
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('food-photos')
+          .upload(fileName, file);
+        
+        if (uploadError) throw uploadError;
+        
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('food-photos')
+          .getPublicUrl(fileName);
+        
+        setPhotoUrl(publicUrl);
+        
+        // Analyze photo with AI
+        const { data: analysisData, error: analysisError } = await supabase.functions
+          .invoke('analyze-food-photo', {
+            body: { imageUrl: publicUrl }
+          });
+        
+        if (analysisError) throw analysisError;
+        
+        // Process AI response and add foods
+        if (analysisData.foods && Array.isArray(analysisData.foods)) {
+          const newFoodItems = analysisData.foods.map((food: any) => ({
+            name: food.name,
+            quantity: food.quantity,
+            unit: food.unit,
+            calories: food.calories,
+            protein: food.protein,
+            carbs: food.carbs,
+            fat: food.fat,
+          }));
+          
+          setFoodItems(newFoodItems);
+          
+          // Set meal type if provided
+          if (analysisData.meal_type) {
+            const mealTypeMap: { [key: string]: string } = {
+              'café da manhã': 'cafe-da-manha',
+              'almoço': 'almoco',
+              'jantar': 'jantar',
+              'lanche': 'lanche-tarde'
+            };
+            const mappedMealType = mealTypeMap[analysisData.meal_type.toLowerCase()];
+            if (mappedMealType) {
+              setMealType(mappedMealType);
+            }
+          }
+          
+          toast({
+            title: "Análise concluída!",
+            description: `${analysisData.foods.length} alimento(s) identificado(s) automaticamente.`,
+          });
+        } else {
+          throw new Error('Nenhum alimento foi identificado na imagem');
+        }
+        
+      } catch (error: any) {
+        console.error('Erro ao analisar foto:', error);
+        setAnalysisError(error.message);
+        toast({
+          title: "Erro na análise",
+          description: "Não foi possível analisar a foto. Você pode adicionar os alimentos manualmente.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsAnalyzing(false);
+      }
     }
   };
 
@@ -92,10 +171,20 @@ export const MealRegistrationModal: React.FC<MealRegistrationModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!mealType || foodItems.length === 0) {
+    if (!mealType) {
       toast({
         title: "Dados incompletos",
-        description: "Selecione o tipo de refeição e adicione pelo menos um alimento.",
+        description: "Selecione o tipo de refeição.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // For photo meals, we can submit with empty foodItems if we have photo analysis
+    if (foodItems.length === 0 && !photoUrl) {
+      toast({
+        title: "Dados incompletos",
+        description: "Adicione pelo menos um alimento ou tire uma foto da refeição.",
         variant: "destructive"
       });
       return;
@@ -104,22 +193,42 @@ export const MealRegistrationModal: React.FC<MealRegistrationModalProps> = ({
     try {
       const totals = calculateTotals();
       
-      await addMeal({
-        meal_type: mealType,
-        food_name: foodItems.map(f => f.name).join(', '),
-        quantity: foodItems.reduce((sum, f) => sum + f.quantity, 0),
-        unit: 'g',
-        calories: Math.round(totals.calories),
-        protein: Math.round(totals.protein * 10) / 10,
-        carbs: Math.round(totals.carbs * 10) / 10,
-        fat: Math.round(totals.fat * 10) / 10,
-      });
+      // If we have a photo but no manual foods, create a meal entry with photo
+      if (photoUrl && foodItems.length === 0) {
+        await addMeal({
+          meal_type: mealType,
+          food_name: 'Refeição fotografada',
+          quantity: 1,
+          unit: 'porção',
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+          photo_url: photoUrl,
+        });
+      } else {
+        // Normal meal with foods (and optionally photo)
+        await addMeal({
+          meal_type: mealType,
+          food_name: foodItems.map(f => f.name).join(', '),
+          quantity: foodItems.reduce((sum, f) => sum + f.quantity, 0),
+          unit: 'g',
+          calories: Math.round(totals.calories),
+          protein: Math.round(totals.protein * 10) / 10,
+          carbs: Math.round(totals.carbs * 10) / 10,
+          fat: Math.round(totals.fat * 10) / 10,
+          photo_url: photoUrl,
+        });
+      }
 
       // Reset form
       setMealType('');
       setFoodItems([]);
       setCurrentFood({});
       setPhoto(null);
+      setPhotoUrl(null);
+      setIsAnalyzing(false);
+      setAnalysisError(null);
       setNotes('');
       onOpenChange(false);
     } catch (error) {
@@ -283,16 +392,36 @@ export const MealRegistrationModal: React.FC<MealRegistrationModalProps> = ({
                           variant="destructive"
                           size="sm"
                           className="absolute top-2 right-2"
-                          onClick={() => setPhoto(null)}
+                          onClick={() => {
+                            setPhoto(null);
+                            setPhotoUrl(null);
+                            setFoodItems([]);
+                            setAnalysisError(null);
+                          }}
                         >
                           <X className="h-4 w-4" />
                         </Button>
+                        
+                        {isAnalyzing && (
+                          <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                            <div className="text-center text-white">
+                              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+                              <p>Analisando alimentos...</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {analysisError && (
+                          <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
+                            Erro na análise: {analysisError}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="border-2 border-dashed border-border rounded-lg p-8">
                         <Camera className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                         <p className="text-muted-foreground mb-4">
-                          Tire uma foto da sua refeição
+                          Tire uma foto da sua refeição para análise automática
                         </p>
                         <Button onClick={() => fileInputRef.current?.click()}>
                           <Camera className="h-4 w-4 mr-2" />
@@ -385,10 +514,10 @@ export const MealRegistrationModal: React.FC<MealRegistrationModalProps> = ({
             </Button>
             <Button 
               onClick={handleSubmit} 
-              disabled={loading || !mealType || foodItems.length === 0}
+              disabled={loading || isAnalyzing || !mealType || (foodItems.length === 0 && !photoUrl)}
               className="flex-1"
             >
-              {loading ? "Salvando..." : "Registrar Refeição"}
+              {loading ? "Salvando..." : isAnalyzing ? "Analisando..." : "Registrar Refeição"}
             </Button>
           </div>
         </div>

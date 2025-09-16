@@ -12,6 +12,7 @@ interface MealData {
   protein?: number;
   carbs?: number;
   fat?: number;
+  photo_url?: string;
 }
 
 interface FoodDiaryEntry {
@@ -27,6 +28,7 @@ interface FoodDiaryEntry {
   meal_type: string;
   quantity: number | null;
   user_id: string;
+  photo_url: string | null;
 }
 
 export const useFoodDiary = () => {
@@ -81,6 +83,7 @@ export const useFoodDiary = () => {
           protein: mealData.protein || 0,
           carbs: mealData.carbs || 0,
           fat: mealData.fat || 0,
+          photo_url: mealData.photo_url || null,
           date: new Date().toISOString().split('T')[0]
         })
         .select()
