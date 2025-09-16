@@ -5,16 +5,14 @@ import { Progress } from "@/components/ui/progress";
 import Header from "@/components/Header";
 import { WaterTrackingModal } from "@/components/WaterTrackingModal";
 import { SleepTrackingModal } from "@/components/SleepTrackingModal";
-import { SleepGoalModal } from "@/components/SleepGoalModal";
 import { useWaterTracking } from "@/hooks/useWaterTracking";
 import { useSleepTracking } from "@/hooks/useSleepTracking";
 import { useAuth } from "@/contexts/AuthContext";
-import { Droplets, Moon, Plus, TrendingUp, Settings } from "lucide-react";
+import { Droplets, Moon, Plus, TrendingUp } from "lucide-react";
 
 export default function Monitoring() {
   const [waterModalOpen, setWaterModalOpen] = useState(false);
   const [sleepModalOpen, setSleepModalOpen] = useState(false);
-  const [sleepGoalModalOpen, setSleepGoalModalOpen] = useState(false);
   const { user } = useAuth();
   const { todayWater, dailyGoal, progress } = useWaterTracking();
   const { todaySleep, sleepGoal, progress: sleepProgress } = useSleepTracking();
@@ -134,20 +132,10 @@ export default function Monitoring() {
                 </CardTitle>
                 <CardDescription>Meta: {sleepGoal}h por noite</CardDescription>
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="gap-2" 
-                  onClick={() => setSleepGoalModalOpen(true)}
-                >
-                  <Settings className="h-4 w-4" />
-                </Button>
-                <Button size="sm" className="gap-2" onClick={() => setSleepModalOpen(true)}>
-                  <Plus className="h-4 w-4" />
-                  Registrar
-                </Button>
-              </div>
+              <Button size="sm" className="gap-2" onClick={() => setSleepModalOpen(true)}>
+                <Plus className="h-4 w-4" />
+                Registrar
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -296,11 +284,6 @@ export default function Monitoring() {
 
         <WaterTrackingModal open={waterModalOpen} onOpenChange={setWaterModalOpen} />
         <SleepTrackingModal open={sleepModalOpen} onOpenChange={setSleepModalOpen} />
-        <SleepGoalModal 
-          open={sleepGoalModalOpen} 
-          onOpenChange={setSleepGoalModalOpen} 
-          currentGoal={sleepGoal} 
-        />
       </main>
     </div>
   );
