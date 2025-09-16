@@ -98,8 +98,9 @@ export const useWaterTracking = () => {
 
       if (error) throw error;
 
-      await fetchTodayWater();
-      await fetchWeeklyData();
+      // Atualizar dados em tempo real
+      await Promise.all([fetchTodayWater(), fetchWeeklyData()]);
+      
       toast({
         title: "Água registrada!",
         description: `${amount}ml adicionados ao seu consumo diário.`,

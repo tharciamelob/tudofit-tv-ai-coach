@@ -7,7 +7,7 @@ export const useSleepTracking = () => {
   const [loading, setLoading] = useState(false);
   const [todaySleep, setTodaySleep] = useState<any>(null);
   const [sleepGoal, setSleepGoal] = useState(8); // Meta padrão de 8 horas
-  const [weeklyData, setWeeklyData] = useState<Array<{day: string, date: string, hours: string, quality: number, data: any}>>([]);
+  const [weeklyData, setWeeklyData] = useState<Array<{day: string, date: string, hours: string, quality: number, progress: number, data: any}>>([]);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -80,12 +80,28 @@ export const useSleepTracking = () => {
 
       const weeklyData = dates.map((date, index) => {
         const dayData = data?.find(entry => entry.date === date);
+        
+        let progressPercent = 0;
+        if (dayData?.sleep_duration) {
+          // Calcular progresso baseado na duração vs meta
+          const duration = dayData.sleep_duration;
+          if (typeof duration === 'string') {
+            const match = duration.match(/(\d+)\s*hours?\s*(\d+)?\s*minutes?/);
+            if (match) {
+              const hours = parseInt(match[1]) || 0;
+              const minutes = parseInt(match[2]) || 0;
+              const totalHours = hours + (minutes / 60);
+              progressPercent = Math.min((totalHours / sleepGoal) * 100, 100);
+            }
+          }
+        }
 
         return {
           day: days[index],
           date,
           hours: dayData ? formatSleepDuration(dayData.sleep_duration?.toString() || "") : "0h 0m",
           quality: dayData?.sleep_quality || 0,
+          progress: Math.round(progressPercent),
           data: dayData
         };
       });
@@ -141,8 +157,9 @@ export const useSleepTracking = () => {
         throw error;
       }
 
-      await fetchTodaySleep();
-      await fetchWeeklyData();
+      // Atualizar dados em tempo real
+      await Promise.all([fetchTodaySleep(), fetchWeeklyData()]);
+      
       toast({
         title: "Sono registrado!",
         description: "Seus dados de sono foram salvos com sucesso.",
@@ -190,10 +207,27 @@ export const useSleepTracking = () => {
   const getSleepProgress = () => {
     if (!todaySleep?.sleep_duration) return 0;
     
-    const match = todaySleep.sleep_duration.match(/(\d+)\s*hours?/);
-    const hours = match ? parseInt(match[1]) : 0;
+    // Converter interval para horas decimais
+    const duration = todaySleep.sleep_duration;
+    if (typeof duration === 'string') {
+      // Tentar extrair horas de string formatada
+      const match = duration.match(/(\d+)\s*hours?\s*(\d+)?\s*minutes?/);
+      if (match) {
+        const hours = parseInt(match[1]) || 0;
+        const minutes = parseInt(match[2]) || 0;
+        const totalHours = hours + (minutes / 60);
+        return Math.min((totalHours / sleepGoal) * 100, 100);
+      }
+    }
     
-    return Math.min((hours / sleepGoal) * 100, 100);
+    // Se for um objeto interval do PostgreSQL
+    if (duration && typeof duration === 'object') {
+      const milliseconds = duration.milliseconds || 0;
+      const totalHours = milliseconds / (1000 * 60 * 60);
+      return Math.min((totalHours / sleepGoal) * 100, 100);
+    }
+    
+    return 0;
   };
 
   const deleteSleepEntry = async () => {

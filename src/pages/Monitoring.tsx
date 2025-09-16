@@ -154,13 +154,13 @@ export default function Monitoring() {
               <div className="space-y-3">
                 {todaySleep ? (
                   <>
-                    <div className="flex justify-between items-center">
-                      <span className="text-2xl font-bold">
-                        {formatSleepDuration(todaySleep.sleep_duration)}
-                      </span>
-                      <span className="text-muted-foreground">de {sleepGoal}h</span>
-                    </div>
-                    <Progress value={sleepProgress} className="h-2" />
+                     <div className="flex justify-between items-center">
+                       <span className="text-2xl font-bold">
+                         {formatSleepDuration(todaySleep.sleep_duration?.toString() || '')}
+                       </span>
+                       <span className="text-muted-foreground">de {sleepGoal}h</span>
+                     </div>
+                     <Progress value={sleepProgress} className="h-2" />
                     <div className="flex justify-between items-center">
                       <div className="flex">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -254,52 +254,55 @@ export default function Monitoring() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {sleepWeekly.map((item) => (
-                  <div key={item.date} className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded-md" onClick={() => {
-                    setSelectedEditDate(new Date(item.date));
-                    setSleepModalOpen(true);
-                  }}>
-                    <span className="w-8 text-sm font-medium">{item.day}</span>
-                    <span className="text-sm">{item.hours}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <span 
-                            key={star} 
-                            className={star <= item.quality ? "text-yellow-400" : "text-gray-300"}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                      {item.data && (
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteSleepByDate(item.date);
-                          }}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 w-6 p-0 text-purple-500 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedEditDate(new Date(item.date));
-                          setSleepModalOpen(true);
-                        }}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                 {sleepWeekly.map((item) => (
+                   <div key={item.date} className="flex items-center gap-3 group cursor-pointer hover:bg-white/5 p-2 rounded-md" onClick={() => {
+                     setSelectedEditDate(new Date(item.date));
+                     setSleepModalOpen(true);
+                   }}>
+                     <span className="w-8 text-sm font-medium">{item.day}</span>
+                     <div className="flex-1 flex items-center gap-3">
+                       <Progress value={item.progress} className="flex-1 h-2" />
+                       <span className="text-sm text-muted-foreground w-16">{item.hours}</span>
+                     </div>
+                     <div className="flex items-center gap-2">
+                       <div className="flex">
+                         {[1, 2, 3, 4, 5].map((star) => (
+                           <span 
+                             key={star} 
+                             className={star <= item.quality ? "text-yellow-400" : "text-gray-300"}
+                           >
+                             ★
+                           </span>
+                         ))}
+                       </div>
+                       {item.data && (
+                         <Button 
+                           size="sm" 
+                           variant="ghost" 
+                           className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" 
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             deleteSleepByDate(item.date);
+                           }}
+                         >
+                           <Trash2 className="h-3 w-3" />
+                         </Button>
+                       )}
+                       <Button
+                         size="sm"
+                         variant="ghost"
+                         className="h-6 w-6 p-0 text-purple-500 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           setSelectedEditDate(new Date(item.date));
+                           setSleepModalOpen(true);
+                         }}
+                       >
+                         <Plus className="h-3 w-3" />
+                       </Button>
+                     </div>
+                   </div>
+                 ))}
               </div>
             </CardContent>
           </Card>
@@ -317,12 +320,12 @@ export default function Monitoring() {
                 <div className="text-2xl font-bold text-blue-500">{(todayWater / 1000).toFixed(1)}L</div>
                 <p className="text-sm text-muted-foreground">Água consumida hoje</p>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-500">
-                  {todaySleep ? formatSleepDuration(todaySleep.sleep_duration) : "0h 0m"}
-                </div>
-                <p className="text-sm text-muted-foreground">Sono registrado hoje</p>
-              </div>
+               <div className="text-center">
+                 <div className="text-2xl font-bold text-purple-500">
+                   {todaySleep ? formatSleepDuration(todaySleep.sleep_duration?.toString() || '') : "0h 0m"}
+                 </div>
+                 <p className="text-sm text-muted-foreground">Sono registrado hoje</p>
+               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-500">{Math.round(progress)}%</div>
                 <p className="text-sm text-muted-foreground">Meta de hidratação hoje</p>
@@ -339,12 +342,24 @@ export default function Monitoring() {
 
         <WaterTrackingModal 
           open={waterModalOpen} 
-          onOpenChange={setWaterModalOpen} 
+          onOpenChange={(open) => {
+            setWaterModalOpen(open);
+            if (!open) {
+              // Reset selected date when closing
+              setSelectedEditDate(null);
+            }
+          }}
           initialDate={selectedEditDate || undefined}
         />
         <SleepTrackingModal 
           open={sleepModalOpen} 
-          onOpenChange={setSleepModalOpen} 
+          onOpenChange={(open) => {
+            setSleepModalOpen(open);
+            if (!open) {
+              // Reset selected date when closing
+              setSelectedEditDate(null);
+            }
+          }}
           initialDate={selectedEditDate || undefined}
         />
       </main>
