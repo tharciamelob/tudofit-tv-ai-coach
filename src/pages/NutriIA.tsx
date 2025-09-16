@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
 import MealPlanModal from "@/components/MealPlanModal";
+import { MealRegistrationModal } from "@/components/MealRegistrationModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFoodDiary } from "@/hooks/useFoodDiary";
 import { 
   Utensils, 
   Clock, 
@@ -15,7 +17,9 @@ import {
   Apple,
   Beef,
   Fish,
-  MessageCircle
+  MessageCircle,
+  Camera,
+  Plus
 } from "lucide-react";
 
 const readyMealPlans = [
@@ -423,7 +427,9 @@ export default function NutriIA() {
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showMealModal, setShowMealModal] = useState(false);
   const { user } = useAuth();
+  const { todayMeals, calculateDailyTotals } = useFoodDiary();
 
   const handlePlanGenerated = (plan: any) => {
     setGeneratedPlan(plan);
@@ -640,34 +646,67 @@ export default function NutriIA() {
             </CardContent>
           </Card>
 
-          {/* Planejamento Semanal */}
+          {/* Registro de Refeições */}
           <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10">
             <CardHeader className="pb-6">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <Calendar className="h-6 w-6 text-primary" />
+                  <Utensils className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle className="text-xl">Planejamento Semanal</CardTitle>
+                <CardTitle className="text-xl">Registrar Refeição</CardTitle>
               </div>
+              <p className="text-sm text-muted-foreground">
+                Registre suas refeições por foto ou texto e acompanhe suas calorias
+              </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <div className="w-2 h-2 rounded-full bg-primary"></div>
-                  <span className="text-sm text-foreground/90">Lista de compras automatizada</span>
+              <div className="bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl p-4 border border-border/40">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-foreground">Hoje</h3>
+                  <Badge variant="secondary">
+                    {calculateDailyTotals().calories} kcal
+                  </Badge>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <div className="w-2 h-2 rounded-full bg-primary"></div>
-                  <span className="text-sm text-foreground/90">Prep das refeições otimizado</span>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <div className="w-2 h-2 rounded-full bg-primary"></div>
-                  <span className="text-sm text-foreground/90">Controle de macronutrientes</span>
+                <div className="text-xs text-muted-foreground grid grid-cols-3 gap-2">
+                  <span>Proteína: {calculateDailyTotals().protein}g</span>
+                  <span>Carbs: {calculateDailyTotals().carbs}g</span>
+                  <span>Gordura: {calculateDailyTotals().fat}g</span>
                 </div>
               </div>
-              <Button variant="outline" className="w-full hover:bg-primary/5 transition-colors">
-                Ver Calendário Nutricional
-              </Button>
+              
+              <div className="space-y-3">
+                <Button 
+                  className="w-full gap-2" 
+                  onClick={() => setShowMealModal(true)}
+                >
+                  <Plus className="h-4 w-4" />
+                  Registrar Refeição
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full gap-2"
+                  onClick={() => setShowMealModal(true)}
+                >
+                  <Camera className="h-4 w-4" />
+                  Foto da Refeição
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-medium text-foreground text-sm">Refeições de Hoje:</h4>
+                {todayMeals.length > 0 ? (
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {todayMeals.map((meal) => (
+                      <div key={meal.id} className="flex justify-between items-center p-2 bg-muted/30 rounded text-xs">
+                        <span className="font-medium">{meal.food_name}</span>
+                        <span className="text-muted-foreground">{meal.calories} kcal</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">Nenhuma refeição registrada hoje</p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -728,6 +767,11 @@ export default function NutriIA() {
         isOpen={showPlanModal}
         onClose={() => setShowPlanModal(false)}
         plan={selectedPlan}
+      />
+      
+      <MealRegistrationModal 
+        open={showMealModal}
+        onOpenChange={setShowMealModal}
       />
     </div>
   );
