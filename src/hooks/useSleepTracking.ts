@@ -7,6 +7,7 @@ export const useSleepTracking = () => {
   const [loading, setLoading] = useState(false);
   const [todaySleep, setTodaySleep] = useState<any>(null);
   const [sleepGoal, setSleepGoal] = useState(8); // Meta padrão de 8 horas
+  const [weeklyData, setWeeklyData] = useState<Array<{day: string, date: string, hours: string, quality: number, data: any}>>([]);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -41,6 +42,54 @@ export const useSleepTracking = () => {
     }
   };
 
+  const fetchWeeklyData = async () => {
+    if (!user) return;
+
+    try {
+      const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const dates = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - i));
+        return date.toISOString().split('T')[0];
+      });
+
+      const { data, error } = await supabase
+        .from('sleep_tracking')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('date', dates[0])
+        .lte('date', dates[6])
+        .order('date');
+
+      if (error) throw error;
+
+      const formatSleepDuration = (duration: string) => {
+        if (!duration) return "0h 0m";
+        const match = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
+        if (match) {
+          return `${match[1]}h ${match[2]}m`;
+        }
+        return duration;
+      };
+
+      const weeklyData = dates.map((date, index) => {
+        const dayData = data?.find(entry => entry.date === date);
+
+        return {
+          day: days[index],
+          date,
+          hours: dayData ? formatSleepDuration(dayData.sleep_duration?.toString() || "") : "0h 0m",
+          quality: dayData?.sleep_quality || 0,
+          data: dayData
+        };
+      });
+
+      setWeeklyData(weeklyData);
+    } catch (error: any) {
+      console.error('Erro ao buscar dados semanais de sono:', error);
+    }
+  };
+
   const addSleep = async (sleepData: {
     bedtime: string;
     wakeTime: string;
@@ -50,6 +99,8 @@ export const useSleepTracking = () => {
 
     setLoading(true);
     try {
+      console.log('Registrando sono:', sleepData); // Debug log
+
       const bedtime = new Date(sleepData.bedtime);
       const wakeTime = new Date(sleepData.wakeTime);
       
@@ -69,14 +120,19 @@ export const useSleepTracking = () => {
           sleep_quality: sleepData.quality
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao inserir sono:', error); // Debug log
+        throw error;
+      }
 
       await fetchTodaySleep();
+      await fetchWeeklyData();
       toast({
         title: "Sono registrado!",
         description: "Seus dados de sono foram salvos com sucesso.",
       });
     } catch (error: any) {
+      console.error('Erro completo:', error); // Debug log
       toast({
         title: "Erro ao registrar sono",
         description: error.message,
@@ -86,10 +142,6 @@ export const useSleepTracking = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchTodaySleep();
-  }, [user]);
 
   const updateSleepGoal = async (newGoal: number) => {
     if (!user) return;
@@ -141,7 +193,8 @@ export const useSleepTracking = () => {
 
       if (error) throw error;
 
-      await fetchTodaySleep(); // Refresh data
+      await fetchTodaySleep();
+      await fetchWeeklyData();
       toast({
         title: "Registro excluído!",
         description: "Registro de sono removido com sucesso.",
@@ -157,13 +210,50 @@ export const useSleepTracking = () => {
     }
   };
 
+  const deleteSleepByDate = async (date: string) => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('sleep_tracking')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('date', date);
+
+      if (error) throw error;
+
+      await fetchTodaySleep();
+      await fetchWeeklyData();
+      toast({
+        title: "Registro excluído!",
+        description: "Registro de sono removido com sucesso.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao excluir registro",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTodaySleep();
+    fetchWeeklyData();
+  }, [user]);
+
   return {
     todaySleep,
     sleepGoal,
+    weeklyData,
     loading,
     addSleep,
     updateSleepGoal,
     deleteSleepEntry,
+    deleteSleepByDate,
     progress: getSleepProgress()
   };
 };

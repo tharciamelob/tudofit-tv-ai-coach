@@ -7,6 +7,7 @@ export const useWaterTracking = () => {
   const [loading, setLoading] = useState(false);
   const [todayWater, setTodayWater] = useState(0);
   const [dailyGoal, setDailyGoal] = useState(2000);
+  const [weeklyData, setWeeklyData] = useState<Array<{day: string, date: string, progress: number, total: number, entries: any[]}>>([]);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -33,6 +34,48 @@ export const useWaterTracking = () => {
     }
   };
 
+  const fetchWeeklyData = async () => {
+    if (!user) return;
+
+    try {
+      const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const dates = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - i));
+        return date.toISOString().split('T')[0];
+      });
+
+      const { data, error } = await supabase
+        .from('water_tracking')
+        .select('id, date, amount_ml, daily_goal_ml')
+        .eq('user_id', user.id)
+        .gte('date', dates[0])
+        .lte('date', dates[6])
+        .order('date');
+
+      if (error) throw error;
+
+      const weeklyData = dates.map((date, index) => {
+        const dayEntries = data?.filter(entry => entry.date === date) || [];
+        const total = dayEntries.reduce((sum, entry) => sum + entry.amount_ml, 0);
+        const goal = dayEntries[0]?.daily_goal_ml || 2000;
+        const progress = Math.min((total / goal) * 100, 100);
+
+        return {
+          day: days[index],
+          date,
+          progress: Math.round(progress),
+          total,
+          entries: dayEntries
+        };
+      });
+
+      setWeeklyData(weeklyData);
+    } catch (error: any) {
+      console.error('Erro ao buscar dados semanais de hidratação:', error);
+    }
+  };
+
   const addWater = async (amount: number) => {
     if (!user) return;
 
@@ -48,7 +91,8 @@ export const useWaterTracking = () => {
 
       if (error) throw error;
 
-      setTodayWater(prev => prev + amount);
+      await fetchTodayWater();
+      await fetchWeeklyData();
       toast({
         title: "Água registrada!",
         description: `${amount}ml adicionados ao seu consumo diário.`,
@@ -111,7 +155,8 @@ export const useWaterTracking = () => {
 
       if (error) throw error;
 
-      await fetchTodayWater(); // Refresh data
+      await fetchTodayWater();
+      await fetchWeeklyData();
       toast({
         title: "Registro excluído!",
         description: "Registro de água removido com sucesso.",
@@ -127,17 +172,50 @@ export const useWaterTracking = () => {
     }
   };
 
+  const deleteAllWaterForDate = async (date: string) => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('water_tracking')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('date', date);
+
+      if (error) throw error;
+
+      await fetchTodayWater();
+      await fetchWeeklyData();
+      toast({
+        title: "Registros excluídos!",
+        description: "Todos os registros de água do dia foram removidos.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao excluir registros",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchTodayWater();
+    fetchWeeklyData();
   }, [user]);
 
   return {
     todayWater,
     dailyGoal,
+    weeklyData,
     loading,
     addWater,
     updateDailyGoal,
     deleteWaterEntry,
+    deleteAllWaterForDate,
     progress: Math.min((todayWater / dailyGoal) * 100, 100)
   };
 };

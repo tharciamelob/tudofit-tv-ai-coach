@@ -14,8 +14,8 @@ export default function Monitoring() {
   const [waterModalOpen, setWaterModalOpen] = useState(false);
   const [sleepModalOpen, setSleepModalOpen] = useState(false);
   const { user } = useAuth();
-  const { todayWater, dailyGoal, progress } = useWaterTracking();
-  const { todaySleep, sleepGoal, progress: sleepProgress, deleteSleepEntry } = useSleepTracking();
+  const { todayWater, dailyGoal, progress, weeklyData: waterWeekly, deleteAllWaterForDate } = useWaterTracking();
+  const { todaySleep, sleepGoal, progress: sleepProgress, deleteSleepEntry, weeklyData: sleepWeekly, deleteSleepByDate } = useSleepTracking();
 
   if (!user) {
     return (
@@ -204,19 +204,21 @@ export default function Monitoring() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[
-                  { day: "Seg", progress: 0 },
-                  { day: "Ter", progress: 0 },
-                  { day: "Qua", progress: 0 },
-                  { day: "Qui", progress: 0 },
-                  { day: "Sex", progress: 0 },
-                  { day: "Sáb", progress: 0 },
-                  { day: "Dom", progress: Math.round(progress) }
-                ].map((item) => (
-                  <div key={item.day} className="flex items-center gap-3">
+                {waterWeekly.map((item) => (
+                  <div key={item.date} className="flex items-center gap-3">
                     <span className="w-8 text-sm font-medium">{item.day}</span>
                     <Progress value={item.progress} className="flex-1 h-2" />
-                    <span className="text-sm text-muted-foreground w-8">{item.progress}%</span>
+                    <span className="text-sm text-muted-foreground w-12">{item.progress}%</span>
+                    {item.total > 0 && (
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50" 
+                        onClick={() => deleteAllWaterForDate(item.date)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -233,27 +235,31 @@ export default function Monitoring() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[
-                  { day: "Seg", hours: "0h 0m", quality: 0 },
-                  { day: "Ter", hours: "0h 0m", quality: 0 },
-                  { day: "Qua", hours: "0h 0m", quality: 0 },
-                  { day: "Qui", hours: "0h 0m", quality: 0 },
-                  { day: "Sex", hours: "0h 0m", quality: 0 },
-                  { day: "Sáb", hours: "0h 0m", quality: 0 },
-                  { day: "Dom", hours: todaySleep ? formatSleepDuration(todaySleep.sleep_duration) : "0h 0m", quality: todaySleep?.sleep_quality || 0 }
-                ].map((item) => (
-                  <div key={item.day} className="flex items-center justify-between">
+                {sleepWeekly.map((item) => (
+                  <div key={item.date} className="flex items-center justify-between">
                     <span className="w-8 text-sm font-medium">{item.day}</span>
                     <span className="text-sm">{item.hours}</span>
-                    <div className="flex">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <span 
-                          key={star} 
-                          className={star <= item.quality ? "text-yellow-400" : "text-gray-300"}
+                    <div className="flex items-center gap-2">
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span 
+                            key={star} 
+                            className={star <= item.quality ? "text-yellow-400" : "text-gray-300"}
+                          >
+                            ★
+                          </span>
+                        ))}
+                      </div>
+                      {item.data && (
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50" 
+                          onClick={() => deleteSleepByDate(item.date)}
                         >
-                          ★
-                        </span>
-                      ))}
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
