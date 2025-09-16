@@ -39,7 +39,7 @@ export const ChatInterface = ({ chatType, onPlanGenerated }: ChatInterfaceProps)
       id: '1',
       type: 'ai',
       content: chatType === 'personal' 
-        ? "Olá! Sou seu assistente de treinos pessoais. Vou te ajudar a criar o plano perfeito para você! Primeiro, me conte: qual é seu principal objetivo? (emagrecimento, ganho de massa muscular, condicionamento físico ou fortalecimento)"
+        ? "Olá! Sou seu personal de treinos. Vou te ajudar a criar o plano perfeito para você! Primeiro, me conte: qual é seu principal objetivo? (emagrecimento, ganho de massa muscular, condicionamento físico ou fortalecimento)"
         : "Oi! Sou sua nutricionista virtual. Vou criar um plano alimentar personalizado para você! Para começar, me fale: qual é seu objetivo nutricional? (emagrecimento, ganho de massa, manutenção do peso ou melhoria da saúde)",
       timestamp: new Date()
     };
