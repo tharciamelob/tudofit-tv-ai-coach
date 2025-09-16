@@ -19,7 +19,7 @@ export const useSleepTracking = () => {
         .select('*')
         .eq('user_id', user.id)
         .eq('date', today)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
       
@@ -54,8 +54,7 @@ export const useSleepTracking = () => {
           user_id: user.id,
           bedtime: bedtime.toISOString(),
           wake_time: wakeTime.toISOString(),
-          sleep_quality: sleepData.quality,
-          sleep_duration: `${Math.floor(duration / 1000)} seconds`
+          sleep_quality: sleepData.quality
         });
 
       if (error) throw error;
