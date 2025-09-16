@@ -71,11 +71,44 @@ export const useSleepTracking = () => {
 
       const formatSleepDuration = (duration: string) => {
         if (!duration) return "0h 0m";
-        const match = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
-        if (match) {
-          return `${match[1]}h ${match[2]}m`;
+        
+        // Handle time format (HH:MM:SS)
+        const timeMatch = duration.match(/^(\d{2}):(\d{2}):(\d{2})$/);
+        if (timeMatch) {
+          const hours = parseInt(timeMatch[1]);
+          const minutes = parseInt(timeMatch[2]);
+          return `${hours}h ${minutes}m`;
         }
+        
+        // Handle text format (X hours Y minutes)
+        const textMatch = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
+        if (textMatch) {
+          return `${textMatch[1]}h ${textMatch[2]}m`;
+        }
+        
         return duration;
+      };
+
+      const parseDurationToHours = (duration: string): number => {
+        if (!duration) return 0;
+        
+        // Handle time format (HH:MM:SS)
+        const timeMatch = duration.match(/^(\d{2}):(\d{2}):(\d{2})$/);
+        if (timeMatch) {
+          const hours = parseInt(timeMatch[1]);
+          const minutes = parseInt(timeMatch[2]);
+          return hours + (minutes / 60);
+        }
+        
+        // Handle text format (X hours Y minutes)
+        const textMatch = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
+        if (textMatch) {
+          const hours = parseInt(textMatch[1]);
+          const minutes = parseInt(textMatch[2]);
+          return hours + (minutes / 60);
+        }
+        
+        return 0;
       };
 
       const weeklyData = dates.map((date, index) => {
@@ -86,13 +119,8 @@ export const useSleepTracking = () => {
           // Calcular progresso baseado na duração vs meta
           const duration = dayData.sleep_duration;
           if (typeof duration === 'string') {
-            const match = duration.match(/(\d+)\s*hours?\s*(\d+)?\s*minutes?/);
-            if (match) {
-              const hours = parseInt(match[1]) || 0;
-              const minutes = parseInt(match[2]) || 0;
-              const totalHours = hours + (minutes / 60);
-              progressPercent = Math.min((totalHours / sleepGoal) * 100, 100);
-            }
+            const totalHours = parseDurationToHours(duration);
+            progressPercent = Math.min((totalHours / sleepGoal) * 100, 100);
           }
         }
 
@@ -204,20 +232,36 @@ export const useSleepTracking = () => {
     }
   };
 
+  const parseDurationToHours = (duration: string): number => {
+    if (!duration) return 0;
+    
+    // Handle time format (HH:MM:SS)
+    const timeMatch = duration.match(/^(\d{2}):(\d{2}):(\d{2})$/);
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1]);
+      const minutes = parseInt(timeMatch[2]);
+      return hours + (minutes / 60);
+    }
+    
+    // Handle text format (X hours Y minutes)
+    const textMatch = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
+    if (textMatch) {
+      const hours = parseInt(textMatch[1]);
+      const minutes = parseInt(textMatch[2]);
+      return hours + (minutes / 60);
+    }
+    
+    return 0;
+  };
+
   const getSleepProgress = () => {
     if (!todaySleep?.sleep_duration) return 0;
     
-    // Converter interval para horas decimais
+    // Converter duration para horas decimais
     const duration = todaySleep.sleep_duration;
     if (typeof duration === 'string') {
-      // Tentar extrair horas de string formatada
-      const match = duration.match(/(\d+)\s*hours?\s*(\d+)?\s*minutes?/);
-      if (match) {
-        const hours = parseInt(match[1]) || 0;
-        const minutes = parseInt(match[2]) || 0;
-        const totalHours = hours + (minutes / 60);
-        return Math.min((totalHours / sleepGoal) * 100, 100);
-      }
+      const totalHours = parseDurationToHours(duration);
+      return Math.min((totalHours / sleepGoal) * 100, 100);
     }
     
     // Se for um objeto interval do PostgreSQL
