@@ -8,14 +8,14 @@ import { SleepTrackingModal } from "@/components/SleepTrackingModal";
 import { useWaterTracking } from "@/hooks/useWaterTracking";
 import { useSleepTracking } from "@/hooks/useSleepTracking";
 import { useAuth } from "@/contexts/AuthContext";
-import { Droplets, Moon, Plus, TrendingUp } from "lucide-react";
+import { Droplets, Moon, Plus, TrendingUp, Trash2 } from "lucide-react";
 
 export default function Monitoring() {
   const [waterModalOpen, setWaterModalOpen] = useState(false);
   const [sleepModalOpen, setSleepModalOpen] = useState(false);
   const { user } = useAuth();
   const { todayWater, dailyGoal, progress } = useWaterTracking();
-  const { todaySleep, sleepGoal, progress: sleepProgress } = useSleepTracking();
+  const { todaySleep, sleepGoal, progress: sleepProgress, deleteSleepEntry } = useSleepTracking();
 
   if (!user) {
     return (
@@ -132,10 +132,22 @@ export default function Monitoring() {
                 </CardTitle>
                 <CardDescription>Meta: {sleepGoal}h por noite</CardDescription>
               </div>
-              <Button size="sm" className="gap-2" onClick={() => setSleepModalOpen(true)}>
-                <Plus className="h-4 w-4" />
-                Registrar
-              </Button>
+              <div className="flex gap-2">
+                {todaySleep && (
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="gap-2 text-red-500 hover:text-red-600" 
+                    onClick={deleteSleepEntry}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+                <Button size="sm" className="gap-2" onClick={() => setSleepModalOpen(true)}>
+                  <Plus className="h-4 w-4" />
+                  Registrar
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -193,12 +205,12 @@ export default function Monitoring() {
             <CardContent>
               <div className="space-y-4">
                 {[
-                  { day: "Seg", progress: 80 },
-                  { day: "Ter", progress: 65 },
-                  { day: "Qua", progress: 90 },
-                  { day: "Qui", progress: 75 },
-                  { day: "Sex", progress: 60 },
-                  { day: "Sáb", progress: 45 },
+                  { day: "Seg", progress: 0 },
+                  { day: "Ter", progress: 0 },
+                  { day: "Qua", progress: 0 },
+                  { day: "Qui", progress: 0 },
+                  { day: "Sex", progress: 0 },
+                  { day: "Sáb", progress: 0 },
                   { day: "Dom", progress: Math.round(progress) }
                 ].map((item) => (
                   <div key={item.day} className="flex items-center gap-3">
@@ -222,12 +234,12 @@ export default function Monitoring() {
             <CardContent>
               <div className="space-y-4">
                 {[
-                  { day: "Seg", hours: "8h 15m", quality: 4 },
-                  { day: "Ter", hours: "6h 45m", quality: 3 },
-                  { day: "Qua", hours: "7h 30m", quality: 5 },
-                  { day: "Qui", hours: "7h 00m", quality: 4 },
-                  { day: "Sex", hours: "6h 30m", quality: 2 },
-                  { day: "Sáb", hours: "9h 00m", quality: 5 },
+                  { day: "Seg", hours: "0h 0m", quality: 0 },
+                  { day: "Ter", hours: "0h 0m", quality: 0 },
+                  { day: "Qua", hours: "0h 0m", quality: 0 },
+                  { day: "Qui", hours: "0h 0m", quality: 0 },
+                  { day: "Sex", hours: "0h 0m", quality: 0 },
+                  { day: "Sáb", hours: "0h 0m", quality: 0 },
                   { day: "Dom", hours: todaySleep ? formatSleepDuration(todaySleep.sleep_duration) : "0h 0m", quality: todaySleep?.sleep_quality || 0 }
                 ].map((item) => (
                   <div key={item.day} className="flex items-center justify-between">
@@ -259,14 +271,14 @@ export default function Monitoring() {
           <CardContent>
             <div className="grid md:grid-cols-4 gap-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-500">{(todayWater / 1000 * 7).toFixed(1)}L</div>
-                <p className="text-sm text-muted-foreground">Total de água estimado</p>
+                <div className="text-2xl font-bold text-blue-500">{(todayWater / 1000).toFixed(1)}L</div>
+                <p className="text-sm text-muted-foreground">Água consumida hoje</p>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-500">
-                  {todaySleep ? formatSleepDuration(todaySleep.sleep_duration) : "7h 25m"}
+                  {todaySleep ? formatSleepDuration(todaySleep.sleep_duration) : "0h 0m"}
                 </div>
-                <p className="text-sm text-muted-foreground">Média de sono</p>
+                <p className="text-sm text-muted-foreground">Sono registrado hoje</p>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-500">{Math.round(progress)}%</div>
@@ -274,7 +286,7 @@ export default function Monitoring() {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-500">
-                  {todaySleep ? todaySleep.sleep_quality : 3.9}★
+                  {todaySleep ? todaySleep.sleep_quality : 0}★
                 </div>
                 <p className="text-sm text-muted-foreground">Qualidade do sono hoje</p>
               </div>

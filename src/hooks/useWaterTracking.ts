@@ -98,6 +98,35 @@ export const useWaterTracking = () => {
     }
   };
 
+  const deleteWaterEntry = async (entryId: string) => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('water_tracking')
+        .delete()
+        .eq('id', entryId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      await fetchTodayWater(); // Refresh data
+      toast({
+        title: "Registro excluído!",
+        description: "Registro de água removido com sucesso.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao excluir registro",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchTodayWater();
   }, [user]);
@@ -108,6 +137,7 @@ export const useWaterTracking = () => {
     loading,
     addWater,
     updateDailyGoal,
+    deleteWaterEntry,
     progress: Math.min((todayWater / dailyGoal) * 100, 100)
   };
 };

@@ -128,12 +128,42 @@ export const useSleepTracking = () => {
     return Math.min((hours / sleepGoal) * 100, 100);
   };
 
+  const deleteSleepEntry = async () => {
+    if (!user || !todaySleep) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('sleep_tracking')
+        .delete()
+        .eq('id', todaySleep.id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      await fetchTodaySleep(); // Refresh data
+      toast({
+        title: "Registro excluído!",
+        description: "Registro de sono removido com sucesso.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao excluir registro",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     todaySleep,
     sleepGoal,
     loading,
     addSleep,
     updateSleepGoal,
+    deleteSleepEntry,
     progress: getSleepProgress()
   };
 };
