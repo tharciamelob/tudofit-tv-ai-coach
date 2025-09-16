@@ -4,10 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import MonthlyProgressCard from '@/components/MonthlyProgressCard';
+import { useMonthlyStats } from '@/hooks/useMonthlyStats';
 import { User, Settings, Crown, CreditCard, LogOut, Shield } from 'lucide-react';
 
 const Profile = () => {
   const { user, signOut } = useAuth();
+  const { stats } = useMonthlyStats();
 
   const handleSignOut = async () => {
     await signOut();
@@ -31,7 +34,7 @@ const Profile = () => {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Informações do Usuário */}
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 space-y-6">{/* Added space-y-6 for better spacing */}
               <Card className="mb-6 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -79,24 +82,24 @@ const Profile = () => {
               {/* Estatísticas */}
               <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                 <CardHeader>
-                  <CardTitle>Suas Estatísticas</CardTitle>
+                  <CardTitle>Suas Estatísticas do Mês</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid md:grid-cols-4 gap-6 text-center">
                     <div>
-                      <p className="text-2xl font-bold text-primary">47</p>
-                      <p className="text-sm text-muted-foreground">Treinos realizados</p>
+                      <p className="text-2xl font-bold text-primary">{stats.workouts.totalWorkouts}</p>
+                      <p className="text-sm text-muted-foreground">Planos criados</p>
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-green-500">125.3 km</p>
+                      <p className="text-2xl font-bold text-green-500">{stats.walking.totalDistance} km</p>
                       <p className="text-sm text-muted-foreground">Distância caminhada</p>
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-blue-500">89.2L</p>
+                      <p className="text-2xl font-bold text-blue-500">{stats.waterIntake.total}L</p>
                       <p className="text-sm text-muted-foreground">Água consumida</p>
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-yellow-500">7.5h</p>
+                      <p className="text-2xl font-bold text-yellow-500">{stats.sleep.avgHours}h</p>
                       <p className="text-sm text-muted-foreground">Média de sono</p>
                     </div>
                   </div>
@@ -169,6 +172,11 @@ const Profile = () => {
                 </CardContent>
               </Card>
             </div>
+          </div>
+
+          {/* Monitoramento Mensal */}
+          <div className="mt-6">
+            <MonthlyProgressCard />
           </div>
 
           {/* Planos e Benefícios */}
