@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
 import MealPlanModal from "@/components/MealPlanModal";
@@ -10,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useFoodDiary } from "@/hooks/useFoodDiary";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 import { PDFSuggestionCard } from "@/components/PDFSuggestionCard";
+import { useNutriAnalysis } from "@/hooks/useNutriAnalysis";
 import { 
   Utensils, 
   Clock, 
@@ -22,7 +27,10 @@ import {
   MessageCircle,
   Camera,
   Plus,
-  FileDown
+  FileDown,
+  Text,
+  Loader2,
+  Save
 } from "lucide-react";
 
 const readyMealPlans = [
@@ -196,105 +204,7 @@ const readyMealPlans = [
     duration: "5 dias completos",
     badge: "Novo",
     days: 5,
-    meals: {
-      "Dia 1": [
-        { 
-          type: "Café da manhã", 
-          time: "07:00",
-          foods: [
-            "Panqueca de aveia: Aveia - 60g, Whey protein - 30g, Ovo - 1 unidade",
-            "Banana prata - 1 unidade grande (120g)",
-            "Pasta de amendoim integral - 2 colheres de sopa (32g)",
-            "Café com leite - 200ml"
-          ], 
-          calories: 650 
-        },
-        { 
-          type: "Lanche da manhã", 
-          time: "10:00",
-          foods: [
-            "Sanduíche: Pão integral - 2 fatias (50g)",
-            "Peito de peru - 60g",
-            "Queijo minas - 2 fatias (40g)",
-            "Suco de laranja natural - 200ml"
-          ], 
-          calories: 450 
-        },
-        { 
-          type: "Almoço", 
-          time: "12:30",
-          foods: [
-            "Carne bovina magra (alcatra) - 150g",
-            "Arroz integral cozido - 6 colheres de sopa (120g)",
-            "Feijão preto - 4 colheres de sopa (80g)",
-            "Salada mista - 100g com azeite - 1 colher de sopa"
-          ], 
-          calories: 800 
-        },
-        { 
-          type: "Lanche pré-treino", 
-          time: "15:00",
-          foods: [
-            "Banana nanica - 1 unidade média (100g)",
-            "Aveia em flocos - 3 colheres de sopa (30g)"
-          ], 
-          calories: 220 
-        },
-        { 
-          type: "Pós-treino", 
-          time: "17:30",
-          foods: [
-            "Whey protein - 40g",
-            "Água de coco - 300ml",
-            "Mel - 1 colher de sopa"
-          ], 
-          calories: 250 
-        },
-        { 
-          type: "Jantar", 
-          time: "19:30",
-          foods: [
-            "Frango grelhado - 150g",
-            "Batata doce assada - 1 unidade grande (150g)",
-            "Vegetais refogados (brócolis, cenoura) - 150g",
-            "Azeite para tempero - 1 colher de sopa"
-          ], 
-          calories: 680 
-        }
-      ],
-      "Dia 2": [
-        { 
-          type: "Café da manhã", 
-          time: "07:00",
-          foods: [
-            "Vitamina: Leite integral - 300ml, Banana - 1 unidade, Aveia - 40g",
-            "Granola caseira - 3 colheres de sopa (45g)",
-            "Mel - 1 colher de sobremesa"
-          ], 
-          calories: 620 
-        },
-        { 
-          type: "Lanche da manhã", 
-          time: "10:00",
-          foods: [
-            "Mix de oleaginosas (castanhas, nozes, amêndoas) - 30g",
-            "Água - 200ml"
-          ], 
-          calories: 180 
-        },
-        { 
-          type: "Almoço", 
-          time: "12:30",
-          foods: [
-            "Peixe (robalo) grelhado - 150g",
-            "Quinoa cozida - 6 colheres de sopa (120g)",
-            "Grão-de-bico refogado - 4 colheres de sopa (80g)",
-            "Salada verde - 100g com azeite - 1 colher de sopa"
-          ], 
-          calories: 750 
-        }
-      ]
-    }
+    meals: {}
   },
   {
     title: "Vegetariano - 5 Dias",
@@ -304,63 +214,7 @@ const readyMealPlans = [
     duration: "5 dias completos",
     badge: "Sustentável",
     days: 5,
-    meals: {
-      "Dia 1": [
-        { 
-          type: "Café da manhã", 
-          time: "07:00",
-          foods: [
-            "Smoothie: Espinafre fresco - 50g",
-            "Banana - 1 unidade (100g)",
-            "Manga - 100g",
-            "Leite de amêndoas - 200ml",
-            "Granola caseira - 3 colheres de sopa (45g)"
-          ], 
-          calories: 380 
-        },
-        { 
-          type: "Lanche da manhã", 
-          time: "10:00",
-          foods: [
-            "Hummus caseiro - 3 colheres de sopa (60g)",
-            "Cenoura baby - 100g"
-          ], 
-          calories: 160 
-        },
-        { 
-          type: "Almoço", 
-          time: "12:30",
-          foods: [
-            "Grão-de-bico refogado com temperos - 6 colheres de sopa (120g)",
-            "Quinoa cozida - 4 colheres de sopa (80g)",
-            "Salada colorida (rúcula, tomate, pepino, beterraba) - 150g",
-            "Azeite extra virgem - 1 colher de sopa",
-            "Tahine - 1 colher de sobremesa"
-          ], 
-          calories: 520 
-        },
-        { 
-          type: "Lanche da tarde", 
-          time: "15:30",
-          foods: [
-            "Mix de frutas secas (tâmaras, figo, damasco) - 40g",
-            "Nozes - 6 unidades (18g)"
-          ], 
-          calories: 220 
-        },
-        { 
-          type: "Jantar", 
-          time: "19:00",
-          foods: [
-            "Tofu grelhado temperado - 120g",
-            "Arroz integral cozido - 4 colheres de sopa (80g)",
-            "Brócolis refogado com alho - 150g",
-            "Azeite para tempero - 1 colher de chá"
-          ], 
-          calories: 480 
-        }
-      ]
-    }
+    meals: {}
   },
   {
     title: "Low Carb - 5 Dias",
@@ -370,58 +224,7 @@ const readyMealPlans = [
     duration: "5 dias completos",
     badge: "Eficaz",
     days: 5,
-    meals: {
-      "Dia 1": [
-        { 
-          type: "Café da manhã", 
-          time: "07:00",
-          foods: [
-            "Ovos mexidos - 3 unidades grandes",
-            "Bacon - 2 fatias médias (30g)",
-            "Abacate - 1/2 unidade (100g)",
-            "Café com óleo de coco - 1 xícara + 1 colher de sobremesa"
-          ], 
-          calories: 520 
-        },
-        { 
-          type: "Lanche da manhã", 
-          time: "10:00",
-          foods: ["Castanhas mistas (nozes, amêndoas, castanha do pará) - 25g"], 
-          calories: 160 
-        },
-        { 
-          type: "Almoço", 
-          time: "12:30",
-          foods: [
-            "Salmão grelhado - 150g",
-            "Salada verde extensa (alface, rúcula, espinafre) - 200g",
-            "Azeite extra virgem - 2 colheres de sopa",
-            "Queijo feta - 40g"
-          ], 
-          calories: 580 
-        },
-        { 
-          type: "Lanche da tarde", 
-          time: "15:30",
-          foods: [
-            "Queijo coalho grelhado - 80g",
-            "Azeitonas verdes - 10 unidades"
-          ], 
-          calories: 240 
-        },
-        { 
-          type: "Jantar", 
-          time: "19:00",
-          foods: [
-            "Frango com pele assado - 150g",
-            "Aspargos grelhados - 150g",
-            "Manteiga ghee para tempero - 1 colher de sopa",
-            "Salada de folhas verdes - 100g"
-          ], 
-          calories: 560 
-        }
-      ]
-    }
+    meals: {}
   }
 ];
 
@@ -431,9 +234,18 @@ export default function NutriIA() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [showMealModal, setShowMealModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'analysis' | 'plans'>('analysis');
+  const [textInput, setTextInput] = useState('');
+  const [selectedMealType, setSelectedMealType] = useState('lanche');
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  
   const { user } = useAuth();
   const { todayMeals, calculateDailyTotals } = useFoodDiary();
   const { generateNutritionPDF, isGenerating } = usePDFGeneration();
+  const { loading, result, analyzeText, analyzePhoto, saveToDiary, clearResult } = useNutriAnalysis();
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePlanGenerated = (plan: any) => {
     setGeneratedPlan(plan);
@@ -443,6 +255,59 @@ export default function NutriIA() {
   const handleViewPlan = (plan: any) => {
     setSelectedPlan(plan);
     setShowPlanModal(true);
+  };
+
+  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedPhoto(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleTextAnalysis = async () => {
+    if (!textInput.trim()) return;
+    try {
+      await analyzeText(textInput, selectedMealType);
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const handlePhotoAnalysis = async () => {
+    if (!selectedPhoto) return;
+    try {
+      await analyzePhoto(selectedPhoto, selectedMealType);
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const handleSaveToDiary = async () => {
+    if (!result) return;
+    try {
+      await saveToDiary(result as any);
+      clearResult();
+      setTextInput('');
+      setSelectedPhoto(null);
+      setPhotoPreview(null);
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const clearAll = () => {
+    clearResult();
+    setTextInput('');
+    setSelectedPhoto(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   if (!user) {
@@ -475,323 +340,398 @@ export default function NutriIA() {
     );
   }
 
-  if (generatedPlan) {
-    return (
-      <div className="min-h-screen bg-black">
-        <Header />
-        <main className="container mx-auto px-4 pt-20 pb-8">
-          <Card className="max-w-6xl mx-auto bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-2xl text-center">{(generatedPlan as any).plan_data.plan_name}</CardTitle>
-              <CardDescription className="text-center">{(generatedPlan as any).plan_data.description}</CardDescription>
-              <div className="flex justify-center gap-4 mt-4">
-                <Badge variant="secondary">
-                  {(generatedPlan as any).plan_data.daily_calories} kcal/dia
-                </Badge>
-                <Badge variant="outline">
-                  Proteína: {(generatedPlan as any).plan_data.macros?.protein}g
-                </Badge>
-                <Badge variant="outline">
-                  Carboidratos: {(generatedPlan as any).plan_data.macros?.carbs}g
-                </Badge>
-                <Badge variant="outline">
-                  Gorduras: {(generatedPlan as any).plan_data.macros?.fat}g
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <PDFSuggestionCard
-                contentType="nutrition"
-                content={(generatedPlan as any).plan_data}
-                onGeneratePDF={() => generateNutritionPDF((generatedPlan as any).plan_data)}
-                isGenerating={isGenerating}
-              />
-              
-              <div className="space-y-6">
-                {(generatedPlan as any).plan_data.weekly_plan?.map((day: any, index: number) => (
-                  <Card key={index} className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
-                    <CardHeader>
-                      <CardTitle className="text-lg">{day.day}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {day.meals?.map((meal: any, mealIndex: number) => (
-                          <div key={mealIndex} className="p-4 bg-muted rounded-lg">
-                            <div className="flex justify-between items-center mb-3">
-                              <h4 className="font-semibold">{meal.type}</h4>
-                              <span className="text-sm text-muted-foreground">{meal.time}</span>
-                            </div>
-                            <div className="space-y-2">
-                              {meal.foods?.map((food: any, foodIndex: number) => (
-                                <div key={foodIndex} className="flex justify-between items-center text-sm">
-                                  <div>
-                                    <span className="font-medium">{food.name}</span>
-                                    <span className="text-muted-foreground ml-2">({food.quantity})</span>
-                                  </div>
-                                  <div className="text-right">
-                                    <div>{food.calories} kcal</div>
-                                    <div className="text-xs text-muted-foreground">
-                                      P: {food.protein}g | C: {food.carbs}g | G: {food.fat}g
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              
-              <div className="flex gap-4 mt-6 justify-center">
-                <Button 
-                  onClick={() => generateNutritionPDF((generatedPlan as any).plan_data)}
-                  disabled={isGenerating}
-                  className="gap-2"
-                >
-                  <FileDown className="h-4 w-4" />
-                  {isGenerating ? "Gerando PDF..." : "Baixar PDF"}
-                </Button>
-                <Button onClick={() => setGeneratedPlan(null)}>
-                  Gerar Novo Plano
-                </Button>
-                <Button variant="outline" onClick={() => window.location.reload()}>
-                  Voltar ao Início
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black app-container">
       <Header />
-      
-      <main className="container mx-auto px-4 pt-20 pb-12">
-        {/* Hero Section */}
-        <div className="text-center mb-16 relative">
-          <div className="absolute inset-0 -z-10">
-            <div className="w-full h-full bg-gradient-to-r from-primary/5 via-transparent to-primary/5 rounded-3xl"></div>
-          </div>
-          <div className="flex justify-center mb-6">
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 shadow-lg">
-              <ChefHat className="h-20 w-20 text-primary" />
-            </div>
-          </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-6">
-            Nutri IA
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Transforme sua alimentação com planos nutricionais personalizados criados por 
-            <span className="text-primary font-semibold"> inteligência artificial especializada</span> em nutrição.
-          </p>
-          <div className="flex justify-center gap-4 mt-8">
-            <Badge variant="outline" className="px-4 py-2 text-sm font-medium">
-              CRN Especialista
-            </Badge>
-            <Badge variant="outline" className="px-4 py-2 text-sm font-medium">
-              Cardápios Personalizados
-            </Badge>
-            <Badge variant="outline" className="px-4 py-2 text-sm font-medium">
-              Nutrição Baseada em Evidências
-            </Badge>
+      <main className="container mx-auto px-4 pt-20 pb-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-4 text-white">🥗 Nutri IA</h1>
+          <p className="text-xl text-gray-300">Análise nutricional inteligente por texto ou foto</p>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex justify-center mb-8">
+          <div className="flex bg-black/50 p-1 rounded-lg border border-white/10">
+            <Button 
+              variant={activeTab === 'analysis' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('analysis')}
+              className="flex items-center gap-2"
+            >
+              <Target className="w-4 h-4" />
+              Análise Nutricional
+            </Button>
+            <Button 
+              variant={activeTab === 'plans' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('plans')}
+              className="flex items-center gap-2"
+            >
+              <ChefHat className="w-4 h-4" />
+              Planos Prontos
+            </Button>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 mb-16">
-          {/* Cardápio Personalizado */}
-          <Card className="lg:col-span-2 border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10">
-            <CardHeader className="pb-8">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 rounded-xl bg-primary/10">
-                  <Utensils className="h-8 w-8 text-primary" />
+        {activeTab === 'analysis' && (
+          <div className="max-w-4xl mx-auto">
+            {/* Estatísticas do dia */}
+            <Card className="mb-8 bg-gradient-to-r from-green-900/20 to-blue-900/20 border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-green-400" />
+                  Resumo Nutricional Hoje
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {(() => {
+                    const totals = calculateDailyTotals();
+                    return (
+                      <>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-orange-400">{totals.calories}</div>
+                          <div className="text-sm text-gray-400">Calorias</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-blue-400">{totals.protein.toFixed(1)}g</div>
+                          <div className="text-sm text-gray-400">Proteínas</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-400">{totals.carbs.toFixed(1)}g</div>
+                          <div className="text-sm text-gray-400">Carboidratos</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-yellow-400">{totals.fat.toFixed(1)}g</div>
+                          <div className="text-sm text-gray-400">Gorduras</div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Análise por Texto */}
+            <Card className="mb-6 bg-gradient-to-b from-blue-900/10 to-blue-900/20 border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-blue-400">
+                  <Text className="w-5 h-5" />
+                  Calcular por Texto
+                </CardTitle>
+                <CardDescription>
+                  Descreva sua refeição e obtenha as informações nutricionais
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
-                  <CardTitle className="text-3xl text-foreground">Cardápio Personalizado</CardTitle>
-                  <p className="text-muted-foreground mt-1">Nutrição científica adaptada ao seu perfil</p>
+                  <Label htmlFor="meal-type-text">Tipo da Refeição</Label>
+                  <Select value={selectedMealType} onValueChange={setSelectedMealType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de refeição" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cafe_da_manha">Café da manhã</SelectItem>
+                      <SelectItem value="lanche">Lanche</SelectItem>
+                      <SelectItem value="almoco">Almoço</SelectItem>
+                      <SelectItem value="jantar">Jantar</SelectItem>
+                      <SelectItem value="pre_treino">Pré-treino</SelectItem>
+                      <SelectItem value="pos_treino">Pós-treino</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              </div>
-              <CardDescription className="text-base leading-relaxed">
-                Nossa IA especialista em nutrição cria um plano alimentar único, baseado em seus objetivos, 
-                preferências, restrições e necessidades metabólicas individuais.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-8">
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="text-center p-6 bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl border border-border/40">
-                  <div className="p-3 rounded-xl bg-primary/10 w-fit mx-auto mb-4">
-                    <Target className="h-8 w-8 text-primary" />
-                  </div>
-                  <h3 className="font-bold mb-2 text-foreground">Objetivos Específicos</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Emagrecimento, ganho de massa ou manutenção com base científica
-                  </p>
+                
+                <div>
+                  <Label htmlFor="meal-description">Descrição da Refeição</Label>
+                  <Textarea
+                    id="meal-description"
+                    placeholder="Ex: 2 ovos mexidos com 1 fatia de pão integral e 1/2 abacate"
+                    value={textInput}
+                    onChange={(e) => setTextInput(e.target.value)}
+                    rows={3}
+                  />
                 </div>
-                <div className="text-center p-6 bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl border border-border/40">
-                  <div className="p-3 rounded-xl bg-primary/10 w-fit mx-auto mb-4">
-                    <Apple className="h-8 w-8 text-primary" />
-                  </div>
-                  <h3 className="font-bold mb-2 text-foreground">Preferências Respeitadas</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Vegetariano, vegano, sem glúten, low carb e todas as suas restrições
-                  </p>
-                </div>
-                <div className="text-center p-6 bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl border border-border/40">
-                  <div className="p-3 rounded-xl bg-primary/10 w-fit mx-auto mb-4">
-                    <Clock className="h-8 w-8 text-primary" />
-                  </div>
-                  <h3 className="font-bold mb-2 text-foreground">Rotina Adaptada</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Horários flexíveis e refeições que se encaixam na sua vida
-                  </p>
-                </div>
-              </div>
-              
-              <div className="text-center bg-gradient-to-r from-primary/5 to-primary/10 p-8 rounded-2xl border border-primary/20">
-                <h3 className="text-xl font-bold mb-3 text-foreground">Converse com sua Nutricionista IA</h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Inicie uma conversa personalizada para criar seu plano nutricional ideal
-                </p>
-                <Button size="lg" className="px-8 gap-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300" onClick={() => setShowChat(true)}>
-                  <MessageCircle className="h-5 w-5" />
-                  Iniciar Consulta Nutricional
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Registro de Refeições */}
-          <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10">
-            <CardHeader className="pb-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Utensils className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-xl">Registrar Refeição</CardTitle>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Registre suas refeições por foto ou texto e acompanhe suas calorias
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-gradient-to-br from-muted/30 to-muted/10 rounded-xl p-4 border border-border/40">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-foreground">Hoje</h3>
-                  <Badge variant="secondary">
-                    {calculateDailyTotals().calories} kcal
-                  </Badge>
-                </div>
-                <div className="text-xs text-muted-foreground grid grid-cols-3 gap-2">
-                  <span>Proteína: {calculateDailyTotals().protein}g</span>
-                  <span>Carbs: {calculateDailyTotals().carbs}g</span>
-                  <span>Gordura: {calculateDailyTotals().fat}g</span>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
                 <Button 
-                  className="w-full gap-2" 
-                  onClick={() => setShowMealModal(true)}
+                  onClick={handleTextAnalysis}
+                  disabled={loading || !textInput.trim()}
+                  className="w-full"
                 >
-                  <Plus className="h-4 w-4" />
-                  Registrar Refeição
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full gap-2"
-                  onClick={() => setShowMealModal(true)}
-                >
-                  <Camera className="h-4 w-4" />
-                  Foto da Refeição
-                </Button>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-medium text-foreground text-sm">Refeições de Hoje:</h4>
-                {todayMeals.length > 0 ? (
-                  <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {todayMeals.map((meal) => (
-                      <div key={meal.id} className="flex justify-between items-center p-2 bg-muted/30 rounded text-xs">
-                        <span className="font-medium">{meal.food_name}</span>
-                        <span className="text-muted-foreground">{meal.calories} kcal</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground italic">Nenhuma refeição registrada hoje</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Cardápios Prontos */}
-        <div className="bg-gradient-to-r from-muted/20 via-background to-muted/20 p-8 rounded-3xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Cardápios Prontos Especializados</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Planos nutricionais de <span className="text-primary font-semibold">5 dias completos</span> com quantidades precisas, 
-              desenvolvidos por especialistas em nutrição
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {readyMealPlans.map((plan) => (
-              <Card key={plan.title} className="relative group hover:shadow-2xl transition-all duration-500 border-0 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 hover:scale-105">
-                <CardHeader className="text-center pb-4">
-                  {plan.badge && (
-                    <Badge className="absolute top-4 right-4 z-10 shadow-lg" variant="secondary">
-                      {plan.badge}
-                    </Badge>
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Analisando...
+                    </>
+                  ) : (
+                    'Calcular Nutrição'
                   )}
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
-                    <plan.icon className="h-12 w-12 text-primary" />
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Análise por Foto */}
+            <Card className="mb-6 bg-gradient-to-b from-purple-900/10 to-purple-900/20 border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-purple-400">
+                  <Camera className="w-5 h-5" />
+                  Calcular pela Foto
+                </CardTitle>
+                <CardDescription>
+                  Tire uma foto da sua refeição para análise automática
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="meal-type-photo">Tipo da Refeição</Label>
+                  <Select value={selectedMealType} onValueChange={setSelectedMealType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de refeição" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cafe_da_manha">Café da manhã</SelectItem>
+                      <SelectItem value="lanche">Lanche</SelectItem>
+                      <SelectItem value="almoco">Almoço</SelectItem>
+                      <SelectItem value="jantar">Jantar</SelectItem>
+                      <SelectItem value="pre_treino">Pré-treino</SelectItem>
+                      <SelectItem value="pos_treino">Pós-treino</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="photo-upload">Foto da Refeição</Label>
+                  <Input
+                    ref={fileInputRef}
+                    id="photo-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoSelect}
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80"
+                  />
+                </div>
+
+                {photoPreview && (
+                  <div className="mt-4">
+                    <img 
+                      src={photoPreview} 
+                      alt="Preview da refeição" 
+                      className="w-full max-w-sm mx-auto rounded-lg border border-white/20"
+                    />
                   </div>
-                  <CardTitle className="text-xl text-foreground group-hover:text-primary transition-colors">
-                    {plan.title}
+                )}
+
+                <Button 
+                  onClick={handlePhotoAnalysis}
+                  disabled={loading || !selectedPhoto}
+                  className="w-full"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Analisando...
+                    </>
+                  ) : (
+                    'Analisar Foto'
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Resultado da Análise */}
+            {result && (
+              <Card className="mb-6 bg-gradient-to-b from-green-900/10 to-green-900/20 border-green-400/30">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-400">
+                    <Target className="w-5 h-5" />
+                    Resultado da Análise
                   </CardTitle>
+                  <CardDescription>
+                    {result.nutrition.item_name}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground text-sm leading-relaxed">{plan.description}</p>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between items-center p-2 bg-muted/30 rounded-lg">
-                      <span className="text-muted-foreground font-medium">Calorias:</span>
-                      <span className="font-bold text-primary">{plan.calories}</span>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="text-center p-4 bg-orange-400/10 rounded-lg border border-orange-400/20">
+                      <div className="text-2xl font-bold text-orange-400">{result.nutrition.calories}</div>
+                      <div className="text-sm text-orange-300">kcal</div>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-muted/30 rounded-lg">
-                      <span className="text-muted-foreground font-medium">Duração:</span>
-                      <span className="font-bold text-foreground">{plan.duration}</span>
+                    <div className="text-center p-4 bg-blue-400/10 rounded-lg border border-blue-400/20">
+                      <div className="text-2xl font-bold text-blue-400">{result.nutrition.protein_g}</div>
+                      <div className="text-sm text-blue-300">g proteína</div>
+                    </div>
+                    <div className="text-center p-4 bg-green-400/10 rounded-lg border border-green-400/20">
+                      <div className="text-2xl font-bold text-green-400">{result.nutrition.carbs_g}</div>
+                      <div className="text-sm text-green-300">g carbo</div>
+                    </div>
+                    <div className="text-center p-4 bg-yellow-400/10 rounded-lg border border-yellow-400/20">
+                      <div className="text-2xl font-bold text-yellow-400">{result.nutrition.fat_g}</div>
+                      <div className="text-sm text-yellow-300">g gordura</div>
                     </div>
                   </div>
+
+                  <div className="flex gap-2">
+                    <Button onClick={handleSaveToDiary} className="flex-1">
+                      <Save className="w-4 h-4 mr-2" />
+                      Salvar no Diário
+                    </Button>
+                    <Button variant="outline" onClick={clearAll}>
+                      Nova Análise
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Link para Planos */}
+            <Card className="bg-gradient-to-b from-orange-900/10 to-orange-900/20 border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-orange-400">
+                  <MessageCircle className="w-5 h-5" />
+                  Precisa de um Plano Completo?
+                </CardTitle>
+                <CardDescription>
+                  Converse com a IA para criar um plano nutricional personalizado
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => setShowChat(true)} className="w-full">
+                  Gerar Plano com IA
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'plans' && (
+          <div>
+            <PDFSuggestionCard 
+              content={generatedPlan || selectedPlan} 
+            />
+
+            {/* Ações principais */}
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <Card 
+                className="cursor-pointer hover:border-green-400/50 transition-colors bg-gradient-to-b from-green-900/10 to-green-900/20 border-white/10"
+                onClick={() => setShowChat(true)}
+              >
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-400">
+                    <MessageCircle className="w-5 h-5" />
+                    Gerar Plano IA
+                  </CardTitle>
+                  <CardDescription>
+                    Converse com a IA para criar um plano nutricional personalizado
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+
+              <Card 
+                className="cursor-pointer hover:border-blue-400/50 transition-colors bg-gradient-to-b from-blue-900/10 to-blue-900/20 border-white/10"
+                onClick={() => setShowMealModal(true)}
+              >
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-blue-400">
+                    <Plus className="w-5 h-5" />
+                    Registrar Refeição
+                  </CardTitle>
+                  <CardDescription>
+                    Adicione uma refeição manualmente ao seu diário
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+
+              <Card className="bg-gradient-to-b from-purple-900/10 to-purple-900/20 border-white/10">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-purple-400">
+                    <FileDown className="w-5 h-5" />
+                    Gerar PDF
+                  </CardTitle>
+                  <CardDescription>
+                    Download do seu plano nutricional em PDF
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                   <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shadow-sm hover:shadow-md" 
-                    onClick={() => handleViewPlan(plan)}
+                    onClick={() => generateNutritionPDF(generatedPlan || selectedPlan || { plan_data: readyMealPlans[0] })}
+                    disabled={isGenerating}
+                    className="w-full"
                   >
-                    Ver Cardápio Detalhado
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Gerando...
+                      </>
+                    ) : (
+                      'Baixar PDF'
+                    )}
                   </Button>
                 </CardContent>
               </Card>
-            ))}
+            </div>
+
+            {/* Planos prontos */}
+            <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ChefHat className="w-5 h-5 text-orange-400" />
+                  Planos Nutricionais Prontos
+                </CardTitle>
+                <CardDescription>
+                  Planos completos criados por nutricionistas especialistas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {readyMealPlans.map((plan, index) => (
+                    <Card 
+                      key={index}
+                      className="cursor-pointer hover:border-orange-400/50 transition-colors bg-gradient-to-b from-slate-900/50 to-slate-800/50 border-white/10"
+                      onClick={() => handleViewPlan(plan)}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start mb-2">
+                          <plan.icon className="w-8 h-8 text-orange-400" />
+                          {plan.badge && (
+                            <Badge variant="secondary" className="text-xs">
+                              {plan.badge}
+                            </Badge>
+                          )}
+                        </div>
+                        <CardTitle className="text-lg">{plan.title}</CardTitle>
+                        <CardDescription className="text-sm">
+                          {plan.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Target className="w-4 h-4 text-orange-400" />
+                            <span>{plan.calories}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-blue-400" />
+                            <span>{plan.duration}</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </div>
+        )}
+
+        {/* Modals */}
+        <MealPlanModal 
+          isOpen={showPlanModal}
+          onClose={() => setShowPlanModal(false)}
+          plan={selectedPlan}
+        />
+        
+        <MealRegistrationModal
+          open={showMealModal}
+          onClose={() => setShowMealModal(false)}
+        />
       </main>
-      
-      <MealPlanModal 
-        isOpen={showPlanModal}
-        onClose={() => setShowPlanModal(false)}
-        plan={selectedPlan}
-      />
-      
-      <MealRegistrationModal 
-        open={showMealModal}
-        onOpenChange={setShowMealModal}
-      />
     </div>
   );
 }

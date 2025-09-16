@@ -23,6 +23,7 @@ export type Database = {
           fat: number | null
           food_name: string
           id: string
+          item_name: string | null
           meal_type: string
           photo_url: string | null
           protein: number | null
@@ -38,6 +39,7 @@ export type Database = {
           fat?: number | null
           food_name: string
           id?: string
+          item_name?: string | null
           meal_type: string
           photo_url?: string | null
           protein?: number | null
@@ -53,6 +55,7 @@ export type Database = {
           fat?: number | null
           food_name?: string
           id?: string
+          item_name?: string | null
           meal_type?: string
           photo_url?: string | null
           protein?: number | null
