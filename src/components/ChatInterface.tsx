@@ -109,7 +109,7 @@ export const ChatInterface = ({ chatType, onPlanGenerated }: ChatInterfaceProps)
       <CardHeader className="pb-4 border-b border-white/10">
         <CardTitle className="flex items-center gap-2">
           <Bot className="h-6 w-6 text-primary" />
-          {chatType === 'personal' ? 'Personal IA Assistant' : 'Nutri IA Assistant'}
+          {chatType === 'personal' ? 'Personal IA' : 'Nutri IA'}
         </CardTitle>
       </CardHeader>
       

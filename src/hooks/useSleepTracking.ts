@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export const useSleepTracking = () => {
   const [loading, setLoading] = useState(false);
   const [todaySleep, setTodaySleep] = useState<any>(null);
+  const [sleepGoal, setSleepGoal] = useState(8); // Meta padrão de 8 horas
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -24,6 +25,17 @@ export const useSleepTracking = () => {
       if (error && error.code !== 'PGRST116') throw error;
       
       setTodaySleep(data);
+
+      // Buscar meta de sono do perfil do usuário
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile?.sleep_goal) {
+        setSleepGoal(profile.sleep_goal);
+      }
     } catch (error: any) {
       console.error('Erro ao buscar dados de sono:', error);
     }
@@ -79,9 +91,49 @@ export const useSleepTracking = () => {
     fetchTodaySleep();
   }, [user]);
 
+  const updateSleepGoal = async (newGoal: number) => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ sleep_goal: newGoal })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setSleepGoal(newGoal);
+      toast({
+        title: "Meta atualizada!",
+        description: `Nova meta de sono: ${newGoal} horas por noite.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao atualizar meta",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getSleepProgress = () => {
+    if (!todaySleep?.sleep_duration) return 0;
+    
+    const match = todaySleep.sleep_duration.match(/(\d+)\s*hours?/);
+    const hours = match ? parseInt(match[1]) : 0;
+    
+    return Math.min((hours / sleepGoal) * 100, 100);
+  };
+
   return {
     todaySleep,
+    sleepGoal,
     loading,
-    addSleep
+    addSleep,
+    updateSleepGoal,
+    progress: getSleepProgress()
   };
 };
