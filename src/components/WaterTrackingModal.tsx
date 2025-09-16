@@ -1,26 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useWaterTracking } from '@/hooks/useWaterTracking';
-import { Droplets, Target } from 'lucide-react';
+import { Droplets, Target, Calendar as CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface WaterTrackingModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialDate?: Date;
 }
 
-export const WaterTrackingModal = ({ open, onOpenChange }: WaterTrackingModalProps) => {
+export const WaterTrackingModal = ({ open, onOpenChange, initialDate }: WaterTrackingModalProps) => {
   const [amount, setAmount] = useState(250);
   const [goalAmount, setGoalAmount] = useState(2000);
+  const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
   const { addWater, updateDailyGoal, loading, dailyGoal } = useWaterTracking();
 
+  // Atualizar a data selecionada quando initialDate mudar
+  useEffect(() => {
+    if (initialDate) {
+      setSelectedDate(initialDate);
+    }
+  }, [initialDate, open]);
+
   const handleSubmit = async () => {
-    await addWater(amount);
+    await addWater(amount, selectedDate.toISOString().split('T')[0]);
     onOpenChange(false);
     setAmount(250);
+    setSelectedDate(new Date());
   };
 
   const handleGoalUpdate = async () => {
@@ -47,6 +61,33 @@ export const WaterTrackingModal = ({ open, onOpenChange }: WaterTrackingModalPro
           </TabsList>
           
           <TabsContent value="add" className="space-y-4">
+            <div>
+              <Label>Data do registro</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal mt-1",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Selecionar data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
             <div>
               <Label htmlFor="amount">Quantidade (ml)</Label>
               <Input

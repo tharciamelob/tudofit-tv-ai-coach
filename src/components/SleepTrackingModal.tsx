@@ -5,19 +5,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useSleepTracking } from '@/hooks/useSleepTracking';
-import { Moon, Target } from 'lucide-react';
+import { Moon, Target, Calendar as CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface SleepTrackingModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialDate?: Date;
 }
 
-export const SleepTrackingModal = ({ open, onOpenChange }: SleepTrackingModalProps) => {
+export const SleepTrackingModal = ({ open, onOpenChange, initialDate }: SleepTrackingModalProps) => {
   const [bedtime, setBedtime] = useState('');
   const [wakeTime, setWakeTime] = useState('');
   const [quality, setQuality] = useState(5);
   const [goal, setGoal] = useState(8);
+  const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
   const { addSleep, updateSleepGoal, sleepGoal, loading } = useSleepTracking();
 
   // Atualizar a meta quando o modal abrir
@@ -25,28 +31,35 @@ export const SleepTrackingModal = ({ open, onOpenChange }: SleepTrackingModalPro
     if (open && sleepGoal) {
       setGoal(sleepGoal);
     }
-  }, [open, sleepGoal]);
+    if (initialDate) {
+      setSelectedDate(initialDate);
+    }
+  }, [open, sleepGoal, initialDate]);
 
   const handleSubmit = async () => {
-    if (!bedtime || !wakeTime) return;
+    if (!bedtime || !wakeTime || !selectedDate) return;
 
-    // Converter para ISO string com data de hoje
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    // Usar a data selecionada
+    const selectedDateStr = selectedDate.toISOString().split('T')[0];
+    const previousDate = new Date(selectedDate);
+    previousDate.setDate(previousDate.getDate() - 1);
+    const previousDateStr = previousDate.toISOString().split('T')[0];
     
-    const bedtimeISO = `${yesterday}T${bedtime}:00`;
-    const wakeTimeISO = `${today}T${wakeTime}:00`;
+    const bedtimeISO = `${previousDateStr}T${bedtime}:00`;
+    const wakeTimeISO = `${selectedDateStr}T${wakeTime}:00`;
 
     await addSleep({
       bedtime: bedtimeISO,
       wakeTime: wakeTimeISO,
-      quality
+      quality,
+      date: selectedDateStr
     });
     
     onOpenChange(false);
     setBedtime('');
     setWakeTime('');
     setQuality(5);
+    setSelectedDate(new Date());
   };
 
   const handleGoalSubmit = async () => {
@@ -74,7 +87,34 @@ export const SleepTrackingModal = ({ open, onOpenChange }: SleepTrackingModalPro
           
           <TabsContent value="register" className="space-y-4 mt-4">
             <div>
-              <Label htmlFor="bedtime">Horário que dormiu (ontem)</Label>
+              <Label>Data do registro</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal mt-1",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Selecionar data"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div>
+              <Label htmlFor="bedtime">Horário que dormiu</Label>
               <Input
                 id="bedtime"
                 type="time"
@@ -85,7 +125,7 @@ export const SleepTrackingModal = ({ open, onOpenChange }: SleepTrackingModalPro
             </div>
 
             <div>
-              <Label htmlFor="waketime">Horário que acordou (hoje)</Label>
+              <Label htmlFor="waketime">Horário que acordou</Label>
               <Input
                 id="waketime"
                 type="time"

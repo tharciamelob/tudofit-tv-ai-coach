@@ -94,6 +94,7 @@ export const useSleepTracking = () => {
     bedtime: string;
     wakeTime: string;
     quality: number;
+    date?: string;
   }) => {
     if (!user) return;
 
@@ -117,7 +118,8 @@ export const useSleepTracking = () => {
           user_id: user.id,
           bedtime: bedtime.toISOString(),
           wake_time: wakeTime.toISOString(),
-          sleep_quality: sleepData.quality
+          sleep_quality: sleepData.quality,
+          date: sleepData.date || new Date().toISOString().split('T')[0]
         });
 
       if (error) {

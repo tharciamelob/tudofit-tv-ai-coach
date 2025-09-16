@@ -76,7 +76,7 @@ export const useWaterTracking = () => {
     }
   };
 
-  const addWater = async (amount: number) => {
+  const addWater = async (amount: number, date?: string) => {
     if (!user) return;
 
     setLoading(true);
@@ -86,7 +86,8 @@ export const useWaterTracking = () => {
         .insert({
           user_id: user.id,
           amount_ml: amount,
-          daily_goal_ml: dailyGoal
+          daily_goal_ml: dailyGoal,
+          date: date || new Date().toISOString().split('T')[0]
         });
 
       if (error) throw error;

@@ -13,6 +13,7 @@ import { Droplets, Moon, Plus, TrendingUp, Trash2 } from "lucide-react";
 export default function Monitoring() {
   const [waterModalOpen, setWaterModalOpen] = useState(false);
   const [sleepModalOpen, setSleepModalOpen] = useState(false);
+  const [selectedEditDate, setSelectedEditDate] = useState<Date | null>(null);
   const { user } = useAuth();
   const { todayWater, dailyGoal, progress, weeklyData: waterWeekly, deleteAllWaterForDate } = useWaterTracking();
   const { todaySleep, sleepGoal, progress: sleepProgress, deleteSleepEntry, weeklyData: sleepWeekly, deleteSleepByDate } = useSleepTracking();
@@ -205,7 +206,10 @@ export default function Monitoring() {
             <CardContent>
               <div className="space-y-4">
                 {waterWeekly.map((item) => (
-                  <div key={item.date} className="flex items-center gap-3">
+                  <div key={item.date} className="flex items-center gap-3 group cursor-pointer hover:bg-white/5 p-2 rounded-md" onClick={() => {
+                    setSelectedEditDate(new Date(item.date));
+                    setWaterModalOpen(true);
+                  }}>
                     <span className="w-8 text-sm font-medium">{item.day}</span>
                     <Progress value={item.progress} className="flex-1 h-2" />
                     <span className="text-sm text-muted-foreground w-12">{item.progress}%</span>
@@ -213,12 +217,27 @@ export default function Monitoring() {
                       <Button 
                         size="sm" 
                         variant="ghost" 
-                        className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50" 
-                        onClick={() => deleteAllWaterForDate(item.date)}
+                        className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteAllWaterForDate(item.date);
+                        }}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 p-0 text-blue-500 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedEditDate(new Date(item.date));
+                        setWaterModalOpen(true);
+                      }}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -236,7 +255,10 @@ export default function Monitoring() {
             <CardContent>
               <div className="space-y-4">
                 {sleepWeekly.map((item) => (
-                  <div key={item.date} className="flex items-center justify-between">
+                  <div key={item.date} className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded-md" onClick={() => {
+                    setSelectedEditDate(new Date(item.date));
+                    setSleepModalOpen(true);
+                  }}>
                     <span className="w-8 text-sm font-medium">{item.day}</span>
                     <span className="text-sm">{item.hours}</span>
                     <div className="flex items-center gap-2">
@@ -254,12 +276,27 @@ export default function Monitoring() {
                         <Button 
                           size="sm" 
                           variant="ghost" 
-                          className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50" 
-                          onClick={() => deleteSleepByDate(item.date)}
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteSleepByDate(item.date);
+                          }}
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 text-purple-500 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedEditDate(new Date(item.date));
+                          setSleepModalOpen(true);
+                        }}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -300,8 +337,16 @@ export default function Monitoring() {
           </CardContent>
         </Card>
 
-        <WaterTrackingModal open={waterModalOpen} onOpenChange={setWaterModalOpen} />
-        <SleepTrackingModal open={sleepModalOpen} onOpenChange={setSleepModalOpen} />
+        <WaterTrackingModal 
+          open={waterModalOpen} 
+          onOpenChange={setWaterModalOpen} 
+          initialDate={selectedEditDate || undefined}
+        />
+        <SleepTrackingModal 
+          open={sleepModalOpen} 
+          onOpenChange={setSleepModalOpen} 
+          initialDate={selectedEditDate || undefined}
+        />
       </main>
     </div>
   );
