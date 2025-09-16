@@ -335,9 +335,56 @@ export const useSleepTracking = () => {
   };
 
   useEffect(() => {
+    if (!user) return;
+    
     fetchTodaySleep();
     fetchWeeklyData();
+
+    // Set up real-time listener for sleep tracking
+    const channel = supabase
+      .channel('sleep-tracking-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sleep_tracking',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Sleep tracking real-time update:', payload);
+          // Refresh data when changes occur
+          fetchTodaySleep();
+          fetchWeeklyData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
+
+  // Format sleep duration helper function
+  const formatSleepDuration = (duration: string) => {
+    if (!duration) return "0h 0m";
+    
+    // Handle time format (HH:MM:SS)
+    const timeMatch = duration.match(/^(\d{2}):(\d{2}):(\d{2})$/);
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1]);
+      const minutes = parseInt(timeMatch[2]);
+      return `${hours}h ${minutes}m`;
+    }
+    
+    // Handle text format (X hours Y minutes)
+    const textMatch = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
+    if (textMatch) {
+      return `${textMatch[1]}h ${textMatch[2]}m`;
+    }
+    
+    return duration;
+  };
 
   return {
     todaySleep,
@@ -348,6 +395,7 @@ export const useSleepTracking = () => {
     updateSleepGoal,
     deleteSleepEntry,
     deleteSleepByDate,
+    formatSleepDuration,
     progress: getSleepProgress()
   };
 };

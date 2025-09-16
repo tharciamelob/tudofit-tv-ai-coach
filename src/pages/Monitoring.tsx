@@ -16,7 +16,7 @@ export default function Monitoring() {
   const [selectedEditDate, setSelectedEditDate] = useState<Date | null>(null);
   const { user } = useAuth();
   const { todayWater, dailyGoal, progress, weeklyData: waterWeekly, deleteAllWaterForDate } = useWaterTracking();
-  const { todaySleep, sleepGoal, progress: sleepProgress, deleteSleepEntry, weeklyData: sleepWeekly, deleteSleepByDate } = useSleepTracking();
+  const { todaySleep, sleepGoal, progress: sleepProgress, deleteSleepEntry, weeklyData: sleepWeekly, deleteSleepByDate, formatSleepDuration } = useSleepTracking();
 
   if (!user) {
     return (
@@ -32,14 +32,7 @@ export default function Monitoring() {
     );
   }
 
-  const formatSleepDuration = (duration: string) => {
-    if (!duration) return "0h 0m";
-    const match = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
-    if (match) {
-      return `${match[1]}h ${match[2]}m`;
-    }
-    return duration;
-  };
+  // formatSleepDuration is now handled by the useSleepTracking hook
 
   const getWaterAnalysis = (progress: number) => {
     if (progress >= 100) {

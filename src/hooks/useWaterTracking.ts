@@ -211,8 +211,34 @@ export const useWaterTracking = () => {
   };
 
   useEffect(() => {
+    if (!user) return;
+    
     fetchTodayWater();
     fetchWeeklyData();
+
+    // Set up real-time listener for water tracking
+    const channel = supabase
+      .channel('water-tracking-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'water_tracking',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Water tracking real-time update:', payload);
+          // Refresh data when changes occur
+          fetchTodayWater();
+          fetchWeeklyData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   return {
