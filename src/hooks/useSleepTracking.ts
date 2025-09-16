@@ -105,11 +105,19 @@ export const useSleepTracking = () => {
       const bedtime = new Date(sleepData.bedtime);
       const wakeTime = new Date(sleepData.wakeTime);
       
-      // Calcular duração do sono
-      let duration = wakeTime.getTime() - bedtime.getTime();
-      if (duration < 0) {
-        // Se acordou no dia seguinte
-        duration += 24 * 60 * 60 * 1000;
+      // Calcular duração do sono com lógica inteligente
+      let duration;
+      if (bedtime.getTime() > wakeTime.getTime()) {
+        // Se bedtime > wakeTime, significa que acordou no dia seguinte
+        duration = wakeTime.getTime() - bedtime.getTime() + (24 * 60 * 60 * 1000);
+      } else {
+        // Caso normal: mesmo dia
+        duration = wakeTime.getTime() - bedtime.getTime();
+      }
+
+      // Se a duração for negativa ou muito pequena, assumir que cruzou a meia-noite
+      if (duration < 0 || duration < 2 * 60 * 60 * 1000) { // Menos de 2 horas
+        duration = duration + (24 * 60 * 60 * 1000);
       }
 
       const { error } = await supabase

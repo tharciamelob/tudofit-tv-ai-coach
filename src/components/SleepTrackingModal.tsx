@@ -39,20 +39,33 @@ export const SleepTrackingModal = ({ open, onOpenChange, initialDate }: SleepTra
   const handleSubmit = async () => {
     if (!bedtime || !wakeTime || !selectedDate) return;
 
-    // Usar a data selecionada
-    const selectedDateStr = selectedDate.toISOString().split('T')[0];
-    const previousDate = new Date(selectedDate);
-    previousDate.setDate(previousDate.getDate() - 1);
-    const previousDateStr = previousDate.toISOString().split('T')[0];
+    // Determinar se dormiu no mesmo dia ou no anterior
+    const bedtimeHour = parseInt(bedtime.split(':')[0]);
+    const wakeTimeHour = parseInt(wakeTime.split(':')[0]);
     
-    const bedtimeISO = `${previousDateStr}T${bedtime}:00`;
-    const wakeTimeISO = `${selectedDateStr}T${wakeTime}:00`;
+    let bedtimeDate, wakeTimeDate;
+    
+    // Se dormiu após meia-noite (00h-05h), considera como mesmo dia
+    if (bedtimeHour >= 0 && bedtimeHour <= 5) {
+      // Dormiu no mesmo dia da data selecionada
+      bedtimeDate = selectedDate.toISOString().split('T')[0];
+      wakeTimeDate = selectedDate.toISOString().split('T')[0];
+    } else {
+      // Lógica tradicional: dormiu no dia anterior
+      const previousDate = new Date(selectedDate);
+      previousDate.setDate(previousDate.getDate() - 1);
+      bedtimeDate = previousDate.toISOString().split('T')[0];
+      wakeTimeDate = selectedDate.toISOString().split('T')[0];
+    }
+    
+    const bedtimeISO = `${bedtimeDate}T${bedtime}:00`;
+    const wakeTimeISO = `${wakeTimeDate}T${wakeTime}:00`;
 
     await addSleep({
       bedtime: bedtimeISO,
       wakeTime: wakeTimeISO,
       quality,
-      date: selectedDateStr
+      date: selectedDate.toISOString().split('T')[0]
     });
     
     onOpenChange(false);
@@ -122,6 +135,9 @@ export const SleepTrackingModal = ({ open, onOpenChange, initialDate }: SleepTra
                 onChange={(e) => setBedtime(e.target.value)}
                 className="mt-1"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Se dormiu após 00h, será considerado como mesmo dia
+              </p>
             </div>
 
             <div>
