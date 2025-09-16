@@ -5,17 +5,19 @@ import { Progress } from "@/components/ui/progress";
 import Header from "@/components/Header";
 import { WaterTrackingModal } from "@/components/WaterTrackingModal";
 import { SleepTrackingModal } from "@/components/SleepTrackingModal";
+import { SleepGoalModal } from "@/components/SleepGoalModal";
 import { useWaterTracking } from "@/hooks/useWaterTracking";
 import { useSleepTracking } from "@/hooks/useSleepTracking";
 import { useAuth } from "@/contexts/AuthContext";
-import { Droplets, Moon, Plus, TrendingUp } from "lucide-react";
+import { Droplets, Moon, Plus, TrendingUp, Settings } from "lucide-react";
 
 export default function Monitoring() {
   const [waterModalOpen, setWaterModalOpen] = useState(false);
   const [sleepModalOpen, setSleepModalOpen] = useState(false);
+  const [sleepGoalModalOpen, setSleepGoalModalOpen] = useState(false);
   const { user } = useAuth();
   const { todayWater, dailyGoal, progress } = useWaterTracking();
-  const { todaySleep } = useSleepTracking();
+  const { todaySleep, sleepGoal, progress: sleepProgress } = useSleepTracking();
 
   if (!user) {
     return (
@@ -52,32 +54,27 @@ export default function Monitoring() {
     }
   };
 
-  const getSleepAnalysis = (sleepData: any) => {
-    const duration = sleepData.sleep_duration;
+  const getSleepAnalysis = (sleepData: any, progress: number) => {
     const quality = sleepData.sleep_quality;
-    
-    // Extrai horas da duração
-    const match = duration?.match(/(\d+)\s*hours?/);
-    const hours = match ? parseInt(match[1]) : 0;
     
     let message = "";
     let color = "";
     
-    if (hours >= 7 && hours <= 9 && quality >= 4) {
-      message = "😴 Sono perfeito! Qualidade e duração ideais.";
+    if (progress >= 100 && quality >= 4) {
+      message = "😴 Sono perfeito! Meta atingida com boa qualidade.";
       color = "text-green-500";
-    } else if (hours >= 6 && hours <= 10 && quality >= 3) {
-      message = "🌙 Bom sono! Dentro do recomendado.";
+    } else if (progress >= 80 && quality >= 3) {
+      message = "🌙 Bom sono! Quase na meta ideal.";
       color = "text-blue-500";
-    } else if (hours < 6) {
-      message = "⏰ Durma mais! Você precisa de pelo menos 7-9h.";
+    } else if (progress < 70) {
+      message = "⏰ Durma mais! Você precisa atingir sua meta.";
       color = "text-red-500";
-    } else if (hours > 9) {
-      message = "🛌 Muito sono pode indicar fadiga. Consulte um médico.";
-      color = "text-yellow-500";
     } else if (quality < 3) {
       message = "💤 Qualidade baixa. Revise sua rotina noturna.";
       color = "text-orange-500";
+    } else {
+      message = "🛌 Sono adequado. Continue assim!";
+      color = "text-yellow-500";
     }
     
     return <p className={`text-sm font-medium ${color} mt-2`}>{message}</p>;
@@ -135,12 +132,22 @@ export default function Monitoring() {
                   <Moon className="h-5 w-5 text-purple-500" />
                   Qualidade do Sono
                 </CardTitle>
-                <CardDescription>Última noite registrada</CardDescription>
+                <CardDescription>Meta: {sleepGoal}h por noite</CardDescription>
               </div>
-              <Button size="sm" className="gap-2" onClick={() => setSleepModalOpen(true)}>
-                <Plus className="h-4 w-4" />
-                Registrar
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="gap-2" 
+                  onClick={() => setSleepGoalModalOpen(true)}
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+                <Button size="sm" className="gap-2" onClick={() => setSleepModalOpen(true)}>
+                  <Plus className="h-4 w-4" />
+                  Registrar
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -150,6 +157,10 @@ export default function Monitoring() {
                       <span className="text-2xl font-bold">
                         {formatSleepDuration(todaySleep.sleep_duration)}
                       </span>
+                      <span className="text-muted-foreground">de {sleepGoal}h</span>
+                    </div>
+                    <Progress value={sleepProgress} className="h-2" />
+                    <div className="flex justify-between items-center">
                       <div className="flex">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <span 
@@ -160,12 +171,15 @@ export default function Monitoring() {
                           </span>
                         ))}
                       </div>
+                      <span className="text-sm text-muted-foreground">
+                        {Math.round(sleepProgress)}% da meta
+                      </span>
                     </div>
                     <div className="text-sm text-muted-foreground space-y-1">
                       <p>Dormiu às: {new Date(todaySleep.bedtime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                       <p>Acordou às: {new Date(todaySleep.wake_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
-                    {getSleepAnalysis(todaySleep)}
+                    {getSleepAnalysis(todaySleep, sleepProgress)}
                   </>
                 ) : (
                   <div className="text-center py-4">
@@ -282,6 +296,11 @@ export default function Monitoring() {
 
         <WaterTrackingModal open={waterModalOpen} onOpenChange={setWaterModalOpen} />
         <SleepTrackingModal open={sleepModalOpen} onOpenChange={setSleepModalOpen} />
+        <SleepGoalModal 
+          open={sleepGoalModalOpen} 
+          onOpenChange={setSleepGoalModalOpen} 
+          currentGoal={sleepGoal} 
+        />
       </main>
     </div>
   );

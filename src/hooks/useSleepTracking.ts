@@ -33,8 +33,8 @@ export const useSleepTracking = () => {
         .eq('user_id', user.id)
         .single();
 
-      if (profile?.sleep_goal) {
-        setSleepGoal(profile.sleep_goal);
+      if (profile && (profile as any).sleep_goal) {
+        setSleepGoal((profile as any).sleep_goal);
       }
     } catch (error: any) {
       console.error('Erro ao buscar dados de sono:', error);
@@ -98,7 +98,7 @@ export const useSleepTracking = () => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ sleep_goal: newGoal })
+        .update({ sleep_goal: newGoal } as any)
         .eq('user_id', user.id);
 
       if (error) throw error;

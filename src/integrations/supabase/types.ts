@@ -179,6 +179,7 @@ export type Database = {
           gender: string | null
           height: number | null
           id: string
+          sleep_goal: number | null
           subscription_expires_at: string | null
           subscription_status: string | null
           updated_at: string
@@ -194,6 +195,7 @@ export type Database = {
           gender?: string | null
           height?: number | null
           id?: string
+          sleep_goal?: number | null
           subscription_expires_at?: string | null
           subscription_status?: string | null
           updated_at?: string
@@ -209,6 +211,7 @@ export type Database = {
           gender?: string | null
           height?: number | null
           id?: string
+          sleep_goal?: number | null
           subscription_expires_at?: string | null
           subscription_status?: string | null
           updated_at?: string
