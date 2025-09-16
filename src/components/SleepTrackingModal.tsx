@@ -21,18 +21,8 @@ export const SleepTrackingModal = ({ open, onOpenChange }: SleepTrackingModalPro
   const handleSubmit = async () => {
     if (!bedtime || !wakeTime) return;
 
-    // Converter para ISO string com data de hoje
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    
-    const bedtimeISO = `${yesterday}T${bedtime}:00`;
-    const wakeTimeISO = `${today}T${wakeTime}:00`;
-
-    await addSleep({
-      bedtime: bedtimeISO,
-      wakeTime: wakeTimeISO,
-      quality
-    });
+    // Funcionalidade removida - inserção manual no Supabase
+    alert('Para registrar sono, insira os dados manualmente na tabela sleep_tracking do Supabase');
     
     onOpenChange(false);
     setBedtime('');
@@ -99,10 +89,10 @@ export const SleepTrackingModal = ({ open, onOpenChange }: SleepTrackingModalPro
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={loading || !bedtime || !wakeTime}
+              disabled={!bedtime || !wakeTime}
               className="flex-1"
             >
-              {loading ? 'Registrando...' : 'Registrar'}
+              Ver no Supabase
             </Button>
           </div>
         </div>

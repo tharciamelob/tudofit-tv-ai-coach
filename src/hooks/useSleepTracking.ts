@@ -34,46 +34,11 @@ export const useSleepTracking = () => {
     wakeTime: string;
     quality: number;
   }) => {
-    if (!user) return;
-
-    setLoading(true);
-    try {
-      const bedtime = new Date(sleepData.bedtime);
-      const wakeTime = new Date(sleepData.wakeTime);
-      
-      // Calcular duração do sono
-      let duration = wakeTime.getTime() - bedtime.getTime();
-      if (duration < 0) {
-        // Se acordou no dia seguinte
-        duration += 24 * 60 * 60 * 1000;
-      }
-
-      const { error } = await supabase
-        .from('sleep_tracking')
-        .insert({
-          user_id: user.id,
-          bedtime: bedtime.toISOString(),
-          wake_time: wakeTime.toISOString(),
-          sleep_quality: sleepData.quality,
-          sleep_duration: `${Math.floor(duration / 1000)} seconds`
-        });
-
-      if (error) throw error;
-
-      await fetchTodaySleep();
-      toast({
-        title: "Sono registrado!",
-        description: "Seus dados de sono foram salvos com sucesso.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erro ao registrar sono",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+    // Funcionalidade desabilitada - inserção manual no Supabase
+    toast({
+      title: "Inserção manual habilitada",
+      description: "Insira os dados diretamente na tabela sleep_tracking do Supabase.",
+    });
   };
 
   useEffect(() => {
