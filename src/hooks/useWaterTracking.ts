@@ -38,10 +38,16 @@ export const useWaterTracking = () => {
     if (!user) return;
 
     try {
-      const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+      
+      // Calcular os dias da semana atual (segunda a domingo)
+      const today = new Date();
+      const currentDay = today.getDay(); // 0 = domingo, 1 = segunda, etc.
+      const mondayOffset = currentDay === 0 ? -6 : -(currentDay - 1); // Offset para segunda-feira
+      
       const dates = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (6 - i));
+        const date = new Date(today);
+        date.setDate(today.getDate() + mondayOffset + i);
         return date.toISOString().split('T')[0];
       });
 
