@@ -109,17 +109,38 @@ serve(async (req) => {
     const messages: any[] = [
       {
         role: "system",
-        content: `Você é um nutricionista expert. Analise a refeição descrita e retorne SOMENTE um JSON válido com as informações nutricionais. 
+        content: `Você é um nutricionista expert em análise nutricional. 
+Analise a imagem ou descrição da refeição e retorne APENAS um objeto JSON válido no seguinte formato:
 
-FORMATO OBRIGATÓRIO (exato):
-{"item_name": "nome do alimento", "calories": número, "protein_g": número, "carbs_g": número, "fat_g": número}
+{
+  "ok": true,
+  "meal_type": "tipo_da_refeicao",
+  "foods": [
+    {
+      "name": "nome_do_alimento",
+      "quantity": "quantidade_estimada (ex: 1 unidade, 100g, 1 xícara)",
+      "calories": numero,
+      "protein_g": numero,
+      "carbs_g": numero,
+      "fat_g": numero
+    }
+  ],
+  "totals": {
+    "calories": numero_total,
+    "protein_g": numero_total,
+    "carbs_g": numero_total,
+    "fat_g": numero_total
+  }
+}
 
-REGRAS:
-- Sempre retorne números inteiros para calories
-- Sempre retorne números decimais com até 1 casa para protein_g, carbs_g, fat_g
-- Se não conseguir identificar, use valores estimados razoáveis
-- item_name deve ser descritivo e conciso
-- NÃO adicione texto extra, apenas o JSON`
+IMPORTANTE:
+- Se não conseguir identificar o alimento, retorne { "ok": false, "error": "Não foi possível identificar o alimento na imagem" }
+- Sempre use números inteiros para os valores nutricionais
+- Identifique CADA alimento separadamente no array "foods"
+- Some todos os valores no objeto "totals"
+- Para meal_type, use: "cafe_da_manha", "almoco", "lanche", "jantar", ou "ceia"
+- Para estimativas de quantidade, seja específico (ex: "1 fatia média", "150g", "1 copo")
+- RETORNE APENAS O JSON, sem texto adicional`
       }
     ];
 
@@ -207,11 +228,53 @@ REGRAS:
     }
 
     // Validate nutrition object
-    if (!nutrition.item_name || typeof nutrition.calories !== 'number') {
-      console.error('Invalid nutrition format:', nutrition);
+    if (!nutrition.ok) {
       return new Response(JSON.stringify({
-        error: "Formato nutricional inválido",
-        details: "Dados nutricionais incompletos"
+        error: nutrition.error || "Erro na análise nutricional",
+        details: "A IA não conseguiu processar a refeição"
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    if (!nutrition.foods || !Array.isArray(nutrition.foods) || nutrition.foods.length === 0) {
+      console.error('Invalid nutrition format - no foods:', nutrition);
+      return new Response(JSON.stringify({
+        error: "Nenhum alimento identificado",
+        details: "A IA não conseguiu identificar alimentos na refeição"
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Validate each food item
+    for (const food of nutrition.foods) {
+      if (!food.name || typeof food.calories !== 'number' ||
+          typeof food.protein_g !== 'number' || typeof food.carbs_g !== 'number' || 
+          typeof food.fat_g !== 'number' || !food.quantity) {
+        console.error('Invalid food format:', food);
+        return new Response(JSON.stringify({
+          error: "Formato de dados nutricionais inválido",
+          details: "Dados nutricionais incompletos para um dos alimentos"
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    // Validate totals
+    if (!nutrition.totals || 
+        typeof nutrition.totals.calories !== 'number' ||
+        typeof nutrition.totals.protein_g !== 'number' ||
+        typeof nutrition.totals.carbs_g !== 'number' ||
+        typeof nutrition.totals.fat_g !== 'number') {
+      console.error('Invalid totals format:', nutrition.totals);
+      return new Response(JSON.stringify({
+        error: "Formato de totais nutricionais inválido",
+        details: "Totais nutricionais incompletos"
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -221,12 +284,19 @@ REGRAS:
     const result = {
       ok: true,
       meal_type: normalizedMealType,
-      nutrition: {
-        item_name: nutrition.item_name,
-        calories: Math.round(nutrition.calories),
-        protein_g: Number((nutrition.protein_g || 0).toFixed(1)),
-        carbs_g: Number((nutrition.carbs_g || 0).toFixed(1)),
-        fat_g: Number((nutrition.fat_g || 0).toFixed(1))
+      foods: nutrition.foods.map((food: any) => ({
+        name: food.name,
+        quantity: food.quantity,
+        calories: Math.round(food.calories),
+        protein_g: Number((food.protein_g || 0).toFixed(1)),
+        carbs_g: Number((food.carbs_g || 0).toFixed(1)),
+        fat_g: Number((food.fat_g || 0).toFixed(1))
+      })),
+      totals: {
+        calories: Math.round(nutrition.totals.calories),
+        protein_g: Number((nutrition.totals.protein_g || 0).toFixed(1)),
+        carbs_g: Number((nutrition.totals.carbs_g || 0).toFixed(1)),
+        fat_g: Number((nutrition.totals.fat_g || 0).toFixed(1))
       }
     };
 

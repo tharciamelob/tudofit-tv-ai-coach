@@ -3,11 +3,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+interface FoodItem {
+  name: string;
+  quantity: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+}
+
 interface NutritionResult {
   ok: boolean;
   meal_type: string;
-  nutrition: {
-    item_name: string;
+  foods: FoodItem[];
+  totals: {
     calories: number;
     protein_g: number;
     carbs_g: number;
@@ -52,7 +61,7 @@ export const useNutriAnalysis = () => {
       setResult(data);
       toast({
         title: "Análise concluída!",
-        description: `Encontrado: ${data.nutrition.item_name}`,
+        description: `Identificados ${data.foods.length} alimento(s)`,
       });
 
       return data;
@@ -126,7 +135,7 @@ export const useNutriAnalysis = () => {
       setResult(resultWithPhoto);
       toast({
         title: "Análise concluída!",
-        description: `Encontrado: ${data.nutrition.item_name}`,
+        description: `Identificados ${data.foods.length} alimento(s)`,
       });
 
       return resultWithPhoto;
@@ -154,20 +163,24 @@ export const useNutriAnalysis = () => {
     }
 
     try {
+      // Salvar cada alimento individualmente
+      const foodEntries = nutritionData.foods.map(food => ({
+        user_id: user.id,
+        meal_type: nutritionData.meal_type,
+        item_name: food.name,
+        food_name: food.name, // Compatibilidade
+        calories: food.calories,
+        protein: food.protein_g,
+        carbs: food.carbs_g,
+        fat: food.fat_g,
+        quantity: parseFloat(food.quantity.replace(/[^\d.,]/g, '').replace(',', '.')) || 1,
+        photo_url: nutritionData.photo_url || null,
+        date: new Date().toISOString().split('T')[0]
+      }));
+
       const { error } = await supabase
         .from('food_diary')
-        .insert({
-          user_id: user.id,
-          meal_type: nutritionData.meal_type,
-          item_name: nutritionData.nutrition.item_name,
-          food_name: nutritionData.nutrition.item_name, // Compatibilidade
-          calories: nutritionData.nutrition.calories,
-          protein: nutritionData.nutrition.protein_g,
-          carbs: nutritionData.nutrition.carbs_g,
-          fat: nutritionData.nutrition.fat_g,
-          photo_url: nutritionData.photo_url || null,
-          date: new Date().toISOString().split('T')[0]
-        });
+        .insert(foodEntries);
 
       if (error) {
         throw new Error('Erro ao salvar no diário: ' + error.message);
@@ -175,7 +188,7 @@ export const useNutriAnalysis = () => {
 
       toast({
         title: "Salvo no diário!",
-        description: "Refeição adicionada ao seu diário alimentar",
+        description: `${nutritionData.foods.length} alimento(s) adicionado(s) ao seu diário`,
       });
 
       return true;
