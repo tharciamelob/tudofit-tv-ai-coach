@@ -603,7 +603,10 @@ export default function NutriIA() {
         {activeTab === 'plans' && (
           <div>
             <PDFSuggestionCard 
+              contentType="nutrition"
               content={generatedPlan || selectedPlan} 
+              onGeneratePDF={() => generateNutritionPDF(generatedPlan || selectedPlan)}
+              isGenerating={isGenerating}
             />
 
             {/* Ações principais */}
@@ -727,10 +730,10 @@ export default function NutriIA() {
           plan={selectedPlan}
         />
         
-        <MealRegistrationModal
-          open={showMealModal}
-          onClose={() => setShowMealModal(false)}
-        />
+      <MealRegistrationModal
+        open={showMealModal}
+        onOpenChange={setShowMealModal}
+      />
       </main>
     </div>
   );
