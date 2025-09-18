@@ -40,13 +40,15 @@ export default function PersonalIA() {
     return (
     <div className="min-h-screen bg-black app-container">
         <Header />
-        <main className="container mx-auto px-4 pt-20 pb-8">
+        <main className="container mx-auto px-2 sm:px-4 pt-20 pb-8">
           <div className="mb-4">
             <Button variant="outline" onClick={() => setShowChat(false)}>
               ← Voltar
             </Button>
           </div>
-          <ChatInterface chatType="personal" onPlanGenerated={handlePlanGenerated} />
+          <div className="w-full max-w-4xl mx-auto">
+            <ChatInterface chatType="personal" onPlanGenerated={handlePlanGenerated} />
+          </div>
         </main>
       </div>
     );
@@ -122,7 +124,7 @@ export default function PersonalIA() {
     <div className="min-h-screen bg-black">
       <Header />
       
-      <main className="container mx-auto px-4 pt-20 pb-12">
+      <main className="container mx-auto px-2 sm:px-4 pt-20 pb-12">
         {/* Hero Section */}
         <div className="text-center mb-16 relative">
           <div className="absolute inset-0 -z-10">
@@ -133,14 +135,14 @@ export default function PersonalIA() {
               <Brain className="h-20 w-20 text-primary" />
             </div>
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-6">
+          <h1 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-6">
             Personal IA
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
             Revolucione seus treinos com planos de exercícios personalizados criados por 
             <span className="text-primary font-semibold"> inteligência artificial especializada</span> em educação física.
           </p>
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-8">
             <Badge variant="outline" className="px-4 py-2 text-sm font-medium">
               CREF Especialista
             </Badge>
@@ -154,7 +156,7 @@ export default function PersonalIA() {
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16">
           <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500">
             <CardHeader className="text-center pb-4">
               <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">

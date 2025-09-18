@@ -2,83 +2,22 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Apple, Utensils, MessageCircle, FileDown, Zap, Target, Clock, Brain } from "lucide-react";
+import { Apple, MessageCircle, FileDown, Target, Clock, Brain } from "lucide-react";
 import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
-import { NutritionalBreakdown } from "@/components/NutritionalBreakdown";
-import { UnifiedMealInput } from "@/components/UnifiedMealInput";
 import { ReadyMealPlans } from "@/components/ReadyMealPlans";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNutriAnalysis } from "@/hooks/useNutriAnalysis";
-import { useFoodDiary } from "@/hooks/useFoodDiary";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
-import { usePDFSuggestions } from "@/hooks/usePDFSuggestions";
 
 export default function NutriIA() {
   const [showChat, setShowChat] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const { user } = useAuth();
-  const { loading, result, analyzeText, analyzePhoto, saveToDiary, clearResult, setResult } = useNutriAnalysis();
-  const { todayMeals, calculateDailyTotals } = useFoodDiary();
   const { generateNutritionPDF, isGenerating } = usePDFGeneration();
-  const { getSuggestion } = usePDFSuggestions();
 
   const handlePlanGenerated = (plan: any) => {
     setGeneratedPlan(plan);
     setShowChat(false);
-  };
-
-  const handleUnifiedInput = async (data: { text?: string; photo?: File; mealType: string }) => {
-    try {
-      if (data.photo) {
-        await analyzePhoto(data.photo, data.mealType);
-      } else if (data.text) {
-        await analyzeText(data.text, data.mealType);
-      }
-    } catch (error) {
-      console.error('Error analyzing meal:', error);
-    }
-  };
-
-  const handleSaveToDiary = async () => {
-    if (!result) return;
-    
-    try {
-      await saveToDiary(result);
-      clearResult();
-    } catch (error) {
-      console.error('Error saving to diary:', error);
-    }
-  };
-
-  const handleSelectReadyPlan = async (plan: any) => {
-    try {
-      // Convert ready meal plan to our analysis result format and set it
-      const analysisResult = {
-        ok: true,
-        meal_type: plan.meal_type,
-        foods: plan.foods,
-        totals: plan.totals
-      };
-      
-      // Set the result using the exposed setResult function
-      setResult(analysisResult);
-      
-    } catch (error) {
-      console.error('Error selecting ready plan:', error);
-    }
-  };
-
-  const handleGeneratePDF = async () => {
-    const suggestion = await getSuggestion('nutrition', { dailyMeals: todayMeals, totals: calculateDailyTotals() });
-    if (suggestion.shouldSuggest) {
-      await generateNutritionPDF({
-        plan_name: "Relatório Nutricional Diário",
-        description: "Resumo das suas refeições de hoje",
-        meals: todayMeals,
-        totals: calculateDailyTotals()
-      });
-    }
   };
 
   if (!user) {
@@ -99,13 +38,15 @@ export default function NutriIA() {
     return (
       <div className="min-h-screen bg-black app-container">
         <Header />
-        <main className="container mx-auto px-4 pt-20 pb-8">
+        <main className="container mx-auto px-2 sm:px-4 pt-20 pb-8">
           <div className="mb-4">
             <Button variant="outline" onClick={() => setShowChat(false)}>
               ← Voltar
             </Button>
           </div>
-          <ChatInterface chatType="nutrition" onPlanGenerated={handlePlanGenerated} />
+          <div className="w-full max-w-4xl mx-auto">
+            <ChatInterface chatType="nutrition" onPlanGenerated={handlePlanGenerated} />
+          </div>
         </main>
       </div>
     );
@@ -171,13 +112,11 @@ export default function NutriIA() {
     );
   }
 
-  const dailyTotals = calculateDailyTotals();
-
   return (
     <div className="min-h-screen bg-black">
       <Header />
       
-      <main className="container mx-auto px-4 pt-20 pb-12">
+      <main className="container mx-auto px-2 sm:px-4 pt-20 pb-12">
         {/* Hero Section */}
         <div className="text-center mb-16 relative">
           <div className="absolute inset-0 -z-10">
@@ -185,148 +124,73 @@ export default function NutriIA() {
           </div>
           <div className="flex justify-center mb-6">
             <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 shadow-lg">
-              <Apple className="h-20 w-20 text-primary" />
+              <Apple className="h-16 sm:h-20 w-16 sm:w-20 text-primary" />
             </div>
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-6">
+          <h1 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-6">
             Nutri IA
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Analise suas refeições com <span className="text-primary font-semibold">inteligência artificial avançada</span> e 
-            obtenha informações nutricionais precisas de forma instantânea.
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
+            Obtenha <span className="text-primary font-semibold">cardápios personalizados</span> e 
+            sugestões nutricionais criadas por inteligência artificial especializada.
           </p>
-          <div className="flex justify-center gap-4 mt-8">
-            <Badge variant="outline" className="px-4 py-2 text-sm font-medium">
-              Análise por Foto
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-8">
+            <Badge variant="outline" className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
+              Cardápios Personalizados
             </Badge>
-            <Badge variant="outline" className="px-4 py-2 text-sm font-medium">
-              Contagem de Macros
+            <Badge variant="outline" className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
+              IA Nutricionista
             </Badge>
-            <Badge variant="outline" className="px-4 py-2 text-sm font-medium">
+            <Badge variant="outline" className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
               Relatórios em PDF
             </Badge>
           </div>
         </div>
 
-        {/* Resumo Diário */}
-        {todayMeals.length > 0 && (
-          <Card className="max-w-4xl mx-auto mb-8 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-primary" />
-                Resumo de Hoje
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{dailyTotals.calories}</div>
-                  <div className="text-sm text-muted-foreground">kcal consumidas</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-500">{dailyTotals.protein}g</div>
-                  <div className="text-sm text-muted-foreground">Proteína</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-500">{dailyTotals.carbs}g</div>
-                  <div className="text-sm text-muted-foreground">Carboidrato</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-500">{dailyTotals.fat}g</div>
-                  <div className="text-sm text-muted-foreground">Gordura</div>
-                </div>
-              </div>
-              
-              <div className="flex justify-center mt-4">
-                <Button variant="outline" onClick={handleGeneratePDF} disabled={isGenerating}>
-                  <FileDown className="h-4 w-4 mr-2" />
-                  {isGenerating ? "Gerando..." : "Gerar Relatório PDF"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Cardápios Prontos */}
-        <ReadyMealPlans onSelectPlan={handleSelectReadyPlan} />
-
-        {/* Input de Análise */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <UnifiedMealInput 
-            onSubmit={handleUnifiedInput}
-            loading={loading}
-            placeholder="Descreva sua refeição ou tire uma foto para análise nutricional instantânea..."
-          />
+        <div className="mb-8">
+          <ReadyMealPlans onSelectPlan={() => {}} />
         </div>
 
-        {/* Resultados da Análise */}
-        {result && (
-          <Card className="max-w-4xl mx-auto mb-8 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl" data-analysis-results>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Utensils className="h-5 w-5 text-primary" />
-                Análise Nutricional
-              </CardTitle>
-              <CardDescription>Alimentos identificados e informações nutricionais</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <NutritionalBreakdown 
-                foods={result.foods}
-                totals={result.totals}
-              />
-              
-              <div className="flex gap-4 mt-6 justify-center">
-                <Button onClick={handleSaveToDiary} className="gap-2">
-                  <Utensils className="h-4 w-4" />
-                  Salvar no Diário
-                </Button>
-                <Button variant="outline" onClick={clearResult}>
-                  Nova Análise
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Features Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16 max-w-6xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16 max-w-6xl mx-auto">
           <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500">
             <CardHeader className="text-center pb-4">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
-                <Target className="h-12 w-12 text-primary" />
+              <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
+                <Target className="h-10 sm:h-12 w-10 sm:w-12 text-primary" />
               </div>
-              <CardTitle className="text-xl group-hover:text-primary transition-colors">Análise Precisa</CardTitle>
+              <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors">Cardápios Prontos</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-center leading-relaxed">
-                <span className="text-primary font-medium">IA especializada em nutrição</span> identifica alimentos e calcula macronutrientes com alta precisão.
+              <p className="text-muted-foreground text-center leading-relaxed text-sm sm:text-base">
+                <span className="text-primary font-medium">Cardápios balanceados</span> para emagrecimento, ganho de massa e manutenção.
               </p>
             </CardContent>
           </Card>
 
           <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500">
             <CardHeader className="text-center pb-4">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
-                <Clock className="h-12 w-12 text-primary" />
+              <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
+                <Clock className="h-10 sm:h-12 w-10 sm:w-12 text-primary" />
               </div>
-              <CardTitle className="text-xl group-hover:text-primary transition-colors">Instantâneo</CardTitle>
+              <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors">Resposta Rápida</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-center leading-relaxed">
-                Análise <span className="text-primary font-medium">em segundos</span>. Tire uma foto ou descreva sua refeição e tenha os dados na hora.
+              <p className="text-muted-foreground text-center leading-relaxed text-sm sm:text-base">
+                Cardápios <span className="text-primary font-medium">personalizados em minutos</span> através da nossa IA nutricionista.
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500">
+          <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500 sm:col-span-2 lg:col-span-1">
             <CardHeader className="text-center pb-4">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
-                <Brain className="h-12 w-12 text-primary" />
+              <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
+                <Brain className="h-10 sm:h-12 w-10 sm:w-12 text-primary" />
               </div>
-              <CardTitle className="text-xl group-hover:text-primary transition-colors">Planos Personalizados</CardTitle>
+              <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors">Planos Personalizados</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-center leading-relaxed">
+              <p className="text-muted-foreground text-center leading-relaxed text-sm sm:text-base">
                 Converse com nossa <span className="text-primary font-medium">nutricionista IA</span> e receba planos alimentares sob medida.
               </p>
             </CardContent>
@@ -336,27 +200,31 @@ export default function NutriIA() {
         {/* Chat CTA */}
         <Card className="max-w-4xl mx-auto border-0 shadow-xl bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20">
           <CardHeader className="text-center pb-6">
-            <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
               <div className="p-3 rounded-xl bg-primary/10">
-                <MessageCircle className="h-8 w-8 text-primary" />
+                <MessageCircle className="h-6 sm:h-8 w-6 sm:w-8 text-primary" />
               </div>
-              <div>
-                <CardTitle className="text-3xl text-foreground">Converse com o Nutri IA</CardTitle>
-                <p className="text-muted-foreground mt-1">Planos nutricionais personalizados baseados em ciência</p>
+              <div className="text-center sm:text-left">
+                <CardTitle className="text-2xl sm:text-3xl text-foreground">Converse com o Nutri IA</CardTitle>
+                <p className="text-muted-foreground mt-1 text-sm sm:text-base">Planos nutricionais personalizados baseados em ciência</p>
               </div>
             </div>
-            <CardDescription className="text-base leading-relaxed max-w-2xl mx-auto">
+            <CardDescription className="text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
               Nossa IA nutricionista cria planos alimentares personalizados baseados em seus objetivos, preferências e restrições alimentares.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center bg-gradient-to-r from-primary/5 to-primary/10 p-8 rounded-2xl border border-primary/20">
-              <h3 className="text-xl font-bold mb-3 text-foreground">Crie seu Plano Nutricional Ideal</h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            <div className="text-center bg-gradient-to-r from-primary/5 to-primary/10 p-6 sm:p-8 rounded-2xl border border-primary/20">
+              <h3 className="text-lg sm:text-xl font-bold mb-3 text-foreground">Crie seu Plano Nutricional Ideal</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto text-sm sm:text-base">
                 Uma conversa de 5 minutos para criar seu cardápio personalizado
               </p>
-              <Button size="lg" className="px-8 gap-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300" onClick={() => setShowChat(true)}>
-                <MessageCircle className="h-5 w-5" />
+              <Button 
+                size="lg" 
+                className="w-full sm:w-auto px-6 sm:px-8 gap-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300" 
+                onClick={() => setShowChat(true)}
+              >
+                <MessageCircle className="h-4 sm:h-5 w-4 sm:w-5" />
                 Iniciar Consulta Nutricional
               </Button>
             </div>
