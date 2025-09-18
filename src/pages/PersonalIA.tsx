@@ -6,7 +6,7 @@ import { Brain, Target, Clock, Dumbbell, MessageCircle, Zap, Shield, TrendingUp,
 import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
 import { ConversationHistory } from "@/components/ConversationHistory";
-import { TestOpenAI } from "@/components/TestOpenAI";
+
 import { PDFSuggestionCard } from "@/components/PDFSuggestionCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConversationHistory } from "@/hooks/useConversationHistory";
@@ -363,9 +363,6 @@ export default function PersonalIA() {
           </CardContent>
         </Card>
         
-        <div className="mt-8">
-          <TestOpenAI />
-        </div>
       </main>
     </div>
   );

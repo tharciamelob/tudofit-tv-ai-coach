@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,11 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import MonthlyProgressCard from '@/components/MonthlyProgressCard';
 import { useMonthlyStats } from '@/hooks/useMonthlyStats';
-import { User, Settings, Crown, CreditCard, LogOut, Shield } from 'lucide-react';
+import { useProfile } from '@/hooks/useProfile';
+import { SupportModal } from '@/components/SupportModal';
+import { ProfileEditModal } from '@/components/ProfileEditModal';
+import { User, Settings, Crown, CreditCard, LogOut, Shield, MessageSquare, Calendar } from 'lucide-react';
 
 const Profile = () => {
   const { user, signOut } = useAuth();
   const { stats } = useMonthlyStats();
+  const { profileData } = useProfile();
+  const [showSupportModal, setShowSupportModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -42,7 +48,7 @@ const Profile = () => {
                       <User className="h-5 w-5 mr-2" />
                       Informações Pessoais
                     </div>
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={() => setShowEditModal(true)}>
                       <Settings className="h-4 w-4 mr-1" />
                       Editar
                     </Button>
@@ -53,7 +59,7 @@ const Profile = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm text-muted-foreground">Nome completo</label>
-                        <p className="font-medium">{user?.user_metadata?.full_name || 'Não informado'}</p>
+                        <p className="font-medium">{profileData.full_name || user?.user_metadata?.full_name || 'Não informado'}</p>
                       </div>
                       <div>
                         <label className="text-sm text-muted-foreground">Email</label>
@@ -61,18 +67,34 @@ const Profile = () => {
                       </div>
                     </div>
                     
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm text-muted-foreground">Data de Nascimento</label>
+                        <p className="font-medium">
+                          {profileData.birth_date 
+                            ? new Date(profileData.birth_date).toLocaleDateString('pt-BR') 
+                            : 'Não informado'
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm text-muted-foreground">Sexo</label>
+                        <p className="font-medium">{profileData.gender || 'Não informado'}</p>
+                      </div>
+                    </div>
+                    
                     <div className="grid md:grid-cols-3 gap-4">
                       <div>
                         <label className="text-sm text-muted-foreground">Altura</label>
-                        <p className="font-medium">1,75 m</p>
+                        <p className="font-medium">{profileData.height ? `${profileData.height} cm` : 'Não informado'}</p>
                       </div>
                       <div>
                         <label className="text-sm text-muted-foreground">Peso</label>
-                        <p className="font-medium">78 kg</p>
+                        <p className="font-medium">{profileData.weight ? `${profileData.weight} kg` : 'Não informado'}</p>
                       </div>
                       <div>
                         <label className="text-sm text-muted-foreground">Objetivo</label>
-                        <p className="font-medium">Ganhar massa</p>
+                        <p className="font-medium">{profileData.fitness_goal || 'Não informado'}</p>
                       </div>
                     </div>
                   </div>
@@ -163,6 +185,15 @@ const Profile = () => {
                   
                   <Button 
                     variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => setShowSupportModal(true)}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Suporte
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
                     className="w-full justify-start text-red-500 hover:text-red-600"
                     onClick={handleSignOut}
                   >
@@ -220,6 +251,16 @@ const Profile = () => {
           </Card>
         </div>
       </main>
+      
+      <SupportModal 
+        isOpen={showSupportModal} 
+        onClose={() => setShowSupportModal(false)} 
+      />
+      
+      <ProfileEditModal 
+        isOpen={showEditModal} 
+        onClose={() => setShowEditModal(false)} 
+      />
     </div>
   );
 };
