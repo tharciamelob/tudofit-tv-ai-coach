@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
 import { NutritionalBreakdown } from "@/components/NutritionalBreakdown";
 import { UnifiedMealInput } from "@/components/UnifiedMealInput";
+import { ReadyMealPlans } from "@/components/ReadyMealPlans";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNutriAnalysis } from "@/hooks/useNutriAnalysis";
 import { useFoodDiary } from "@/hooks/useFoodDiary";
@@ -17,7 +18,7 @@ export default function NutriIA() {
   const [showChat, setShowChat] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const { user } = useAuth();
-  const { loading, result, analyzeText, analyzePhoto, saveToDiary, clearResult } = useNutriAnalysis();
+  const { loading, result, analyzeText, analyzePhoto, saveToDiary, clearResult, setResult } = useNutriAnalysis();
   const { todayMeals, calculateDailyTotals } = useFoodDiary();
   const { generateNutritionPDF, isGenerating } = usePDFGeneration();
   const { getSuggestion } = usePDFSuggestions();
@@ -47,6 +48,24 @@ export default function NutriIA() {
       clearResult();
     } catch (error) {
       console.error('Error saving to diary:', error);
+    }
+  };
+
+  const handleSelectReadyPlan = async (plan: any) => {
+    try {
+      // Convert ready meal plan to our analysis result format and set it
+      const analysisResult = {
+        ok: true,
+        meal_type: plan.meal_type,
+        foods: plan.foods,
+        totals: plan.totals
+      };
+      
+      // Set the result using the exposed setResult function
+      setResult(analysisResult);
+      
+    } catch (error) {
+      console.error('Error selecting ready plan:', error);
     }
   };
 
@@ -228,6 +247,9 @@ export default function NutriIA() {
           </Card>
         )}
 
+        {/* Cardápios Prontos */}
+        <ReadyMealPlans onSelectPlan={handleSelectReadyPlan} />
+
         {/* Input de Análise */}
         <div className="max-w-4xl mx-auto mb-8">
           <UnifiedMealInput 
@@ -239,7 +261,7 @@ export default function NutriIA() {
 
         {/* Resultados da Análise */}
         {result && (
-          <Card className="max-w-4xl mx-auto mb-8 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
+          <Card className="max-w-4xl mx-auto mb-8 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl" data-analysis-results>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Utensils className="h-5 w-5 text-primary" />

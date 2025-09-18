@@ -41,7 +41,11 @@ export const useNutriAnalysis = () => {
     }
 
     setLoading(true);
+    setResult(null);
+    
     try {
+      console.log('Enviando análise de texto:', { text: text.trim(), meal_type: mealType || 'lanche' });
+      
       const { data, error } = await supabase.functions.invoke('generate-nutrition', {
         body: { 
           text: text.trim(),
@@ -49,15 +53,27 @@ export const useNutriAnalysis = () => {
         }
       });
 
+      console.log('Resposta da função Supabase:', { data, error });
+
       if (error) {
-        console.error('Supabase function error:', error);
-        throw new Error(error.message);
+        console.error('Erro da função Supabase:', error);
+        throw new Error(error.message || 'Erro na chamada da função');
+      }
+
+      if (!data) {
+        throw new Error('Nenhum dado retornado da análise');
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
       }
 
       if (!data.ok) {
         throw new Error(data.error || 'Erro na análise nutricional');
       }
 
+      console.log('Análise bem-sucedida:', data);
+      
       setResult(data);
       toast({
         title: "Análise concluída!",
@@ -66,7 +82,7 @@ export const useNutriAnalysis = () => {
 
       return data;
     } catch (error: any) {
-      console.error('Error analyzing text:', error);
+      console.error('Erro na análise de texto:', error);
       toast({
         title: "Erro na análise",
         description: error.message || "Não foi possível analisar a refeição",
@@ -89,7 +105,11 @@ export const useNutriAnalysis = () => {
     }
 
     setLoading(true);
+    setResult(null);
+    
     try {
+      console.log('Iniciando upload de foto para análise...');
+      
       // Upload photo to Supabase Storage
       const fileName = `${user.id}/${Date.now()}-${photoFile.name}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -97,6 +117,7 @@ export const useNutriAnalysis = () => {
         .upload(fileName, photoFile);
 
       if (uploadError) {
+        console.error('Erro no upload:', uploadError);
         throw new Error('Erro no upload da foto: ' + uploadError.message);
       }
 
@@ -109,6 +130,9 @@ export const useNutriAnalysis = () => {
         throw new Error('Erro ao obter URL da foto');
       }
 
+      console.log('Foto enviada, analisando com URL:', urlData.publicUrl);
+      console.log('Enviando análise de foto:', { image_url: urlData.publicUrl, meal_type: mealType || 'lanche' });
+
       // Analyze photo
       const { data, error } = await supabase.functions.invoke('generate-nutrition', {
         body: { 
@@ -117,13 +141,23 @@ export const useNutriAnalysis = () => {
         }
       });
 
+      console.log('Resposta da função Supabase para foto:', { data, error });
+
       if (error) {
-        console.error('Supabase function error:', error);
-        throw new Error(error.message);
+        console.error('Erro da função Supabase:', error);
+        throw new Error(error.message || 'Erro na chamada da função');
+      }
+
+      if (!data) {
+        throw new Error('Nenhum dado retornado da análise da foto');
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
       }
 
       if (!data.ok) {
-        throw new Error(data.error || 'Erro na análise nutricional');
+        throw new Error(data.error || 'Erro na análise nutricional da foto');
       }
 
       // Add photo URL to result
@@ -132,15 +166,17 @@ export const useNutriAnalysis = () => {
         photo_url: urlData.publicUrl
       };
 
+      console.log('Análise de foto bem-sucedida:', resultWithPhoto);
+
       setResult(resultWithPhoto);
       toast({
         title: "Análise concluída!",
-        description: `Identificados ${data.foods.length} alimento(s)`,
+        description: `Identificados ${data.foods.length} alimento(s) na foto`,
       });
 
       return resultWithPhoto;
     } catch (error: any) {
-      console.error('Error analyzing photo:', error);
+      console.error('Erro na análise de foto:', error);
       toast({
         title: "Erro na análise",
         description: error.message || "Não foi possível analisar a foto",
@@ -213,6 +249,7 @@ export const useNutriAnalysis = () => {
     analyzeText,
     analyzePhoto,
     saveToDiary,
-    clearResult
+    clearResult,
+    setResult // Expose setResult for ready meal plans
   };
 };

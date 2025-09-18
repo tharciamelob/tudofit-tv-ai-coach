@@ -93,21 +93,24 @@ export const UnifiedMealInput = ({
         {/* Photo Preview */}
         {previewUrl && (
           <div className="mb-4 relative">
-            <div className="relative w-full h-32 rounded-lg overflow-hidden bg-muted">
+            <div className="relative w-full h-64 rounded-lg overflow-hidden bg-muted border border-white/20">
               <img 
                 src={previewUrl} 
-                alt="Preview" 
-                className="w-full h-full object-cover"
+                alt="Preview da refeição" 
+                className="w-full h-full object-contain bg-muted"
               />
               <Button
                 variant="destructive"
                 size="icon"
-                className="absolute top-2 right-2 h-6 w-6"
+                className="absolute top-2 right-2 h-8 w-8 bg-red-500/80 hover:bg-red-500"
                 onClick={removePhoto}
               >
-                <X className="h-3 w-3" />
+                <X className="h-4 w-4" />
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Foto selecionada para análise
+            </p>
           </div>
         )}
 
