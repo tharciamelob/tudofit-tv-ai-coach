@@ -174,7 +174,7 @@ serve(async (req) => {
           ...(conversationHistory || []).slice(-5), // Últimas 5 mensagens
           { role: 'user', content: message }
         ],
-        max_tokens: 200,
+        max_tokens: 1500,
         temperature: 0.8
       }),
     });
