@@ -15,13 +15,15 @@ interface ChatResponse {
   shouldGeneratePlan: boolean;
   planData?: any;
   shouldOfferPDF?: boolean;
+  conversationId?: string;
 }
 
 interface UseChatConversationProps {
   chatType: 'personal' | 'nutrition';
+  conversationId?: string;
 }
 
-export const useChatConversation = ({ chatType }: UseChatConversationProps) => {
+export const useChatConversation = ({ chatType, conversationId }: UseChatConversationProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -38,7 +40,8 @@ export const useChatConversation = ({ chatType }: UseChatConversationProps) => {
             content: msg.content
           })),
           chatType,
-          userId: user?.id
+          userId: user?.id,
+          conversationId
         }
       });
 

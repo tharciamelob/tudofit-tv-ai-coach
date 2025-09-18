@@ -2,23 +2,57 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Target, Clock, Dumbbell, MessageCircle, Zap, Shield, TrendingUp, FileDown } from "lucide-react";
+import { Brain, Target, Clock, Dumbbell, MessageCircle, Zap, Shield, TrendingUp, FileDown, History } from "lucide-react";
 import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
+import { ConversationHistory } from "@/components/ConversationHistory";
 import { TestOpenAI } from "@/components/TestOpenAI";
 import { PDFSuggestionCard } from "@/components/PDFSuggestionCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useConversationHistory } from "@/hooks/useConversationHistory";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 
 export default function PersonalIA() {
   const [showChat, setShowChat] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const { user } = useAuth();
   const { generateWorkoutPDF, isGenerating } = usePDFGeneration();
+  const { 
+    currentConversation, 
+    createConversation, 
+    selectConversation, 
+    clearCurrentConversation,
+    loadConversationMessages
+  } = useConversationHistory('personal');
 
   const handlePlanGenerated = (plan: any) => {
     setGeneratedPlan(plan);
     setShowChat(false);
+  };
+
+  const handleSelectConversation = async (conversationId: string) => {
+    await selectConversation(conversationId);
+    setShowHistory(false);
+    setShowChat(true);
+  };
+
+  const handleNewConversation = async () => {
+    const newConv = await createConversation({
+      conversation_type: 'personal',
+      title: 'Nova Consulta Personal',
+    });
+    
+    if (newConv) {
+      clearCurrentConversation();
+      setShowHistory(false);
+      setShowChat(true);
+    }
+  };
+
+  const handleBackFromChat = () => {
+    setShowChat(false);
+    clearCurrentConversation();
   };
 
   if (!user) {
@@ -36,21 +70,47 @@ export default function PersonalIA() {
     );
   }
 
-  if (showChat) {
+  if (showHistory) {
     return (
-    <div className="min-h-screen bg-black app-container">
+      <div className="min-h-screen bg-black app-container">
         <Header />
         <main className="container mx-auto px-2 sm:px-4 pt-20 pb-8">
           <div className="mb-4">
-            <Button variant="outline" onClick={() => setShowChat(false)}>
+            <Button variant="outline" onClick={() => setShowHistory(false)}>
               ← Voltar
             </Button>
           </div>
+          <div className="max-w-4xl mx-auto">
+            <ConversationHistory 
+              conversationType="personal"
+              onSelectConversation={handleSelectConversation}
+              onNewConversation={handleNewConversation}
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (showChat) {
+    const initialMessages = currentConversation?.messages?.map(msg => ({
+      id: msg.id,
+      type: msg.message_type as 'user' | 'ai',
+      content: msg.content,
+      timestamp: new Date(msg.created_at)
+    })) || [];
+
+    return (
+      <div className="min-h-screen bg-black app-container">
+        <Header />
+        <main className="container mx-auto px-2 sm:px-4 pt-20 pb-8">
           <div className="w-full max-w-4xl mx-auto">
             <ChatInterface 
               chatType="personal" 
               onPlanGenerated={handlePlanGenerated}
-              onBack={() => setShowChat(false)}
+              onBack={handleBackFromChat}
+              conversationId={currentConversation?.id}
+              initialMessages={initialMessages}
             />
           </div>
         </main>
@@ -159,6 +219,25 @@ export default function PersonalIA() {
           </div>
         </div>
 
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-8 max-w-md mx-auto">
+          <Button 
+            onClick={() => setShowHistory(true)}
+            variant="outline"
+            className="flex items-center gap-2 border-primary/30 text-primary hover:bg-primary/10"
+          >
+            <History className="h-4 w-4" />
+            Histórico de Conversas
+          </Button>
+          <Button 
+            onClick={handleNewConversation}
+            className="flex items-center gap-2"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Nova Conversa
+          </Button>
+        </div>
+
         {/* Features Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16">
           <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500">
@@ -252,7 +331,7 @@ export default function PersonalIA() {
                 <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                   Uma conversa de 5 minutos para criar seu plano de treino ideal
                 </p>
-                <Button size="lg" className="px-8 gap-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300" onClick={() => setShowChat(true)}>
+                <Button size="lg" className="px-8 gap-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300" onClick={handleNewConversation}>
                   <MessageCircle className="h-5 w-5" />
                   Iniciar Consulta Personalizada
                 </Button>
@@ -276,7 +355,7 @@ export default function PersonalIA() {
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                 Crie seu primeiro treino personalizado conversando com nosso Personal IA especialista
               </p>
-              <Button variant="outline" onClick={() => setShowChat(true)} className="gap-2">
+              <Button variant="outline" onClick={handleNewConversation} className="gap-2">
                 <MessageCircle className="h-4 w-4" />
                 Criar Primeiro Treino
               </Button>

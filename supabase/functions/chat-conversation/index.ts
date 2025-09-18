@@ -35,15 +35,49 @@ serve(async (req) => {
       });
     }
 
-    const { message, conversationHistory, chatType, userId } = await req.json();
+    const { message, conversationHistory, chatType, userId, conversationId } = await req.json();
     console.log('Request data:', { 
       chatType, 
       userId: userId?.substring(0, 8) + '...', 
       messageLength: message?.length,
-      historyLength: conversationHistory?.length 
+      historyLength: conversationHistory?.length,
+      conversationId: conversationId?.substring(0, 8) + '...' || 'none'
     });
     
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+
+    // Salvar mensagens na conversa se necessário
+    let activeConversationId = conversationId;
+    if (userId && !activeConversationId) {
+      // Se não temos conversationId, buscar a mais recente ou criar uma nova
+      const { data: conversation } = await supabase
+        .from('ai_conversations')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('conversation_type', chatType)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (conversation) {
+        activeConversationId = conversation.id;
+      } else {
+        // Criar nova conversa
+        const { data: newConv } = await supabase
+          .from('ai_conversations')
+          .insert({
+            user_id: userId,
+            conversation_type: chatType,
+            title: `Nova Consulta ${chatType === 'personal' ? 'Personal' : 'Nutricional'}`
+          })
+          .select('id')
+          .single();
+        
+        if (newConv) {
+          activeConversationId = newConv.id;
+        }
+      }
+    }
 
     // Analisar se o usuário está pronto para gerar um plano
     const shouldGeneratePlan = conversationHistory && conversationHistory.length >= 4 && 
@@ -194,7 +228,37 @@ serve(async (req) => {
     const data = await response.json();
     console.log('OpenAI response received successfully');
     
+    
     const aiResponse = data.choices[0].message.content;
+    
+    // Salvar mensagens no histórico se temos uma conversa ativa
+    if (activeConversationId) {
+      try {
+        // Salvar mensagem do usuário
+        await supabase.from('ai_messages').insert({
+          conversation_id: activeConversationId,
+          message_type: 'user',
+          content: message
+        });
+
+        // Salvar resposta da IA
+        await supabase.from('ai_messages').insert({
+          conversation_id: activeConversationId,
+          message_type: 'ai',
+          content: aiResponse
+        });
+
+        // Atualizar timestamp da conversa
+        await supabase.from('ai_conversations')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', activeConversationId);
+
+        console.log('Messages saved to conversation:', activeConversationId);
+      } catch (saveError) {
+        console.error('Error saving messages:', saveError);
+        // Não falhar a requisição se não conseguir salvar
+      }
+    }
     
     // Verificar se a IA está sugerindo gerar PDF
     const shouldOfferPDF = aiResponse.toLowerCase().includes('gostaria que você gere') || 
@@ -206,7 +270,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       message: aiResponse,
       shouldGeneratePlan: false,
-      shouldOfferPDF
+      shouldOfferPDF,
+      conversationId: activeConversationId
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

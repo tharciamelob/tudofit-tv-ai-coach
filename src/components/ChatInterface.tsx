@@ -18,16 +18,24 @@ interface ChatInterfaceProps {
   chatType: 'personal' | 'nutrition';
   onPlanGenerated: (plan: any) => void;
   onBack: () => void;
+  conversationId?: string;
+  initialMessages?: Message[];
 }
 
-export const ChatInterface = ({ chatType, onPlanGenerated, onBack }: ChatInterfaceProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+export const ChatInterface = ({ 
+  chatType, 
+  onPlanGenerated, 
+  onBack, 
+  conversationId,
+  initialMessages = []
+}: ChatInterfaceProps) => {
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputValue, setInputValue] = useState('');
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [showPDFOffer, setShowPDFOffer] = useState(false);
   const [lastPlanContent, setLastPlanContent] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { sendMessage, isLoading } = useChatConversation({ chatType });
+  const { sendMessage, isLoading } = useChatConversation({ chatType, conversationId });
   const { generateElementPDF, isGenerating } = usePDFGeneration();
 
   const scrollToBottom = () => {
@@ -39,17 +47,21 @@ export const ChatInterface = ({ chatType, onPlanGenerated, onBack }: ChatInterfa
   }, [messages]);
 
   useEffect(() => {
-    // Mensagem inicial da IA
-    const initialMessage: Message = {
-      id: '1',
-      type: 'ai',
-      content: chatType === 'personal' 
-        ? "Olá! Sou seu personal de treinos. Vou te ajudar a criar o plano perfeito para você! Primeiro, me conte: qual é seu principal objetivo? (emagrecimento, ganho de massa muscular, condicionamento físico ou fortalecimento)"
-        : "Oi! Sou sua nutricionista virtual. Vou criar um plano alimentar personalizado para você! Para começar, me fale: qual é seu objetivo nutricional? (emagrecimento, ganho de massa, manutenção do peso ou melhoria da saúde)",
-      timestamp: new Date()
-    };
-    setMessages([initialMessage]);
-  }, [chatType]);
+    // Se não temos mensagens iniciais, adicionar mensagem de boas-vindas
+    if (initialMessages.length === 0) {
+      const initialMessage: Message = {
+        id: '1',
+        type: 'ai',
+        content: chatType === 'personal' 
+          ? "Olá! Sou seu personal de treinos. Vou te ajudar a criar o plano perfeito para você! Primeiro, me conte: qual é seu principal objetivo? (emagrecimento, ganho de massa muscular, condicionamento físico ou fortalecimento)"
+          : "Oi! Sou sua nutricionista virtual. Vou criar um plano alimentar personalizado para você! Para começar, me fale: qual é seu objetivo nutricional? (emagrecimento, ganho de massa, manutenção do peso ou melhoria da saúde)",
+        timestamp: new Date()
+      };
+      setMessages([initialMessage]);
+    } else {
+      setMessages(initialMessages);
+    }
+  }, [chatType, initialMessages]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;

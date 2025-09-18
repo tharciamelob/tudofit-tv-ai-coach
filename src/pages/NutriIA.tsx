@@ -2,22 +2,56 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Apple, MessageCircle, FileDown, Target, Clock, Brain } from "lucide-react";
+import { Apple, MessageCircle, FileDown, Target, Clock, Brain, History } from "lucide-react";
 import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
+import { ConversationHistory } from "@/components/ConversationHistory";
 import { ReadyMealPlans } from "@/components/ReadyMealPlans";
 import { useAuth } from "@/contexts/AuthContext";
+import { useConversationHistory } from "@/hooks/useConversationHistory";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 
 export default function NutriIA() {
   const [showChat, setShowChat] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const { user } = useAuth();
   const { generateNutritionPDF, isGenerating } = usePDFGeneration();
+  const { 
+    currentConversation, 
+    createConversation, 
+    selectConversation, 
+    clearCurrentConversation,
+    loadConversationMessages
+  } = useConversationHistory('nutrition');
 
   const handlePlanGenerated = (plan: any) => {
     setGeneratedPlan(plan);
     setShowChat(false);
+  };
+
+  const handleSelectConversation = async (conversationId: string) => {
+    await selectConversation(conversationId);
+    setShowHistory(false);
+    setShowChat(true);
+  };
+
+  const handleNewConversation = async () => {
+    const newConv = await createConversation({
+      conversation_type: 'nutrition',
+      title: 'Nova Consulta Nutricional',
+    });
+    
+    if (newConv) {
+      clearCurrentConversation();
+      setShowHistory(false);
+      setShowChat(true);
+    }
+  };
+
+  const handleBackFromChat = () => {
+    setShowChat(false);
+    clearCurrentConversation();
   };
 
   if (!user) {
@@ -34,21 +68,47 @@ export default function NutriIA() {
     );
   }
 
-  if (showChat) {
+  if (showHistory) {
     return (
       <div className="min-h-screen bg-black app-container">
         <Header />
         <main className="container mx-auto px-2 sm:px-4 pt-20 pb-8">
           <div className="mb-4">
-            <Button variant="outline" onClick={() => setShowChat(false)}>
+            <Button variant="outline" onClick={() => setShowHistory(false)}>
               ← Voltar
             </Button>
           </div>
+          <div className="max-w-4xl mx-auto">
+            <ConversationHistory 
+              conversationType="nutrition"
+              onSelectConversation={handleSelectConversation}
+              onNewConversation={handleNewConversation}
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (showChat) {
+    const initialMessages = currentConversation?.messages?.map(msg => ({
+      id: msg.id,
+      type: msg.message_type as 'user' | 'ai',
+      content: msg.content,
+      timestamp: new Date(msg.created_at)
+    })) || [];
+
+    return (
+      <div className="min-h-screen bg-black app-container">
+        <Header />
+        <main className="container mx-auto px-2 sm:px-4 pt-20 pb-8">
           <div className="w-full max-w-4xl mx-auto">
             <ChatInterface 
               chatType="nutrition" 
               onPlanGenerated={handlePlanGenerated}
-              onBack={() => setShowChat(false)}
+              onBack={handleBackFromChat}
+              conversationId={currentConversation?.id}
+              initialMessages={initialMessages}
             />
           </div>
         </main>
@@ -156,6 +216,25 @@ export default function NutriIA() {
           <ReadyMealPlans onSelectPlan={() => {}} />
         </div>
 
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-8 max-w-md mx-auto">
+          <Button 
+            onClick={() => setShowHistory(true)}
+            variant="outline"
+            className="flex items-center gap-2 border-primary/30 text-primary hover:bg-primary/10"
+          >
+            <History className="h-4 w-4" />
+            Histórico de Conversas
+          </Button>
+          <Button 
+            onClick={handleNewConversation}
+            className="flex items-center gap-2"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Nova Conversa
+          </Button>
+        </div>
+
         {/* Features Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16 max-w-6xl mx-auto">
           <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500">
@@ -226,7 +305,7 @@ export default function NutriIA() {
               <Button 
                 size="lg" 
                 className="w-full sm:w-auto px-6 sm:px-8 gap-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300" 
-                onClick={() => setShowChat(true)}
+                onClick={handleNewConversation}
               >
                 <MessageCircle className="h-4 sm:h-5 w-4 sm:w-5" />
                 Iniciar Consulta Nutricional
