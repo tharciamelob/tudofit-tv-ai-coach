@@ -14,6 +14,7 @@ interface ChatResponse {
   message: string;
   shouldGeneratePlan: boolean;
   planData?: any;
+  shouldOfferPDF?: boolean;
 }
 
 interface UseChatConversationProps {

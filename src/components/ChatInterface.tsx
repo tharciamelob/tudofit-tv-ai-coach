@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Loader2, FileDown, ArrowLeft } from 'lucide-react';
 import { useChatConversation } from '@/hooks/useChatConversation';
+import { usePDFGeneration } from '@/hooks/usePDFGeneration';
 
 interface Message {
   id: string;
@@ -16,14 +17,18 @@ interface Message {
 interface ChatInterfaceProps {
   chatType: 'personal' | 'nutrition';
   onPlanGenerated: (plan: any) => void;
+  onBack: () => void;
 }
 
-export const ChatInterface = ({ chatType, onPlanGenerated }: ChatInterfaceProps) => {
+export const ChatInterface = ({ chatType, onPlanGenerated, onBack }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [showPDFOffer, setShowPDFOffer] = useState(false);
+  const [lastPlanContent, setLastPlanContent] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { sendMessage, isLoading } = useChatConversation({ chatType });
+  const { generateElementPDF, isGenerating } = usePDFGeneration();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -85,6 +90,12 @@ export const ChatInterface = ({ chatType, onPlanGenerated }: ChatInterfaceProps)
           timestamp: new Date()
         };
         setMessages(prev => [...prev, aiMessage]);
+        
+        // Verificar se deve oferecer PDF
+        if (response.shouldOfferPDF) {
+          setShowPDFOffer(true);
+          setLastPlanContent(response.message);
+        }
       }
     } catch (error) {
       const errorMessage: Message = {
@@ -104,10 +115,66 @@ export const ChatInterface = ({ chatType, onPlanGenerated }: ChatInterfaceProps)
     }
   };
 
+  const handleGeneratePDF = async () => {
+    try {
+      // Criar um elemento temporário com o conteúdo do plano
+      const tempDiv = document.createElement('div');
+      tempDiv.id = 'temp-plan-content';
+      tempDiv.innerHTML = `
+        <div style="padding: 20px; font-family: Arial, sans-serif;">
+          <h1 style="color: #2563eb; margin-bottom: 20px;">
+            ${chatType === 'nutrition' ? 'Cardápio Personalizado' : 'Plano de Treino Personalizado'}
+          </h1>
+          <div style="white-space: pre-wrap; line-height: 1.6;">
+            ${lastPlanContent}
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(tempDiv);
+      
+      const fileName = chatType === 'nutrition' 
+        ? `cardapio_personalizado_${Date.now()}`
+        : `treino_personalizado_${Date.now()}`;
+        
+      await generateElementPDF('temp-plan-content', fileName);
+      
+      document.body.removeChild(tempDiv);
+      setShowPDFOffer(false);
+      
+      // Adicionar mensagem confirmando geração do PDF
+      const confirmMessage: Message = {
+        id: Date.now().toString() + '_ai',
+        type: 'ai',
+        content: 'PDF gerado com sucesso! ✅ Você pode encontrá-lo na pasta de downloads do seu dispositivo.',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, confirmMessage]);
+      
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      const errorMessage: Message = {
+        id: Date.now().toString() + '_ai',
+        type: 'ai',
+        content: 'Desculpe, houve um erro ao gerar o PDF. Tente novamente.',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
   return (
     <Card className="h-[70vh] flex flex-col max-w-4xl mx-auto bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
       <CardHeader className="pb-4 border-b border-white/10">
         <CardTitle className="flex items-center gap-2">
+          <Button
+            onClick={onBack}
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-white/10 p-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
           <Bot className="h-6 w-6 text-primary" />
           {chatType === 'personal' ? 'Personal IA' : 'Nutri IA'}
         </CardTitle>
@@ -179,6 +246,36 @@ export const ChatInterface = ({ chatType, onPlanGenerated }: ChatInterfaceProps)
           </div>
           <div ref={messagesEndRef} />
         </ScrollArea>
+        
+        {showPDFOffer && (
+          <div className="border-t border-b border-white/10 p-4 bg-slate-800/50">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm text-white/80">
+                Gostaria de gerar este {chatType === 'nutrition' ? 'cardápio' : 'treino'} em PDF?
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleGeneratePDF}
+                  disabled={isGenerating}
+                  size="sm"
+                  variant="default"
+                  className="flex items-center gap-2"
+                >
+                  <FileDown className="h-4 w-4" />
+                  {isGenerating ? 'Gerando...' : 'Gerar PDF'}
+                </Button>
+                <Button
+                  onClick={() => setShowPDFOffer(false)}
+                  size="sm"
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/10"
+                >
+                  Não, obrigado
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="border-t border-white/10 p-4 bg-gradient-to-b from-black via-black to-slate-800">
           <div className="flex gap-2">

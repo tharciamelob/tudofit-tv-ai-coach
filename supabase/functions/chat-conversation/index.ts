@@ -145,7 +145,9 @@ serve(async (req) => {
          Se perguntado sobre outros assuntos, diga: "Sou especialista apenas em educação física. Para questões de nutrição, consulte nossa Nutri IA."
          
          Faça perguntas específicas sobre objetivos físicos, experiência, tempo disponível e equipamentos.
-         Após coletar informações suficientes, sugira criar o plano de treino personalizado.`
+         Após coletar informações suficientes, sugira criar o plano de treino personalizado.
+         
+         APÓS APRESENTAR UM PLANO COMPLETO DE TREINO: Sempre pergunte se o usuário gostaria que você gere este plano em PDF para facilitar o uso na academia.`
       : `Você é uma Nutricionista EXCLUSIVAMENTE especializada em NUTRIÇÃO. 
          IMPORTANTE: Você APENAS responde perguntas sobre:
          - Alimentação e nutrição
@@ -159,7 +161,9 @@ serve(async (req) => {
          Se perguntado sobre outros assuntos, diga: "Sou especialista apenas em nutrição. Para questões de exercícios, consulte nossa Personal IA."
          
          Faça perguntas específicas sobre objetivos nutricionais, peso, restrições, preferências e rotina alimentar.
-         Após coletar informações suficientes, sugira criar o cardápio personalizado.`;
+         Após coletar informações suficientes, sugira criar o cardápio personalizado.
+         
+         APÓS APRESENTAR UM CARDÁPIO COMPLETO: Sempre pergunte se o usuário gostaria que você gere este cardápio em PDF para facilitar o acompanhamento offline.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -191,12 +195,18 @@ serve(async (req) => {
     console.log('OpenAI response received successfully');
     
     const aiResponse = data.choices[0].message.content;
+    
+    // Verificar se a IA está sugerindo gerar PDF
+    const shouldOfferPDF = aiResponse.toLowerCase().includes('gostaria que você gere') || 
+                          aiResponse.toLowerCase().includes('quer que eu gere') ||
+                          aiResponse.toLowerCase().includes('gerar') && aiResponse.toLowerCase().includes('pdf');
 
     console.log('=== CHAT CONVERSATION SUCCESS ===');
     
     return new Response(JSON.stringify({
       message: aiResponse,
-      shouldGeneratePlan: false
+      shouldGeneratePlan: false,
+      shouldOfferPDF
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

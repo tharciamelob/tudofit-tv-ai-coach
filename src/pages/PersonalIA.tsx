@@ -47,7 +47,11 @@ export default function PersonalIA() {
             </Button>
           </div>
           <div className="w-full max-w-4xl mx-auto">
-            <ChatInterface chatType="personal" onPlanGenerated={handlePlanGenerated} />
+            <ChatInterface 
+              chatType="personal" 
+              onPlanGenerated={handlePlanGenerated}
+              onBack={() => setShowChat(false)}
+            />
           </div>
         </main>
       </div>

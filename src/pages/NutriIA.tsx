@@ -45,7 +45,11 @@ export default function NutriIA() {
             </Button>
           </div>
           <div className="w-full max-w-4xl mx-auto">
-            <ChatInterface chatType="nutrition" onPlanGenerated={handlePlanGenerated} />
+            <ChatInterface 
+              chatType="nutrition" 
+              onPlanGenerated={handlePlanGenerated}
+              onBack={() => setShowChat(false)}
+            />
           </div>
         </main>
       </div>
