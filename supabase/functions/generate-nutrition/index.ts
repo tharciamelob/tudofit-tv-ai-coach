@@ -120,16 +120,16 @@ Analise a imagem ou descrição da refeição e retorne APENAS um objeto JSON v�
       "name": "nome_do_alimento",
       "quantity": "quantidade_estimada (ex: 1 unidade, 100g, 1 xícara)",
       "calories": numero,
-      "protein_g": numero,
-      "carbs_g": numero,
-      "fat_g": numero
+      "protein": numero,
+      "carbs": numero,
+      "fat": numero
     }
   ],
   "totals": {
     "calories": numero_total,
-    "protein_g": numero_total,
-    "carbs_g": numero_total,
-    "fat_g": numero_total
+    "protein": numero_total,
+    "carbs": numero_total,
+    "fat": numero_total
   }
 }
 
@@ -252,8 +252,8 @@ IMPORTANTE:
     // Validate each food item
     for (const food of nutrition.foods) {
       if (!food.name || typeof food.calories !== 'number' ||
-          typeof food.protein_g !== 'number' || typeof food.carbs_g !== 'number' || 
-          typeof food.fat_g !== 'number' || !food.quantity) {
+          typeof food.protein !== 'number' || typeof food.carbs !== 'number' || 
+          typeof food.fat !== 'number' || !food.quantity) {
         console.error('Invalid food format:', food);
         return new Response(JSON.stringify({
           error: "Formato de dados nutricionais inválido",
@@ -268,9 +268,9 @@ IMPORTANTE:
     // Validate totals
     if (!nutrition.totals || 
         typeof nutrition.totals.calories !== 'number' ||
-        typeof nutrition.totals.protein_g !== 'number' ||
-        typeof nutrition.totals.carbs_g !== 'number' ||
-        typeof nutrition.totals.fat_g !== 'number') {
+        typeof nutrition.totals.protein !== 'number' ||
+        typeof nutrition.totals.carbs !== 'number' ||
+        typeof nutrition.totals.fat !== 'number') {
       console.error('Invalid totals format:', nutrition.totals);
       return new Response(JSON.stringify({
         error: "Formato de totais nutricionais inválido",
@@ -288,15 +288,15 @@ IMPORTANTE:
         name: food.name,
         quantity: food.quantity,
         calories: Math.round(food.calories),
-        protein_g: Number((food.protein_g || 0).toFixed(1)),
-        carbs_g: Number((food.carbs_g || 0).toFixed(1)),
-        fat_g: Number((food.fat_g || 0).toFixed(1))
+        protein: Number((food.protein || 0).toFixed(1)),
+        carbs: Number((food.carbs || 0).toFixed(1)),
+        fat: Number((food.fat || 0).toFixed(1))
       })),
       totals: {
         calories: Math.round(nutrition.totals.calories),
-        protein_g: Number((nutrition.totals.protein_g || 0).toFixed(1)),
-        carbs_g: Number((nutrition.totals.carbs_g || 0).toFixed(1)),
-        fat_g: Number((nutrition.totals.fat_g || 0).toFixed(1))
+        protein: Number((nutrition.totals.protein || 0).toFixed(1)),
+        carbs: Number((nutrition.totals.carbs || 0).toFixed(1)),
+        fat: Number((nutrition.totals.fat || 0).toFixed(1))
       }
     };
 

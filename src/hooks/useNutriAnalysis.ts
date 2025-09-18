@@ -7,9 +7,9 @@ interface FoodItem {
   name: string;
   quantity: string;
   calories: number;
-  protein_g: number;
-  carbs_g: number;
-  fat_g: number;
+  protein: number;
+  carbs: number;
+  fat: number;
 }
 
 interface NutritionResult {
@@ -18,9 +18,9 @@ interface NutritionResult {
   foods: FoodItem[];
   totals: {
     calories: number;
-    protein_g: number;
-    carbs_g: number;
-    fat_g: number;
+    protein: number;
+    carbs: number;
+    fat: number;
   };
 }
 
@@ -170,9 +170,9 @@ export const useNutriAnalysis = () => {
         item_name: food.name,
         food_name: food.name, // Compatibilidade
         calories: food.calories,
-        protein: food.protein_g,
-        carbs: food.carbs_g,
-        fat: food.fat_g,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
         quantity: parseFloat(food.quantity.replace(/[^\d.,]/g, '').replace(',', '.')) || 1,
         photo_url: nutritionData.photo_url || null,
         date: new Date().toISOString().split('T')[0]
