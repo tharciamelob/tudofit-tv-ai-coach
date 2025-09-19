@@ -7,6 +7,9 @@ schemas = ["public", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
+[functions.send-support-email]
+verify_jwt = false
+
 [functions.generate-workout]
 verify_jwt = false
 
@@ -14,9 +17,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.chat-conversation]
-verify_jwt = false
-
-[functions.test-openai]
 verify_jwt = false
 
 [functions.analyze-food-photo]

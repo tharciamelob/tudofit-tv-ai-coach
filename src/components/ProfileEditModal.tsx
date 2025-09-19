@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -19,13 +19,25 @@ interface ProfileEditModalProps {
 export const ProfileEditModal = ({ isOpen, onClose }: ProfileEditModalProps) => {
   const { profileData, updateProfile, loading } = useProfile();
   const [formData, setFormData] = useState({
-    full_name: profileData.full_name || '',
-    height: profileData.height?.toString() || '',
-    weight: profileData.weight?.toString() || '',
-    birth_date: profileData.birth_date || '',
-    gender: profileData.gender || '',
-    fitness_goal: profileData.fitness_goal || '',
+    full_name: '',
+    height: '',
+    weight: '',
+    birth_date: '',
+    gender: '',
+    fitness_goal: '',
   });
+
+  // Update form data when profileData changes
+  useEffect(() => {
+    setFormData({
+      full_name: profileData.full_name || '',
+      height: profileData.height?.toString() || '',
+      weight: profileData.weight?.toString() || '',
+      birth_date: profileData.birth_date || '',
+      gender: profileData.gender || '',
+      fitness_goal: profileData.fitness_goal || '',
+    });
+  }, [profileData, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
