@@ -9,6 +9,7 @@ interface WorkoutCardProps {
   rating: number;
   thumbnail?: string;
   isNew?: boolean;
+  category?: string;
 }
 
 const WorkoutCard = ({ 
@@ -18,7 +19,8 @@ const WorkoutCard = ({
   difficulty, 
   rating, 
   thumbnail,
-  isNew = false 
+  isNew = false,
+  category = ""
 }: WorkoutCardProps) => {
   const getDifficultyColor = (level: string) => {
     switch (level) {
@@ -27,6 +29,60 @@ const WorkoutCard = ({
       case "Avançado": return "text-red-400";
       default: return "text-muted-foreground";
     }
+  };
+
+  const getWorkoutSynopsis = (category: string, title: string) => {
+    const synopsisMap: { [key: string]: string[] } = {
+      "Cardio HIIT": [
+        "4x burpees (12 reps)",
+        "3x jumping jacks (30 seg)",
+        "4x mountain climbers (20 reps)",
+        "3x squat jumps (15 reps)"
+      ],
+      "Força e Resistência": [
+        "3x flexões (10-15 reps)",
+        "4x agachamentos (12 reps)", 
+        "3x prancha (30-60 seg)",
+        "3x lunges (10 reps cada perna)"
+      ],
+      "Yoga e Flexibilidade": [
+        "5x saudação ao sol",
+        "3x postura do guerreiro (30 seg cada)",
+        "2x alongamento espinhal (1 min)",
+        "1x relaxamento final (5 min)"
+      ],
+      "Pilates": [
+        "3x hundred (100 batidas)",
+        "2x roll up (8 reps)",
+        "3x single leg stretch (10 cada)",
+        "2x teaser (5 reps)"
+      ],
+      "Funcional": [
+        "3x deadlift (12 reps)",
+        "4x kettlebell swing (15 reps)",
+        "3x farmer's walk (30 seg)",
+        "3x box jumps (10 reps)"
+      ],
+      "Aulas de Jump": [
+        "4x basic bounce (32 tempos)",
+        "3x tuck jump (16 reps)",
+        "4x knee lift (20 cada perna)",
+        "2x combination sequence (1 min)"
+      ],
+      "Tutorial de Academia": [
+        "Demonstração completa",
+        "Postura correta",
+        "Variações disponíveis",
+        "Dicas de segurança"
+      ]
+    };
+
+    return synopsisMap[category] || [
+      "3x exercício principal (12 reps)",
+      "2x exercício auxiliar (15 reps)", 
+      "1x alongamento (30 seg)",
+      "1x descanso ativo (1 min)"
+    ];
   };
 
   return (
@@ -79,6 +135,15 @@ const WorkoutCard = ({
         <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary transition-colors">
           {title}
         </h3>
+
+        {/* Sinopse dos exercícios */}
+        <div className="mb-3 space-y-1">
+          {getWorkoutSynopsis(category, title).map((exercise, index) => (
+            <p key={index} className="text-xs text-muted-foreground/80 leading-relaxed">
+              • {exercise}
+            </p>
+          ))}
+        </div>
         
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center space-x-4">

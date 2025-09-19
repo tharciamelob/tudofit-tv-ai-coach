@@ -88,6 +88,7 @@ const WorkoutCarousel = ({ title, workouts }: WorkoutCarouselProps) => {
               rating={workout.rating}
               thumbnail={workout.thumbnail}
               isNew={workout.isNew}
+              category={title}
             />
           ))}
         </div>
