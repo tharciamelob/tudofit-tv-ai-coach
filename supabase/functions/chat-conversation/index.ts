@@ -212,7 +212,7 @@ serve(async (req) => {
           ...(conversationHistory || []).slice(-5), // Últimas 5 mensagens
           { role: 'user', content: message }
         ],
-        max_tokens: 1500,
+        max_tokens: 3000,
         temperature: 0.8
       }),
     });

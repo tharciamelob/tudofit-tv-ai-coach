@@ -179,7 +179,7 @@ IMPORTANTE:
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: messages,
-        max_tokens: 800,
+        max_tokens: 3000,
         temperature: 0.3,
         response_format: { type: "json_object" }
       }),
