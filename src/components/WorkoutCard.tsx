@@ -34,54 +34,62 @@ const WorkoutCard = ({
   const getWorkoutSynopsis = (category: string, title: string) => {
     const synopsisMap: { [key: string]: string[] } = {
       "Cardio HIIT": [
-        "4x burpees (12 reps)",
-        "3x jumping jacks (30 seg)",
-        "4x mountain climbers (20 reps)",
-        "3x squat jumps (15 reps)"
+        "• 4x Burpees completos (15 reps)",
+        "• 3x Jumping Jacks (45 segundos)",
+        "• 4x Mountain Climbers (30 reps)",
+        "• 3x Jump Squats (20 reps)",
+        "• 2x Sprint no lugar (30 seg)"
       ],
       "Força e Resistência": [
-        "3x flexões (10-15 reps)",
-        "4x agachamentos (12 reps)", 
-        "3x prancha (30-60 seg)",
-        "3x lunges (10 reps cada perna)"
+        "• 4x Flexões de braço (12-15 reps)",
+        "• 3x Agachamento livre (20 reps)", 
+        "• 4x Prancha abdominal (45 seg)",
+        "• 3x Lunges alternados (16 reps)",
+        "• 3x Elevação pélvica (15 reps)"
       ],
       "Yoga e Flexibilidade": [
-        "5x saudação ao sol",
-        "3x postura do guerreiro (30 seg cada)",
-        "2x alongamento espinhal (1 min)",
-        "1x relaxamento final (5 min)"
+        "• 5x Saudação ao Sol completa",
+        "• 3x Guerreiro I e II (45 seg cada)",
+        "• 2x Flexão anterior sentado (1 min)",
+        "• 3x Torção espinhal (30 seg cada)",
+        "• 1x Savasana relaxamento (5 min)"
       ],
       "Pilates": [
-        "3x hundred (100 batidas)",
-        "2x roll up (8 reps)",
-        "3x single leg stretch (10 cada)",
-        "2x teaser (5 reps)"
+        "• 3x The Hundred (100 batidas)",
+        "• 4x Roll Up vertebral (8 reps)",
+        "• 3x Single Leg Stretch (12 cada)",
+        "• 3x Criss Cross oblíquo (16 reps)",
+        "• 2x Teaser completo (6 reps)"
       ],
       "Funcional": [
-        "3x deadlift (12 reps)",
-        "4x kettlebell swing (15 reps)",
-        "3x farmer's walk (30 seg)",
-        "3x box jumps (10 reps)"
+        "• 4x Deadlift com peso corporal (15 reps)",
+        "• 3x Kettlebell Swing (20 reps)",
+        "• 4x Farmer's Walk (40 passos)",
+        "• 3x Box Jump ou Step Up (12 reps)",
+        "• 3x Turkish Get-Up (5 cada lado)"
       ],
       "Aulas de Jump": [
-        "4x basic bounce (32 tempos)",
-        "3x tuck jump (16 reps)",
-        "4x knee lift (20 cada perna)",
-        "2x combination sequence (1 min)"
+        "• 4x Basic Bounce (64 tempos)",
+        "• 3x Tuck Jump no trampolim (20 reps)",
+        "• 4x Knee Lift alternado (32 cada)",
+        "• 3x Twist Jump (24 reps)",
+        "• 2x Sequência coreografada (2 min)"
       ],
       "Tutorial de Academia": [
-        "Demonstração completa",
-        "Postura correta",
-        "Variações disponíveis",
-        "Dicas de segurança"
+        "• Demonstração técnica completa",
+        "• Posicionamento e postura correta",
+        "• Variações para diferentes níveis",
+        "• Erros comuns e como evitar",
+        "• Dicas de segurança e respiração"
       ]
     };
 
     return synopsisMap[category] || [
-      "3x exercício principal (12 reps)",
-      "2x exercício auxiliar (15 reps)", 
-      "1x alongamento (30 seg)",
-      "1x descanso ativo (1 min)"
+      "• 3x Exercício principal (12-15 reps)",
+      "• 3x Exercício auxiliar (10-12 reps)", 
+      "• 2x Exercício de ativação (8-10 reps)",
+      "• 1x Alongamento específico (45 seg)",
+      "• 1x Descanso ativo (1-2 min)"
     ];
   };
 
