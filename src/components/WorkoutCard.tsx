@@ -32,7 +32,133 @@ const WorkoutCard = ({
   };
 
   const getWorkoutSynopsis = (category: string, title: string) => {
-    const synopsisMap: { [key: string]: string[] } = {
+    // Roteiros específicos baseados no título
+    const specificWorkouts: { [key: string]: string[] } = {
+      // HIIT Workouts
+      "HIIT Queima Gordura": [
+        "• 4x Burpees com salto (12 reps)",
+        "• 3x High Knees intensos (45 seg)",
+        "• 4x Jump Squats explosivos (15 reps)",
+        "• 3x Mountain Climbers rápidos (30 seg)",
+        "• 2x Plank Jacks dinâmicos (20 reps)"
+      ],
+      "HIIT Explosivo": [
+        "• 5x Burpees Box Jump (8 reps)",
+        "• 4x Tuck Jumps (12 reps)",
+        "• 3x Split Lunges alternados (20 seg)",
+        "• 4x Push-up to T (10 reps)",
+        "• 2x Sprint Intervals (30 seg)"
+      ],
+      "HIIT Funcional": [
+        "• 4x Thrusters com peso corporal (15 reps)",
+        "• 3x Bear Crawl para frente/trás (20 seg)",
+        "• 4x Squat to Press imaginário (12 reps)",
+        "• 3x Lateral Bounds (16 reps)",
+        "• 2x Tabata final (20s/10s x4)"
+      ],
+      
+      // Força e Resistência
+      "Treino Superior": [
+        "• 4x Flexões diamante (8-12 reps)",
+        "• 3x Pike Push-ups (10 reps)",
+        "• 4x Tricep Dips na cadeira (15 reps)",
+        "• 3x Superman com braços (12 reps)",
+        "• 2x Prancha lateral (30 seg cada)"
+      ],
+      "Treino Inferior": [
+        "• 4x Pistol Squats assistidos (6 cada)",
+        "• 3x Bulgarian Split Squats (12 cada)",
+        "• 4x Single Leg Deadlift (10 cada)",
+        "• 3x Calf Raises (20 reps)",
+        "• 2x Wall Sit (45 seg)"
+      ],
+      "Full Body Power": [
+        "• 4x Burpee to Tuck Jump (10 reps)",
+        "• 3x Push-up to Downward Dog (12 reps)",
+        "• 4x Jump Squats + Overhead Reach (15 reps)",
+        "• 3x Plank Up-Downs (16 reps)",
+        "• 2x Turkish Get-Up (5 cada lado)"
+      ],
+      
+      // Yoga Específicos
+      "Yoga Matinal": [
+        "• 3x Saudação ao Sol A (fluxo lento)",
+        "• 2x Gato-Vaca dinâmico (10 reps)",
+        "• 3x Guerreiro I flow (45 seg cada)",
+        "• 2x Torção sentado suave (1 min cada)",
+        "• 1x Child's Pose relaxante (2 min)"
+      ],
+      "Power Yoga": [
+        "• 5x Saudação ao Sol B (fluxo rápido)",
+        "• 3x Chaturanga flow (8 reps)",
+        "• 4x Guerreiro III desafio (30 seg cada)",
+        "• 3x Crow Pose hold (15 seg)",
+        "• 1x Inversão na parede (1 min)"
+      ],
+      "Yoga Relaxante": [
+        "• 2x Saudação ao Sol gentil",
+        "• 3x Flexão para frente (1 min cada)",
+        "• 3x Torção supina (45 seg cada)",
+        "• 2x Happy Baby pose (1 min)",
+        "• 1x Savasana profundo (5 min)"
+      ],
+      
+      // Pilates Específicos
+      "Pilates Core": [
+        "• 3x Hundred clássico (100 batidas)",
+        "• 4x Criss Cross oblíquos (20 reps)",
+        "• 3x Double Leg Stretch (12 reps)",
+        "• 4x Bicycle abdominal (16 cada)",
+        "• 2x Plank variations (45 seg cada)"
+      ],
+      "Pilates Postural": [
+        "• 4x Roll Up vertebral (8 reps)",
+        "• 3x Swan Dive posterior (10 reps)",
+        "• 4x Side Kick Series (12 cada)",
+        "• 3x Swimming alternado (20 reps)",
+        "• 2x Spine Stretch Forward (8 reps)"
+      ],
+      
+      // Funcionais Específicos
+      "Funcional Atlético": [
+        "• 4x Clean & Press simulado (12 reps)",
+        "• 3x Farmer's Walk pesado (50 passos)",
+        "• 4x Box Jump + Burpee (8 reps)",
+        "• 3x Kettlebell Swing russo (25 reps)",
+        "• 2x Battle Ropes imaginário (30 seg)"
+      ],
+      "Funcional Iniciante": [
+        "• 3x Squat to Stand (15 reps)",
+        "• 4x Modified Push-ups (10 reps)",
+        "• 3x Step-ups na cadeira (12 cada)",
+        "• 3x Dead Bug alternado (16 reps)",
+        "• 2x Bird Dog (30 seg cada)"
+      ],
+      
+      // Jump Específicos
+      "Jump Cardio": [
+        "• 4x Basic Bounce aquecimento (32 tempos)",
+        "• 3x Star Jumps no trampolim (20 reps)",
+        "• 4x Knee Tucks altos (16 reps)",
+        "• 3x Twist Jumps (24 reps)",
+        "• 2x Cardio combo final (2 min)"
+      ],
+      "Jump Coreografia": [
+        "• 2x Sequência básica (64 tempos)",
+        "• 3x Mambo bounce (32 tempos)",
+        "• 4x Grapevine jump (16 cada lado)",
+        "• 3x Combo avançado (48 tempos)",
+        "• 1x Cool down bounce (1 min)"
+      ]
+    };
+
+    // Se encontrar roteiro específico, retorna ele
+    if (specificWorkouts[title]) {
+      return specificWorkouts[title];
+    }
+
+    // Fallback por categoria
+    const categoryDefaults: { [key: string]: string[] } = {
       "Cardio HIIT": [
         "• 4x Burpees completos (15 reps)",
         "• 3x Jumping Jacks (45 segundos)",
@@ -42,7 +168,7 @@ const WorkoutCard = ({
       ],
       "Força e Resistência": [
         "• 4x Flexões de braço (12-15 reps)",
-        "• 3x Agachamento livre (20 reps)", 
+        "• 3x Agachamento livre (20 reps)",
         "• 4x Prancha abdominal (45 seg)",
         "• 3x Lunges alternados (16 reps)",
         "• 3x Elevação pélvica (15 reps)"
@@ -84,12 +210,12 @@ const WorkoutCard = ({
       ]
     };
 
-    return synopsisMap[category] || [
-      "• 3x Exercício principal (12-15 reps)",
-      "• 3x Exercício auxiliar (10-12 reps)", 
-      "• 2x Exercício de ativação (8-10 reps)",
-      "• 1x Alongamento específico (45 seg)",
-      "• 1x Descanso ativo (1-2 min)"
+    return categoryDefaults[category] || [
+      "• 4x Exercício composto (12-15 reps)",
+      "• 3x Exercício isolado (10-12 reps)",
+      "• 3x Exercício funcional (8-10 reps)",
+      "• 2x Exercício de ativação (45 seg)",
+      "• 1x Recuperação ativa (1-2 min)"
     ];
   };
 
