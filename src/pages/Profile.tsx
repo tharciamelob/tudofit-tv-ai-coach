@@ -9,6 +9,9 @@ import { useMonthlyStats } from '@/hooks/useMonthlyStats';
 import { useProfile } from '@/hooks/useProfile';
 import { SupportModal } from '@/components/SupportModal';
 import { ProfileEditModal } from '@/components/ProfileEditModal';
+import { GeneralSettingsModal } from '@/components/GeneralSettingsModal';
+import { PrivacySettingsModal } from '@/components/PrivacySettingsModal';
+import { SubscriptionModal } from '@/components/SubscriptionModal';
 import { User, Settings, Crown, CreditCard, LogOut, Shield, MessageSquare, Calendar } from 'lucide-react';
 
 const Profile = () => {
@@ -17,6 +20,9 @@ const Profile = () => {
   const { profileData } = useProfile();
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showGeneralSettingsModal, setShowGeneralSettingsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -160,7 +166,11 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  <Button variant="outline" className="w-full mt-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-4"
+                    onClick={() => setShowSubscriptionModal(true)}
+                  >
                     <CreditCard className="h-4 w-4 mr-2" />
                     Gerenciar Assinatura
                   </Button>
@@ -173,12 +183,20 @@ const Profile = () => {
                   <CardTitle>Configurações</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => setShowGeneralSettingsModal(true)}
+                  >
                     <Settings className="h-4 w-4 mr-2" />
                     Configurações gerais
                   </Button>
                   
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => setShowPrivacyModal(true)}
+                  >
                     <Shield className="h-4 w-4 mr-2" />
                     Privacidade
                   </Button>
@@ -260,6 +278,21 @@ const Profile = () => {
       <ProfileEditModal 
         isOpen={showEditModal} 
         onClose={() => setShowEditModal(false)} 
+      />
+      
+      <GeneralSettingsModal 
+        isOpen={showGeneralSettingsModal} 
+        onClose={() => setShowGeneralSettingsModal(false)} 
+      />
+      
+      <PrivacySettingsModal 
+        isOpen={showPrivacyModal} 
+        onClose={() => setShowPrivacyModal(false)} 
+      />
+      
+      <SubscriptionModal 
+        isOpen={showSubscriptionModal} 
+        onClose={() => setShowSubscriptionModal(false)} 
       />
     </div>
   );
