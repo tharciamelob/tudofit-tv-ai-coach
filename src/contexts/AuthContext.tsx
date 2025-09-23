@@ -27,23 +27,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+    const initializeAuth = async () => {
+      // Set up auth state listener
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      );
+
+      // Check for existing session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+      } else {
+        // Silent anonymous sign-in if no session exists
+        try {
+          const { data, error } = await supabase.auth.signInAnonymously();
+          if (!error && data.session) {
+            setSession(data.session);
+            setUser(data.session.user);
+          }
+        } catch (error) {
+          console.warn('Anonymous sign-in failed:', error);
+        } finally {
+          setLoading(false);
+        }
       }
-    );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+      return () => subscription.unsubscribe();
+    };
 
-    return () => subscription.unsubscribe();
+    initializeAuth();
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {

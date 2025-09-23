@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useExercises, ExerciseFilters } from '@/hooks/useExercises';
+import { useSignedUrls } from '@/hooks/useSignedUrls';
+import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -7,23 +9,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 
-const ExerciseCard = ({ exercise }: { exercise: any }) => {
+const ExerciseCard = ({ exercise, previewUrl }: { exercise: any; previewUrl?: string }) => {
   const navigate = useNavigate();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    const getPreviewUrl = async () => {
-      if (exercise.preview_path) {
-        const { data } = await supabase.storage
-          .from('previews')
-          .getPublicUrl(exercise.preview_path);
-        setPreviewUrl(data.publicUrl);
-      }
-    };
-    getPreviewUrl();
-  }, [exercise.preview_path]);
 
   const getDifficultyColor = (difficulty: string | null) => {
     switch (difficulty) {
@@ -97,9 +85,36 @@ const ExerciseCard = ({ exercise }: { exercise: any }) => {
 };
 
 const ExerciseExplorer = () => {
+  const { user, loading: authLoading } = useAuth();
   const [filters, setFilters] = useState<ExerciseFilters>({});
   const [searchQuery, setSearchQuery] = useState('');
   const { exercises, loading, error, hasMore, loadMore } = useExercises(filters);
+
+  // Prepare signed URLs for all exercise previews
+  const urlItems = exercises.map(exercise => ({
+    bucket: 'previews',
+    path: exercise.preview_path
+  }));
+  const { urls: previewUrls } = useSignedUrls(urlItems, 60);
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Acesso Restrito</h2>
+          <p className="text-gray-600 mb-6">Você precisa estar logado para explorar os exercícios.</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,8 +210,12 @@ const ExerciseExplorer = () => {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {exercises.map((exercise) => (
-              <ExerciseCard key={exercise.id} exercise={exercise} />
+            {exercises.map((exercise, index) => (
+              <ExerciseCard 
+                key={exercise.id} 
+                exercise={exercise} 
+                previewUrl={previewUrls[index]}
+              />
             ))}
           </div>
 

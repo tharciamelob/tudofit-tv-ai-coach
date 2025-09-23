@@ -1,39 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useExercise } from '@/hooks/useExercises';
+import { useSignedUrl } from '@/hooks/useSignedUrls';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Play, Clock, Target, Dumbbell } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 
 const ExerciseDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const { exercise, loading, error } = useExercise(slug || '');
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    const getMediaUrls = async () => {
-      if (exercise) {
-        if (exercise.video_path) {
-          const { data } = await supabase.storage
-            .from('workouts')
-            .getPublicUrl(exercise.video_path);
-          setVideoUrl(data.publicUrl);
-        }
-        
-        if (exercise.preview_path) {
-          const { data } = await supabase.storage
-            .from('previews')
-            .getPublicUrl(exercise.preview_path);
-          setPreviewUrl(data.publicUrl);
-        }
-      }
-    };
-    getMediaUrls();
-  }, [exercise]);
+  
+  // Get signed URLs for media with 1 hour TTL
+  const { url: videoUrl, loading: videoLoading } = useSignedUrl('workouts', exercise?.video_path || null, 3600);
+  const { url: previewUrl } = useSignedUrl('previews', exercise?.preview_path || null, 3600);
 
   const getDifficultyColor = (difficulty: string | null) => {
     switch (difficulty) {
@@ -51,10 +34,25 @@ const ExerciseDetail = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Acesso Restrito</h2>
+          <p className="text-gray-600 mb-6">Você precisa estar logado para ver este exercício.</p>
+          <Button onClick={() => navigate('/')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar ao início
+          </Button>
+        </div>
       </div>
     );
   }
@@ -92,7 +90,14 @@ const ExerciseDetail = () => {
             <Card>
               <CardContent className="p-0">
                 <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                  {videoUrl ? (
+                  {videoLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center text-white">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+                        <p className="text-sm">Carregando vídeo...</p>
+                      </div>
+                    </div>
+                  ) : videoUrl ? (
                     <video
                       src={videoUrl}
                       controls
