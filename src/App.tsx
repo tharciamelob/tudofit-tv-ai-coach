@@ -12,6 +12,9 @@ import Walking from "./pages/Walking";
 import Meals from "./pages/Meals";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import ExerciseExplorer from "./pages/ExerciseExplorer";
+import ExerciseDetail from "./pages/ExerciseDetail";
+import AdminExercises from "./pages/AdminExercises";
 import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
@@ -27,6 +30,9 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/exercicios" element={<ExerciseExplorer />} />
+              <Route path="/exercicio/:slug" element={<ExerciseDetail />} />
+              <Route path="/admin/exercicios" element={<AdminExercises />} />
               <Route path="/personal-ia" element={<PersonalIA />} />
               <Route path="/nutri-ia" element={<NutriIA />} />
               <Route path="/monitoramento" element={<Monitoring />} />

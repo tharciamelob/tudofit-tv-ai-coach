@@ -73,6 +73,48 @@ export type Database = {
           },
         ]
       }
+      exercises: {
+        Row: {
+          created_at: string | null
+          difficulty: string | null
+          duration_seconds: number | null
+          equipment: string | null
+          id: string
+          muscle_group: string | null
+          name: string
+          preview_path: string | null
+          slug: string
+          tags: string[] | null
+          video_path: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          difficulty?: string | null
+          duration_seconds?: number | null
+          equipment?: string | null
+          id?: string
+          muscle_group?: string | null
+          name: string
+          preview_path?: string | null
+          slug: string
+          tags?: string[] | null
+          video_path?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          difficulty?: string | null
+          duration_seconds?: number | null
+          equipment?: string | null
+          id?: string
+          muscle_group?: string | null
+          name?: string
+          preview_path?: string | null
+          slug?: string
+          tags?: string[] | null
+          video_path?: string | null
+        }
+        Relationships: []
+      }
       food_diary: {
         Row: {
           calories: number | null
