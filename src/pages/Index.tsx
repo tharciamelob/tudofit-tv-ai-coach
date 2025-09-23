@@ -41,6 +41,36 @@ const Index = () => {
       ]
     },
     {
+      title: "CrossFit WODs",
+      workouts: [
+        { id: "cf1", title: "Fran - 21-15-9", duration: "8 min", calories: "180 cal", difficulty: "Avançado" as const, rating: 4.9, isNew: true },
+        { id: "cf2", title: "Murph - Hero WOD", duration: "35 min", calories: "500 cal", difficulty: "Avançado" as const, rating: 4.8 },
+        { id: "cf3", title: "Grace - 30 Clean & Jerk", duration: "6 min", calories: "150 cal", difficulty: "Intermediário" as const, rating: 4.7 },
+        { id: "cf4", title: "Cindy - 20min AMRAP", duration: "20 min", calories: "300 cal", difficulty: "Intermediário" as const, rating: 4.6 },
+        { id: "cf5", title: "Helen - 3 Rounds", duration: "12 min", calories: "220 cal", difficulty: "Intermediário" as const, rating: 4.8 },
+        { id: "cf6", title: "Diane - 21-15-9", duration: "10 min", calories: "200 cal", difficulty: "Avançado" as const, rating: 4.7 },
+        { id: "cf7", title: "Annie - Double Unders", duration: "15 min", calories: "250 cal", difficulty: "Intermediário" as const, rating: 4.5 },
+        { id: "cf8", title: "Kelly - 5 Rounds", duration: "25 min", calories: "350 cal", difficulty: "Intermediário" as const, rating: 4.6 },
+        { id: "cf9", title: "Jackie - For Time", duration: "8 min", calories: "180 cal", difficulty: "Intermediário" as const, rating: 4.7 },
+        { id: "cf10", title: "Lynne - Bodyweight", duration: "18 min", calories: "280 cal", difficulty: "Avançado" as const, rating: 4.8 },
+        { id: "cf11", title: "Eva - Chipper", duration: "30 min", calories: "400 cal", difficulty: "Avançado" as const, rating: 4.9 },
+        { id: "cf12", title: "Nancy - 5 Rounds", duration: "20 min", calories: "320 cal", difficulty: "Intermediário" as const, rating: 4.6 },
+        { id: "cf13", title: "Karen - Wall Balls", duration: "12 min", calories: "240 cal", difficulty: "Intermediário" as const, rating: 4.5 },
+        { id: "cf14", title: "Isabel - Snatches", duration: "5 min", calories: "120 cal", difficulty: "Avançado" as const, rating: 4.8 },
+        { id: "cf15", title: "Elizabeth - Clean & Ring Dips", duration: "15 min", calories: "260 cal", difficulty: "Avançado" as const, rating: 4.7 },
+        { id: "cf16", title: "EMOM - Power", duration: "16 min", calories: "280 cal", difficulty: "Intermediário" as const, rating: 4.6 },
+        { id: "cf17", title: "Tabata This", duration: "20 min", calories: "300 cal", difficulty: "Avançado" as const, rating: 4.8 },
+        { id: "cf18", title: "Fight Gone Bad", duration: "17 min", calories: "290 cal", difficulty: "Intermediário" as const, rating: 4.7 },
+        { id: "cf19", title: "Filthy Fifty", duration: "40 min", calories: "550 cal", difficulty: "Avançado" as const, rating: 4.9 },
+        { id: "cf20", title: "The Seven", duration: "25 min", calories: "380 cal", difficulty: "Avançado" as const, rating: 4.8 },
+        { id: "cf21", title: "Josh - Hero WOD", duration: "28 min", calories: "420 cal", difficulty: "Avançado" as const, rating: 4.7 },
+        { id: "cf22", title: "Amanda - Muscle Ups", duration: "10 min", calories: "200 cal", difficulty: "Avançado" as const, rating: 4.8 },
+        { id: "cf23", title: "Bear Complex", duration: "18 min", calories: "320 cal", difficulty: "Intermediário" as const, rating: 4.6 },
+        { id: "cf24", title: "Death By Burpees", duration: "15 min", calories: "270 cal", difficulty: "Intermediário" as const, rating: 4.5 },
+        { id: "cf25", title: "Open WOD 23.1", duration: "14 min", calories: "250 cal", difficulty: "Intermediário" as const, rating: 4.7 }
+      ]
+    },
+    {
       title: "Aulas de Jump",
       workouts: [
         { id: "jump1", title: "Jump Iniciante - Primeiros Pulos", duration: "20 min", calories: "200 cal", difficulty: "Iniciante" as const, rating: 4.6, isNew: true },
