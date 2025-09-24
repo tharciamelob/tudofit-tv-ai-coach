@@ -200,13 +200,6 @@ const WorkoutCard = ({
         "• 4x Knee Lift alternado (32 cada)",
         "• 3x Twist Jump (24 reps)",
         "• 2x Sequência coreografada (2 min)"
-      ],
-      "Tutorial de Academia": [
-        "• Demonstração técnica completa",
-        "• Posicionamento e postura correta",
-        "• Variações para diferentes níveis",
-        "• Erros comuns e como evitar",
-        "• Dicas de segurança e respiração"
       ]
     };
 
