@@ -1,15 +1,44 @@
-import { Search, Bell, User, Menu } from "lucide-react";
+import { Search, Bell, User, Menu, Settings, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const [activeTab, setActiveTab] = useState("Início");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      localStorage.clear();
+      sessionStorage.clear();
+      toast({
+        title: "Sessão encerrada",
+        description: "Você foi desconectado com sucesso.",
+      });
+      navigate('/auth');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao encerrar sessão.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const tabs = [
     { label: "Início", path: "/" },
@@ -63,14 +92,43 @@ const Header = () => {
                 className="pl-10 w-64 bg-background/20 border-muted text-foreground placeholder:text-muted-foreground"
               />
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-foreground hover:text-foreground"
-              onClick={() => user ? navigate("/perfil") : navigate("/auth")}
-            >
-              <User className="h-5 w-5" />
-            </Button>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="text-foreground hover:text-foreground"
+                  >
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate("/perfil")}>
+                    <User className="mr-2 h-4 w-4" />
+                    Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Configurações
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-foreground hover:text-foreground"
+                onClick={() => navigate("/auth")}
+              >
+                <User className="h-5 w-5" />
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -111,14 +169,43 @@ const Header = () => {
                   className="pl-10 bg-background/20 border-muted text-foreground placeholder:text-muted-foreground"
                 />
               </div>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-foreground hover:text-foreground"
-                onClick={() => user ? navigate("/perfil") : navigate("/auth")}
-              >
-                <User className="h-5 w-5" />
-              </Button>
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-foreground hover:text-foreground"
+                    >
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => {navigate("/perfil"); setIsMobileMenuOpen(false);}}>
+                      <User className="mr-2 h-4 w-4" />
+                      Perfil
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {navigate("/settings"); setIsMobileMenuOpen(false);}}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Configurações
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sair
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-foreground hover:text-foreground"
+                  onClick={() => navigate("/auth")}
+                >
+                  <User className="h-5 w-5" />
+                </Button>
+              )}
             </div>
           </div>
         )}

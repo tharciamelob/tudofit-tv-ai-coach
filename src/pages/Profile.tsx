@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
 import MonthlyProgressCard from '@/components/MonthlyProgressCard';
 import { useMonthlyStats } from '@/hooks/useMonthlyStats';
 import { useProfile } from '@/hooks/useProfile';
@@ -16,8 +17,9 @@ import { User, Settings, Crown, CreditCard, LogOut, Shield, MessageSquare, Calen
 
 const Profile = () => {
   const { user, signOut } = useAuth();
+  const { loading: guardLoading } = useAuthGuard();
   const { stats } = useMonthlyStats();
-  const { profileData } = useProfile();
+  const { profileData, loading } = useProfile();
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showGeneralSettingsModal, setShowGeneralSettingsModal] = useState(false);
@@ -27,6 +29,10 @@ const Profile = () => {
   const handleSignOut = async () => {
     await signOut();
   };
+
+  if (guardLoading || loading) {
+    return <div>Carregando...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-black">

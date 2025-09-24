@@ -12,6 +12,7 @@ import Walking from "./pages/Walking";
 import Meals from "./pages/Meals";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import ExerciseExplorer from "./pages/ExerciseExplorer";
 import ExerciseDetail from "./pages/ExerciseDetail";
 import AdminExercises from "./pages/AdminExercises";
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/caminhada" element={<Walking />} />
               <Route path="/refeicoes" element={<Meals />} />
               <Route path="/perfil" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

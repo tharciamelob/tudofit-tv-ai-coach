@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useExercise } from '@/hooks/useExercises';
 import { useSignedUrl } from '@/hooks/useSignedUrls';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ const ExerciseDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { loading: guardLoading } = useAuthGuard();
   const { exercise, loading, error } = useExercise(slug || '');
   
   // Get signed URLs for media with 1 hour TTL
@@ -34,7 +36,7 @@ const ExerciseDetail = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  if (authLoading || loading) {
+  if (authLoading || guardLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

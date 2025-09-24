@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useExercises, ExerciseFilters } from '@/hooks/useExercises';
 import { useSignedUrls } from '@/hooks/useSignedUrls';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -86,6 +87,7 @@ const ExerciseCard = ({ exercise, previewUrl }: { exercise: any; previewUrl?: st
 
 const ExerciseExplorer = () => {
   const { user, loading: authLoading } = useAuth();
+  const { loading: guardLoading } = useAuthGuard();
   const [filters, setFilters] = useState<ExerciseFilters>({});
   const [searchQuery, setSearchQuery] = useState('');
   const { exercises, loading, error, hasMore, loadMore } = useExercises(filters);
@@ -97,7 +99,7 @@ const ExerciseExplorer = () => {
   }));
   const { urls: previewUrls } = useSignedUrls(urlItems, 60);
 
-  if (authLoading || loading) {
+  if (authLoading || guardLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

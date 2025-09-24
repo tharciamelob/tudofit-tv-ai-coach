@@ -5,9 +5,15 @@ import ContinueWatching from "@/components/ContinueWatching";
 import WorkoutCarousel from "@/components/WorkoutCarousel";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 const Index = () => {
   const { user } = useAuth();
+  const { loading: authLoading } = useAuthGuard();
+
+  if (authLoading) {
+    return <div>Carregando...</div>;
+  }
   // Mock data for workout categories
   const workoutCategories = [
     {
