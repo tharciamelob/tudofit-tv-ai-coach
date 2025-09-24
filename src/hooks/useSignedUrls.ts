@@ -35,9 +35,24 @@ export const useSignedUrl = (bucket: string, path: string | null, ttl = 3600) =>
       setError(null);
 
       try {
-        const { data, error } = await supabase.storage
-          .from(bucket)
-          .createSignedUrl(path, ttl);
+        // Get current session for authentication
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session?.access_token) {
+          throw new Error('No active session');
+        }
+
+        // Call our edge function instead of direct storage
+        const { data, error } = await supabase.functions.invoke('get-signed-url', {
+          body: {
+            bucket,
+            path,
+            expiresIn: ttl
+          },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
 
         if (error) throw error;
 
@@ -93,9 +108,24 @@ export const useSignedUrls = (items: Array<{ bucket: string; path: string | null
               return;
             }
 
-            const { data, error } = await supabase.storage
-              .from(item.bucket)
-              .createSignedUrl(item.path, ttl);
+            // Get current session for authentication
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (!session?.access_token) {
+              throw new Error('No active session');
+            }
+
+            // Call our edge function instead of direct storage
+            const { data, error } = await supabase.functions.invoke('get-signed-url', {
+              body: {
+                bucket: item.bucket,
+                path: item.path,
+                expiresIn: ttl
+              },
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+            });
 
             if (error) throw error;
 
