@@ -3,19 +3,38 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import ContinueWatching from "@/components/ContinueWatching";
 import WorkoutCarousel from "@/components/WorkoutCarousel";
+import CategoryCarousel from "@/components/CategoryCarousel";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { useAppCategories, useCategoryExercises } from "@/hooks/useCategoryExercises";
 
 const Index = () => {
   const { user } = useAuth();
   const { loading: authLoading } = useAuthGuard();
+  const { categories, loading: categoriesLoading } = useAppCategories();
 
-  if (authLoading) {
+  if (authLoading || categoriesLoading) {
     return <div>Carregando...</div>;
   }
-  // Mock data for workout categories
-  const workoutCategories = [
+
+  // Mapeamento de slugs das categorias para os dados do Supabase
+  const categoryMapping = {
+    'series-para-emagrecer-rapido': 'Séries para emagrecer rápido',
+    'crossfit': 'Crossfit',
+    'series-de-academia-iniciantes': 'Séries de academia - iniciantes',
+    'series-de-academia-condicionamento': 'Séries de academia - condicionamento', 
+    'series-de-academia-fisioculturismo': 'Séries de academia - fisioculturismo',
+    'series-para-ganho-de-massa-muscular': 'Séries para ganho de massa muscular',
+    'treinos-em-casa-sem-equipamento': 'Treinos em casa - sem equipamento',
+    'treino-de-pilates-sem-equipamentos': 'Treino de pilates - sem equipamentos',
+    'treinos-yoga': 'Treinos yoga',
+    'funcional-de-15-minutos': 'Funcional de 15 minutos',
+    'calistenia': 'Calistenia'
+  };
+
+  // Mock data para fallback se não houver dados do Supabase  
+  const fallbackCategories = [
     {
       title: "Série para emagrecer rápido",
       workouts: [
@@ -405,7 +424,15 @@ const Index = () => {
         
         {/* Workout Categories */}
         <div className="pb-8">
-          {workoutCategories.map((category, index) => (
+          {categories.map((category) => (
+            <CategoryCarousel
+              key={category.slug}
+              categorySlug={category.slug}
+              title={category.title}
+            />
+          ))}
+          {/* Fallback para categorias sem dados */}
+          {categories.length === 0 && fallbackCategories.map((category, index) => (
             <WorkoutCarousel
               key={index}
               title={category.title}
