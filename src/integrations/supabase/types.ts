@@ -140,10 +140,19 @@ export type Database = {
           duration_seconds: number | null
           equipment: string | null
           id: string
+          level: string | null
+          media_type: string | null
+          media_url: string | null
+          modality: string | null
           muscle_group: string | null
           name: string
           preview_path: string | null
+          primary_muscle: string | null
+          reps: number | null
+          sets: number | null
           slug: string
+          source_category: string | null
+          source_subdir: string | null
           tags: string[] | null
           video_path: string | null
         }
@@ -153,10 +162,19 @@ export type Database = {
           duration_seconds?: number | null
           equipment?: string | null
           id?: string
+          level?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          modality?: string | null
           muscle_group?: string | null
           name: string
           preview_path?: string | null
+          primary_muscle?: string | null
+          reps?: number | null
+          sets?: number | null
           slug: string
+          source_category?: string | null
+          source_subdir?: string | null
           tags?: string[] | null
           video_path?: string | null
         }
@@ -166,10 +184,19 @@ export type Database = {
           duration_seconds?: number | null
           equipment?: string | null
           id?: string
+          level?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          modality?: string | null
           muscle_group?: string | null
           name?: string
           preview_path?: string | null
+          primary_muscle?: string | null
+          reps?: number | null
+          sets?: number | null
           slug?: string
+          source_category?: string | null
+          source_subdir?: string | null
           tags?: string[] | null
           video_path?: string | null
         }
@@ -571,7 +598,42 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      category_exercises: {
+        Row: {
+          category_slug: string | null
+          created_at: string | null
+          difficulty: string | null
+          duration_seconds: number | null
+          eqp: string | null
+          equipment: string | null
+          id: string | null
+          level: string | null
+          lvl: string | null
+          m: string | null
+          media_type: string | null
+          media_url: string | null
+          modality: string | null
+          muscle_group: string | null
+          name: string | null
+          preview_path: string | null
+          primary_muscle: string | null
+          reps: number | null
+          sets: number | null
+          slug: string | null
+          source_category: string | null
+          source_subdir: string | null
+          tags: string[] | null
+          video_path: string | null
+        }
+        Relationships: []
+      }
+      exercise_tag_map: {
+        Row: {
+          exercise_slug: string | null
+          tags: Json | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       é_usuário_admin: {
