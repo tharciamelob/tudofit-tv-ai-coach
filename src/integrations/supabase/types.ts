@@ -73,6 +73,66 @@ export type Database = {
           },
         ]
       }
+      app_categories: {
+        Row: {
+          slug: string
+          title: string
+        }
+        Insert: {
+          slug: string
+          title: string
+        }
+        Update: {
+          slug?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      category_rules: {
+        Row: {
+          category_slug: string
+          require_equipment: string[] | null
+          require_level: string[] | null
+          require_modality: string[] | null
+          require_tags: Json | null
+          rule_id: number
+        }
+        Insert: {
+          category_slug: string
+          require_equipment?: string[] | null
+          require_level?: string[] | null
+          require_modality?: string[] | null
+          require_tags?: Json | null
+          rule_id?: number
+        }
+        Update: {
+          category_slug?: string
+          require_equipment?: string[] | null
+          require_level?: string[] | null
+          require_modality?: string[] | null
+          require_tags?: Json | null
+          rule_id?: number
+        }
+        Relationships: []
+      }
+      exercise_tags: {
+        Row: {
+          exercise_slug: string
+          tag_key: string
+          tag_value: string
+        }
+        Insert: {
+          exercise_slug: string
+          tag_key: string
+          tag_value: string
+        }
+        Update: {
+          exercise_slug?: string
+          tag_key?: string
+          tag_value?: string
+        }
+        Relationships: []
+      }
       exercises: {
         Row: {
           created_at: string | null
@@ -514,6 +574,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      é_usuário_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_admin_user: {
         Args: { user_email?: string }
         Returns: boolean
