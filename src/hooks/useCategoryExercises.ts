@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+export async function fetchCategoryExercises(slug: string, limit = 24, offset = 0) {
+  const { data, error } = await supabase
+    .from('category_exercises')
+    .select('*')
+    .eq('category_slug', slug)
+    .order('score', { ascending: false })
+    .order('name', { ascending: true })
+    .range(offset, offset + limit - 1);
+  if (error) throw error;
+  return data ?? [];
+}
+
 export interface CategoryExercise {
   id: string;
   slug: string;

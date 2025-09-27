@@ -1,9 +1,9 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useCategoryExercises } from "@/hooks/useCategoryExercises";
+import { fetchCategoryExercises } from "@/hooks/useCategoryExercises";
 import { Link } from "react-router-dom";
 
 interface CategoryCarouselProps {
@@ -12,7 +12,28 @@ interface CategoryCarouselProps {
 }
 
 const CategoryCarousel = ({ categorySlug, title }: CategoryCarouselProps) => {
-  const { exercises, loading, error } = useCategoryExercises(categorySlug);
+  const [exercises, setExercises] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadExercises = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await fetchCategoryExercises(categorySlug);
+        setExercises(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro ao carregar exercícios');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (categorySlug) {
+      loadExercises();
+    }
+  }, [categorySlug]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);

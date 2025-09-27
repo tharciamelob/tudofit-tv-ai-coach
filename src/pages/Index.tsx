@@ -7,14 +7,25 @@ import CategoryCarousel from "@/components/CategoryCarousel";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
-import { useAppCategories, useCategoryExercises } from "@/hooks/useCategoryExercises";
 
 const Index = () => {
   const { user } = useAuth();
   const { loading: authLoading } = useAuthGuard();
-  const { categories, loading: categoriesLoading } = useAppCategories();
+  const CATEGORIES = [
+    { slug: 'series-para-emagrecer-rapido', title: 'Séries para emagrecer rápido' },
+    { slug: 'crossfit', title: 'Crossfit' },
+    { slug: 'series-de-academia-iniciantes', title: 'Séries de academia - iniciantes' },
+    { slug: 'series-de-academia-condicionamento', title: 'Séries de academia - condicionamento' },
+    { slug: 'series-de-academia-fisioculturismo', title: 'Séries de academia - fisioculturismo' },
+    { slug: 'series-para-ganho-de-massa-muscular', title: 'Séries para ganho de massa muscular' },
+    { slug: 'treinos-em-casa-sem-equipamento', title: 'Treinos em casa - sem equipamento' },
+    { slug: 'treino-de-pilates-sem-equipamentos', title: 'Treino de pilates - sem equipamentos' },
+    { slug: 'treinos-yoga', title: 'Treinos yoga' },
+    { slug: 'funcional-de-15-minutos', title: 'Funcional de 15 minutos' },
+    { slug: 'calistenia', title: 'Calistenia' },
+  ];
 
-  if (authLoading || categoriesLoading) {
+  if (authLoading) {
     return <div>Carregando...</div>;
   }
 
@@ -424,7 +435,7 @@ const Index = () => {
         
         {/* Workout Categories */}
         <div className="pb-8">
-          {categories.map((category) => (
+          {CATEGORIES.map((category) => (
             <CategoryCarousel
               key={category.slug}
               categorySlug={category.slug}
@@ -432,7 +443,7 @@ const Index = () => {
             />
           ))}
           {/* Fallback para categorias sem dados */}
-          {categories.length === 0 && fallbackCategories.map((category, index) => (
+          {CATEGORIES.length === 0 && fallbackCategories.map((category, index) => (
             <WorkoutCarousel
               key={index}
               title={category.title}
