@@ -11,7 +11,7 @@ import { useAuthGuard } from "@/hooks/useAuthGuard";
 const Index = () => {
   const { user } = useAuth();
   const { loading: authLoading } = useAuthGuard();
-  const CATEGORIES = [
+  const CATEGORIAS = [
     { slug: 'series-para-emagrecer-rapido', title: 'Séries para emagrecer rápido' },
     { slug: 'crossfit', title: 'Crossfit' },
     { slug: 'series-de-academia-iniciantes', title: 'Séries de academia - iniciantes' },
@@ -435,7 +435,7 @@ const Index = () => {
         
         {/* Workout Categories */}
         <div className="pb-8">
-          {CATEGORIES.map((category) => (
+          {CATEGORIAS.map((category) => (
             <CategoryCarousel
               key={category.slug}
               categorySlug={category.slug}
@@ -443,7 +443,7 @@ const Index = () => {
             />
           ))}
           {/* Fallback para categorias sem dados */}
-          {CATEGORIES.length === 0 && fallbackCategories.map((category, index) => (
+          {CATEGORIAS.length === 0 && fallbackCategories.map((category, index) => (
             <WorkoutCarousel
               key={index}
               title={category.title}

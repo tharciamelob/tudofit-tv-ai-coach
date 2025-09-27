@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { fetchCategoryExercises } from "@/hooks/useCategoryExercises";
+import { fetchCategoryExercises, CategoryExercise } from "@/hooks/useCategoryExercises";
 import { Link } from "react-router-dom";
 
 interface CategoryCarouselProps {
@@ -17,22 +17,25 @@ const CategoryCarousel = ({ categorySlug, title }: CategoryCarouselProps) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadExercises = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await fetchCategoryExercises(categorySlug);
-        setExercises(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao carregar exercícios');
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    let active = true;
+    setLoading(true);
+    
     if (categorySlug) {
-      loadExercises();
+      fetchCategoryExercises(categorySlug, 24, 0)
+        .then((data) => { 
+          if (active) setExercises(data); 
+        })
+        .catch((e) => { 
+          if (active) setError(e.message); 
+        })
+        .finally(() => { 
+          if (active) setLoading(false); 
+        });
     }
+    
+    return () => { 
+      active = false; 
+    };
   }, [categorySlug]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -149,7 +152,7 @@ const CategoryCarousel = ({ categorySlug, title }: CategoryCarouselProps) => {
           onScroll={handleScroll}
         >
           {exercises.map((exercise) => (
-            <Card key={exercise.id} className="min-w-[300px] group/card hover:shadow-lg transition-shadow">
+            <Card key={exercise.slug} className="min-w-[300px] group/card hover:shadow-lg transition-shadow">
               <div className="relative overflow-hidden rounded-t-lg">
                 {exercise.media_url ? (
                   <img 
