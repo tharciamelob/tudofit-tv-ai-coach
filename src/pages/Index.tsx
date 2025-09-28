@@ -13,7 +13,6 @@ const CATEGORIAS = [
   { slug: 'series-para-ganho-de-massa-muscular', title: 'Séries para ganho de massa muscular' },
   { slug: 'treinos-em-casa-sem-equipamento', title: 'Treinos em casa - sem equipamento' },
   { slug: 'treino-de-pilates-sem-equipamentos', title: 'Treino de pilates - sem equipamentos' },
-  { slug: 'treinos-yoga', title: 'Treinos yoga' },
   { slug: 'funcional-de-15-minutos', title: 'Funcional de 15 minutos' },
   { slug: 'calistenia', title: 'Calistenia' },
 ];

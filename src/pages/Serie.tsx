@@ -54,7 +54,7 @@ export default function SeriePage() {
         <Button 
           onClick={() => navigate(-1)} 
           variant="ghost" 
-          className="mb-6"
+          className="mb-6 hover:bg-white/10"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
@@ -62,7 +62,7 @@ export default function SeriePage() {
 
         <div className="mb-8">
           <div className="grid md:grid-cols-2 gap-8 items-start">
-            <div className="relative aspect-video rounded-lg overflow-hidden bg-black">
+            <div className="relative aspect-video rounded-lg overflow-hidden bg-black shadow-xl">
               {series.cover_url ? (
                 <img
                   src={series.cover_url}
@@ -70,52 +70,91 @@ export default function SeriePage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-black flex items-center justify-center">
-                  <Play className="w-24 h-24 text-white/80" />
+                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                  <Play className="w-24 h-24 text-white/90 drop-shadow-lg" />
                 </div>
               )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             </div>
             
-            <div>
-              <h1 className="text-4xl font-bold text-foreground mb-4">
+            <div className="space-y-4">
+              <h1 className="text-4xl font-bold text-foreground leading-tight">
                 {series.name ?? series.slug}
               </h1>
-              <p className="text-lg text-muted-foreground mb-6">
+              <p className="text-lg text-muted-foreground leading-relaxed">
                 {series.description ?? 'Série de exercícios para seu treino.'}
               </p>
-              <div className="text-sm text-muted-foreground">
-                {series.exercises?.length || 0} exercícios
+              <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">{series.exercises?.length || 0}</span>
+                  <span>exercícios</span>
+                </div>
+                {series.exercises && series.exercises.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">
+                      ~{Math.round((series.exercises.length * 45) / 60)}min
+                    </span>
+                    <span>duração estimada</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Botão de início */}
+              <div className="pt-4">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-black hover:bg-white/90 font-semibold px-8 py-3 rounded-md"
+                >
+                  <Play className="w-5 h-5 mr-2 fill-black" />
+                  Iniciar Treino
+                </Button>
               </div>
             </div>
           </div>
         </div>
 
         <div>
-          <h2 className="text-2xl font-semibold mb-6 text-foreground">Exercícios</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-foreground">Exercícios da Série</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {series.exercises?.map((exercise, index) => (
-              <div key={exercise.slug} className="card-netflix rounded-lg p-4">
-                <div className="relative aspect-video rounded-lg overflow-hidden mb-4 bg-muted">
+              <div 
+                key={exercise.slug} 
+                className="bg-card rounded-lg overflow-hidden border border-border/50 hover:border-border transition-all duration-300 group cursor-pointer"
+              >
+                <div className="relative aspect-video bg-muted">
                   {exercise.media_url ? (
                     <img
                       src={exercise.media_url}
                       alt={exercise.name ?? exercise.slug}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
                   ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center">
-                      <Play className="w-12 h-12 text-muted-foreground" />
+                    <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
+                      <Play className="w-12 h-12 text-muted-foreground/60" />
                     </div>
                   )}
-                </div>
-                <div className="text-center">
-                  <div className="text-sm text-muted-foreground mb-1">
-                    Exercício {index + 1}
+                  
+                  {/* Número do exercício */}
+                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded">
+                    {index + 1}
                   </div>
-                  <h3 className="font-medium text-foreground line-clamp-2">
+                  
+                  {/* Play button overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+                      <Play className="w-6 h-6 text-white fill-white" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-4">
+                  <h3 className="font-medium text-foreground line-clamp-2 mb-1 group-hover:text-primary transition-colors">
                     {exercise.name ?? exercise.slug}
                   </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Exercício {index + 1} de {series.exercises?.length}
+                  </p>
                 </div>
               </div>
             ))}
