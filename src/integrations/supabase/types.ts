@@ -96,6 +96,9 @@ export type Database = {
           require_modality: string[] | null
           require_tags: Json | null
           rule_id: number
+          tag_key: string | null
+          tag_value: string | null
+          weight: number | null
         }
         Insert: {
           category_slug: string
@@ -104,6 +107,9 @@ export type Database = {
           require_modality?: string[] | null
           require_tags?: Json | null
           rule_id?: number
+          tag_key?: string | null
+          tag_value?: string | null
+          weight?: number | null
         }
         Update: {
           category_slug?: string
@@ -112,6 +118,87 @@ export type Database = {
           require_modality?: string[] | null
           require_tags?: Json | null
           rule_id?: number
+          tag_key?: string | null
+          tag_value?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      exercise_series: {
+        Row: {
+          category_slug: string
+          cover_url: string | null
+          description: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          category_slug: string
+          cover_url?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          category_slug?: string
+          cover_url?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      exercise_stage: {
+        Row: {
+          duration_seconds: string | null
+          equipment: string | null
+          id: string | null
+          level: string | null
+          media_type: string | null
+          media_url: string | null
+          modality: string | null
+          name: string | null
+          primary_muscle: string | null
+          reps: string | null
+          sets: string | null
+          slug: string | null
+          source_category: string | null
+          source_subdir: string | null
+        }
+        Insert: {
+          duration_seconds?: string | null
+          equipment?: string | null
+          id?: string | null
+          level?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          modality?: string | null
+          name?: string | null
+          primary_muscle?: string | null
+          reps?: string | null
+          sets?: string | null
+          slug?: string | null
+          source_category?: string | null
+          source_subdir?: string | null
+        }
+        Update: {
+          duration_seconds?: string | null
+          equipment?: string | null
+          id?: string | null
+          level?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          modality?: string | null
+          name?: string | null
+          primary_muscle?: string | null
+          reps?: string | null
+          sets?: string | null
+          slug?: string | null
+          source_category?: string | null
+          source_subdir?: string | null
         }
         Relationships: []
       }
@@ -414,6 +501,46 @@ export type Database = {
         }
         Relationships: []
       }
+      series_exercises: {
+        Row: {
+          exercise_id: string
+          position: number | null
+          series_id: string
+        }
+        Insert: {
+          exercise_id: string
+          position?: number | null
+          series_id: string
+        }
+        Update: {
+          exercise_id?: string
+          position?: number | null
+          series_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "series_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "category_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "series_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "series_exercises_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sleep_tracking: {
         Row: {
           bedtime: string
@@ -601,29 +728,21 @@ export type Database = {
       category_exercises: {
         Row: {
           category_slug: string | null
-          created_at: string | null
-          difficulty: string | null
           duration_seconds: number | null
-          eqp: string | null
           equipment: string | null
           id: string | null
           level: string | null
-          lvl: string | null
-          m: string | null
           media_type: string | null
           media_url: string | null
           modality: string | null
-          muscle_group: string | null
           name: string | null
-          preview_path: string | null
           primary_muscle: string | null
           reps: number | null
+          score: number | null
           sets: number | null
           slug: string | null
           source_category: string | null
           source_subdir: string | null
-          tags: string[] | null
-          video_path: string | null
         }
         Relationships: []
       }
@@ -631,6 +750,17 @@ export type Database = {
         Row: {
           exercise_slug: string | null
           tags: Json | null
+        }
+        Relationships: []
+      }
+      series_cards: {
+        Row: {
+          category_slug: string | null
+          cover_url: string | null
+          description: string | null
+          exercises: Json | null
+          name: string | null
+          slug: string | null
         }
         Relationships: []
       }
