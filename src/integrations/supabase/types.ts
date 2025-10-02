@@ -505,17 +505,29 @@ export type Database = {
         Row: {
           exercise_id: string
           position: number | null
+          reps: number | null
+          rest_seconds: number | null
           series_id: string
+          sets: number | null
+          work_seconds: number | null
         }
         Insert: {
           exercise_id: string
           position?: number | null
+          reps?: number | null
+          rest_seconds?: number | null
           series_id: string
+          sets?: number | null
+          work_seconds?: number | null
         }
         Update: {
           exercise_id?: string
           position?: number | null
+          reps?: number | null
+          rest_seconds?: number | null
           series_id?: string
+          sets?: number | null
+          work_seconds?: number | null
         }
         Relationships: [
           {
@@ -766,13 +778,56 @@ export type Database = {
       }
     }
     Functions: {
+      audit_series_diversity: {
+        Args: { p_category_slug?: string }
+        Returns: {
+          avg_exercises_per_series: number
+          avg_similarity: number
+          category: string
+          max_similarity: number
+          series_with_duplicates: number
+          top_exercises: Json
+          total_series: number
+        }[]
+      }
       é_usuário_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      ensure_varied_series: {
+        Args: {
+          p_category_slug: string
+          p_exercises_per_card?: number
+          p_min_cards?: number
+          p_reseed?: boolean
+        }
+        Returns: {
+          action: string
+          avg_similarity: number
+          exercise_count: number
+          series_name: string
+          series_slug: string
+        }[]
+      }
+      get_compatible_exercises: {
+        Args: {
+          category_slug_param: string
+          limit_count?: number
+          required_tags: string[]
+        }
+        Returns: {
+          exercise_id: string
+          exercise_slug: string
+          tag_match_score: number
+        }[]
+      }
       is_admin_user: {
         Args: { user_email?: string }
         Returns: boolean
+      }
+      jaccard_similarity: {
+        Args: { arr1: string[]; arr2: string[] }
+        Returns: number
       }
     }
     Enums: {
