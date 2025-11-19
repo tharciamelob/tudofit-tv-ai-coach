@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchSeriesDetails, type SeriesCard } from '@/hooks/useCategoryExercises';
@@ -8,6 +8,7 @@ import { fetchSeriesDetails, type SeriesCard } from '@/hooks/useCategoryExercise
 export default function SeriePage() {
   const params = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [series, setSeries] = React.useState<SeriesCard | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -15,7 +16,10 @@ export default function SeriePage() {
   const slug = params?.slug as string;
 
   const handleBack = () => {
-    if (window.history.length > 1) {
+    // Verifica se veio de dentro da app pelo location.key
+    const canGoBack = location.key !== 'default' && window.history.length > 1;
+    
+    if (canGoBack) {
       navigate(-1);
     } else {
       navigate('/');
