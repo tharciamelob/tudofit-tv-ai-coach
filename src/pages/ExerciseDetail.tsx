@@ -15,6 +15,14 @@ const ExerciseDetail = () => {
   const { user, loading: authLoading } = useAuth();
   const { loading: guardLoading } = useAuthGuard();
   const { exercise, loading, error } = useExercise(slug || '');
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
   
   // Get signed URLs for media with 1 hour TTL
   const { url: videoUrl, loading: videoLoading } = useSignedUrl('workouts', exercise?.video_path || null, 3600);
@@ -50,9 +58,9 @@ const ExerciseDetail = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Acesso Restrito</h2>
           <p className="text-gray-600 mb-6">Você precisa estar logado para ver este exercício.</p>
-          <Button onClick={() => navigate('/')}>
+          <Button onClick={handleBack}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar ao início
+            Voltar
           </Button>
         </div>
       </div>
@@ -65,9 +73,9 @@ const ExerciseDetail = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Exercício não encontrado</h2>
           <p className="text-gray-600 mb-6">{error || 'O exercício solicitado não existe.'}</p>
-          <Button onClick={() => navigate('/exercicios')}>
+          <Button onClick={handleBack}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar aos exercícios
+            Voltar
           </Button>
         </div>
       </div>
@@ -79,11 +87,11 @@ const ExerciseDetail = () => {
       <div className="container mx-auto px-4 py-8">
         <Button
           variant="outline"
-          onClick={() => navigate('/exercicios')}
+          onClick={handleBack}
           className="mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar aos exercícios
+          Voltar
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

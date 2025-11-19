@@ -55,6 +55,14 @@ export default function PersonalIA() {
     clearCurrentConversation();
   };
 
+  const handleBackToMain = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/';
+    }
+  };
+
   if (!user) {
     return (
     <div className="min-h-screen bg-black app-container">
@@ -173,7 +181,7 @@ export default function PersonalIA() {
                 <Button onClick={() => setGeneratedPlan(null)}>
                   Gerar Novo Treino
                 </Button>
-                <Button variant="outline" onClick={() => window.location.reload()}>
+                <Button variant="outline" onClick={handleBackToMain}>
                   Voltar ao Início
                 </Button>
               </div>
