@@ -14,6 +14,14 @@ export default function SeriePage() {
 
   const slug = params?.slug as string;
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
   React.useEffect(() => {
     if (!slug) return;
 
@@ -40,7 +48,7 @@ export default function SeriePage() {
         <div className="text-destructive mb-4">
           {error || 'Série não encontrada'}
         </div>
-        <Button onClick={() => navigate(-1)} variant="outline">
+        <Button onClick={handleBack} variant="outline">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
         </Button>
@@ -52,7 +60,7 @@ export default function SeriePage() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <Button 
-          onClick={() => navigate(-1)} 
+          onClick={handleBack} 
           variant="ghost" 
           className="mb-6 hover:bg-white/10"
         >
