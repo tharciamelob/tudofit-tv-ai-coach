@@ -7,6 +7,7 @@ import { useExercises, ExerciseFilters } from '@/hooks/useExercises';
 import { useSignedUrls } from '@/hooks/useSignedUrls';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
+import { ExerciseImage } from '@/components/ExerciseImage';
 
 interface ExerciseGridProps {
   filters?: ExerciseFilters;
@@ -81,20 +82,16 @@ export const ExerciseGrid: React.FC<ExerciseGridProps> = ({
             <Card key={exercise.id} className="group hover:shadow-lg transition-shadow">
               <CardContent className="p-0">
                 <div className="aspect-video bg-muted relative overflow-hidden rounded-t-lg">
-                  {previewUrl ? (
-                    <video
-                      src={previewUrl}
-                      className="w-full h-full object-cover"
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-muted">
-                      <PlayCircle className="w-12 h-12 text-muted-foreground" />
-                    </div>
-                  )}
+                  <ExerciseImage
+                    src={previewUrl}
+                    alt={exercise.name}
+                    className="w-full h-full object-cover"
+                    isVideo={true}
+                    autoPlay={true}
+                    loop={true}
+                    muted={true}
+                    playsInline={true}
+                  />
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <PlayCircle className="w-12 h-12 text-white" />
                   </div>

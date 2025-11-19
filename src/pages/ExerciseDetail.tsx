@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Play, Clock, Target, Dumbbell } from 'lucide-react';
+import { ExerciseImage } from '@/components/ExerciseImage';
 
 const ExerciseDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -113,22 +114,26 @@ const ExerciseDetail = () => {
                       </div>
                     </div>
                   ) : videoUrl ? (
-                    <video
+                    <ExerciseImage
                       src={videoUrl}
-                      controls
+                      alt={exercise.name}
                       className="w-full h-full object-cover"
-                      poster={previewUrl || undefined}
-                    >
-                      Seu navegador não suporta o elemento de vídeo.
-                    </video>
+                      isVideo={true}
+                      autoPlay={false}
+                      loop={false}
+                      muted={false}
+                      playsInline={true}
+                    />
                   ) : previewUrl ? (
-                    <video
+                    <ExerciseImage
                       src={previewUrl}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
+                      alt={exercise.name}
                       className="w-full h-full object-cover"
+                      isVideo={true}
+                      autoPlay={true}
+                      loop={true}
+                      muted={true}
+                      playsInline={true}
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">
