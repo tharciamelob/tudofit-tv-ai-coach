@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Play } from 'lucide-react';
 import { fetchSeriesCards, type SeriesCard } from '@/hooks/useCategoryExercises';
+import { ExerciseImage } from '@/components/ExerciseImage';
 
 type Props = { title: string; slug: string };
 
@@ -56,18 +57,12 @@ export default function CategoriaCarrossel({ title, slug }: Props) {
               className="flex-shrink-0 w-64 cursor-pointer group"
             >
               <div className="relative aspect-video rounded-lg overflow-hidden mb-3 bg-black shadow-lg">
-                {series.cover_url ? (
-                  <img
-                    src={series.cover_url}
-                    alt={series.name ?? series.slug}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-all duration-300"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                    <Play className="w-16 h-16 text-white/90 drop-shadow-lg" />
-                  </div>
-                )}
+                <ExerciseImage
+                  src={series.cover_url}
+                  alt={series.name ?? series.slug}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-all duration-300"
+                  loading="lazy"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
                 

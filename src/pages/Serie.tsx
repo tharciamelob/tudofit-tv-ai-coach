@@ -4,6 +4,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchSeriesDetails, type SeriesCard } from '@/hooks/useCategoryExercises';
+import { ExerciseImage } from '@/components/ExerciseImage';
 
 export default function SeriePage() {
   const params = useParams();
@@ -75,17 +76,11 @@ export default function SeriePage() {
         <div className="mb-8">
           <div className="grid md:grid-cols-2 gap-8 items-start">
             <div className="relative aspect-video rounded-lg overflow-hidden bg-black shadow-xl">
-              {series.cover_url ? (
-                <img
-                  src={series.cover_url}
-                  alt={series.name ?? series.slug}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                  <Play className="w-24 h-24 text-white/90 drop-shadow-lg" />
-                </div>
-              )}
+              <ExerciseImage
+                src={series.cover_url}
+                alt={series.name ?? series.slug}
+                className="w-full h-full object-cover"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             </div>
             
@@ -134,18 +129,12 @@ export default function SeriePage() {
                 className="bg-card rounded-lg overflow-hidden border border-border/50 hover:border-border transition-all duration-300 group cursor-pointer"
               >
                 <div className="relative aspect-video bg-muted">
-                  {exercise.media_url ? (
-                    <img
-                      src={exercise.media_url}
-                      alt={exercise.name ?? exercise.slug}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-                      <Play className="w-12 h-12 text-muted-foreground/60" />
-                    </div>
-                  )}
+                  <ExerciseImage
+                    src={exercise.media_url}
+                    alt={exercise.name ?? exercise.slug}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
                   
                   {/* Número do exercício */}
                   <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded">

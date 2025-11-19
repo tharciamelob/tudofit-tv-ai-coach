@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { fetchCategoryExercises, CategoryExercise } from "@/hooks/useCategoryExercises";
 import { Link } from "react-router-dom";
+import { ExerciseImage } from '@/components/ExerciseImage';
 
 interface CategoryCarouselProps {
   categorySlug: string;
@@ -154,17 +155,12 @@ const CategoryCarousel = ({ categorySlug, title }: CategoryCarouselProps) => {
           {exercises.map((exercise) => (
             <Card key={exercise.slug} className="min-w-[300px] group/card hover:shadow-lg transition-shadow">
               <div className="relative overflow-hidden rounded-t-lg">
-                {exercise.media_url ? (
-                  <img 
-                    src={exercise.media_url} 
-                    alt={exercise.name}
-                    className="w-full h-40 object-cover group-hover/card:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-40 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                    <span className="text-muted-foreground">Sem imagem</span>
-                  </div>
-                )}
+                <ExerciseImage
+                  src={exercise.media_url}
+                  alt={exercise.name ?? 'Exercício'}
+                  className="w-full h-40 object-cover group-hover/card:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
                 
                 {/* Badges */}
