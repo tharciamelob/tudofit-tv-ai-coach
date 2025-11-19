@@ -559,7 +559,7 @@ export type Database = {
           created_at: string
           date: string
           id: string
-          sleep_duration: unknown | null
+          sleep_duration: unknown
           sleep_quality: number | null
           user_id: string
           wake_time: string
@@ -569,7 +569,7 @@ export type Database = {
           created_at?: string
           date?: string
           id?: string
-          sleep_duration?: unknown | null
+          sleep_duration?: unknown
           sleep_quality?: number | null
           user_id: string
           wake_time: string
@@ -579,7 +579,7 @@ export type Database = {
           created_at?: string
           date?: string
           id?: string
-          sleep_duration?: unknown | null
+          sleep_duration?: unknown
           sleep_quality?: number | null
           user_id?: string
           wake_time?: string
@@ -790,10 +790,8 @@ export type Database = {
           total_series: number
         }[]
       }
-      é_usuário_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      auto_tag_exercises: { Args: never; Returns: undefined }
+      é_usuário_admin: { Args: never; Returns: boolean }
       ensure_varied_series: {
         Args: {
           p_category_slug: string
@@ -809,22 +807,34 @@ export type Database = {
           series_slug: string
         }[]
       }
-      get_compatible_exercises: {
-        Args: {
-          category_slug_param: string
-          limit_count?: number
-          required_tags: string[]
-        }
-        Returns: {
-          exercise_id: string
-          exercise_slug: string
-          tag_match_score: number
-        }[]
-      }
-      is_admin_user: {
-        Args: { user_email?: string }
-        Returns: boolean
-      }
+      get_compatible_exercises:
+        | {
+            Args: {
+              category_slug_param: string
+              exclude_exercises?: string[]
+              limit_count?: number
+              required_tags: string[]
+            }
+            Returns: {
+              exercise_id: string
+              exercise_slug: string
+              tag_match_score: number
+              usage_count: number
+            }[]
+          }
+        | {
+            Args: {
+              category_slug_param: string
+              limit_count?: number
+              required_tags: string[]
+            }
+            Returns: {
+              exercise_id: string
+              exercise_slug: string
+              tag_match_score: number
+            }[]
+          }
+      is_admin_user: { Args: { user_email?: string }; Returns: boolean }
       jaccard_similarity: {
         Args: { arr1: string[]; arr2: string[] }
         Returns: number
