@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useExercise } from '@/hooks/useExercises';
 import { useSignedUrl } from '@/hooks/useSignedUrls';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,12 +12,17 @@ import { ArrowLeft, Play, Clock, Target, Dumbbell } from 'lucide-react';
 const ExerciseDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, loading: authLoading } = useAuth();
   const { loading: guardLoading } = useAuthGuard();
   const { exercise, loading, error } = useExercise(slug || '');
 
   const handleBack = () => {
-    if (window.history.length > 1) {
+    // Verifica se veio de dentro da app pelo location.key
+    // ou se há estado de navegação
+    const canGoBack = location.key !== 'default' && window.history.length > 1;
+    
+    if (canGoBack) {
       navigate(-1);
     } else {
       navigate('/');
