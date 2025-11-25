@@ -12,7 +12,8 @@ import {
   Zap, 
   Heart, 
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Utensils
 } from 'lucide-react';
 
 interface MealPlan {
@@ -20,7 +21,7 @@ interface MealPlan {
   name: string;
   description: string;
   goal: 'emagrecimento' | 'ganho_massa' | 'manutencao';
-  meal_type: 'cafe_da_manha' | 'almoco' | 'lanche' | 'jantar';
+  meal_type: 'cafe_da_manha' | 'almoco' | 'lanche' | 'jantar' | 'ceia';
   foods: {
     name: string;
     quantity: string;
@@ -135,6 +136,72 @@ const readyMealPlans: MealPlan[] = [
     ],
     totals: { calories: 258, protein: 27, carbs: 9, fat: 12 }
   },
+  {
+    id: 'jantar_ganho_massa_1',
+    name: 'Jantar Completo',
+    description: 'Alto valor proteico com carboidratos',
+    goal: 'ganho_massa',
+    meal_type: 'jantar',
+    foods: [
+      { name: 'Batata doce', quantity: '150g', calories: 130, protein: 2, carbs: 30, fat: 0 },
+      { name: 'Frango grelhado', quantity: '180g', calories: 247, protein: 47, carbs: 0, fat: 6 },
+      { name: 'Brócolis no vapor', quantity: '100g', calories: 35, protein: 3, carbs: 7, fat: 0 },
+      { name: 'Azeite', quantity: '1 colher de sopa', calories: 120, protein: 0, carbs: 0, fat: 14 }
+    ],
+    totals: { calories: 532, protein: 52, carbs: 37, fat: 20 }
+  },
+  {
+    id: 'jantar_manutencao_1',
+    name: 'Jantar Balanceado',
+    description: 'Equilíbrio entre proteína e carboidratos',
+    goal: 'manutencao',
+    meal_type: 'jantar',
+    foods: [
+      { name: 'Filé de tilápia', quantity: '150g', calories: 150, protein: 30, carbs: 0, fat: 3 },
+      { name: 'Quinoa cozida', quantity: '80g', calories: 120, protein: 4, carbs: 21, fat: 2 },
+      { name: 'Legumes grelhados', quantity: '150g', calories: 80, protein: 3, carbs: 15, fat: 1 },
+      { name: 'Salada verde', quantity: '1 prato', calories: 25, protein: 2, carbs: 5, fat: 0 }
+    ],
+    totals: { calories: 375, protein: 39, carbs: 41, fat: 6 }
+  },
+  {
+    id: 'ceia_emagrecimento_1',
+    name: 'Ceia Leve',
+    description: 'Proteína pura para recuperação',
+    goal: 'emagrecimento',
+    meal_type: 'ceia',
+    foods: [
+      { name: 'Whey protein', quantity: '30g', calories: 120, protein: 24, carbs: 2, fat: 1 },
+      { name: 'Chá de camomila', quantity: '1 xícara', calories: 0, protein: 0, carbs: 0, fat: 0 }
+    ],
+    totals: { calories: 120, protein: 24, carbs: 2, fat: 1 }
+  },
+  {
+    id: 'ceia_ganho_massa_1',
+    name: 'Ceia Proteica',
+    description: 'Caseína para recuperação noturna',
+    goal: 'ganho_massa',
+    meal_type: 'ceia',
+    foods: [
+      { name: 'Cottage cheese', quantity: '150g', calories: 120, protein: 18, carbs: 6, fat: 3 },
+      { name: 'Aveia', quantity: '30g', calories: 114, protein: 4, carbs: 19, fat: 2 },
+      { name: 'Pasta de amendoim', quantity: '15g', calories: 90, protein: 4, carbs: 3, fat: 8 }
+    ],
+    totals: { calories: 324, protein: 26, carbs: 28, fat: 13 }
+  },
+  {
+    id: 'ceia_manutencao_1',
+    name: 'Ceia Equilibrada',
+    description: 'Leve e nutritiva para o sono',
+    goal: 'manutencao',
+    meal_type: 'ceia',
+    foods: [
+      { name: 'Iogurte grego', quantity: '150g', calories: 100, protein: 15, carbs: 6, fat: 0 },
+      { name: 'Nozes', quantity: '10g', calories: 65, protein: 2, carbs: 1, fat: 6 },
+      { name: 'Mel', quantity: '1 colher de chá', calories: 20, protein: 0, carbs: 5, fat: 0 }
+    ],
+    totals: { calories: 185, protein: 17, carbs: 12, fat: 6 }
+  },
   // Manutenção
   {
     id: 'cafe_manutencao_1',
@@ -200,14 +267,16 @@ export const ReadyMealPlans = ({ onSelectPlan }: ReadyMealPlansProps) => {
     cafe_da_manha: Coffee,
     almoco: Sun,
     lanche: Cookie,
-    jantar: Moon
+    jantar: Moon,
+    ceia: Utensils
   };
 
   const mealTypeLabels = {
     cafe_da_manha: 'Café da Manhã',
     almoco: 'Almoço',
     lanche: 'Lanche',
-    jantar: 'Jantar'
+    jantar: 'Jantar',
+    ceia: 'Ceia'
   };
 
   const goalLabels = {
