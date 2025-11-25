@@ -11,8 +11,8 @@ import {
   Target, 
   Zap, 
   Heart, 
-  Plus,
-  Clock
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 
 interface MealPlan {
@@ -134,6 +134,52 @@ const readyMealPlans: MealPlan[] = [
       { name: 'Salada de rúcula', quantity: '1 prato', calories: 20, protein: 2, carbs: 3, fat: 0 }
     ],
     totals: { calories: 258, protein: 27, carbs: 9, fat: 12 }
+  },
+  // Manutenção
+  {
+    id: 'cafe_manutencao_1',
+    name: 'Café Energético Balanceado',
+    description: 'Manutenção Energética',
+    goal: 'manutencao',
+    meal_type: 'cafe_da_manha',
+    foods: [
+      { name: 'Iogurte natural', quantity: '200g', calories: 120, protein: 10, carbs: 12, fat: 3 },
+      { name: 'Granola', quantity: '30g', calories: 140, protein: 4, carbs: 20, fat: 5 },
+      { name: 'Banana', quantity: '1 unidade média', calories: 105, protein: 1, carbs: 27, fat: 0 },
+      { name: 'Mel', quantity: '1 colher de chá', calories: 20, protein: 0, carbs: 5, fat: 0 },
+      { name: 'Ovos cozidos', quantity: '1 ovo', calories: 70, protein: 6, carbs: 1, fat: 5 }
+    ],
+    totals: { calories: 455, protein: 21, carbs: 65, fat: 13 }
+  },
+  {
+    id: 'almoco_manutencao_1',
+    name: 'Prato Balanceado Completo',
+    description: 'Manutenção Balanceada',
+    goal: 'manutencao',
+    meal_type: 'almoco',
+    foods: [
+      { name: 'Arroz integral', quantity: '80g cozido', calories: 89, protein: 2, carbs: 18, fat: 1 },
+      { name: 'Feijão preto', quantity: '60g', calories: 66, protein: 4, carbs: 12, fat: 0 },
+      { name: 'Filé de frango grelhado', quantity: '120g', calories: 165, protein: 31, carbs: 0, fat: 4 },
+      { name: 'Cenoura refogada', quantity: '80g', calories: 35, protein: 1, carbs: 8, fat: 0 },
+      { name: 'Salada verde', quantity: '1 prato', calories: 25, protein: 2, carbs: 5, fat: 0 },
+      { name: 'Azeite', quantity: '1 colher de chá', calories: 40, protein: 0, carbs: 0, fat: 4 }
+    ],
+    totals: { calories: 420, protein: 40, carbs: 43, fat: 9 }
+  },
+  {
+    id: 'lanche_manutencao_1',
+    name: 'Lanche Equilibrado',
+    description: 'Manutenção Leve',
+    goal: 'manutencao',
+    meal_type: 'lanche',
+    foods: [
+      { name: 'Pão integral', quantity: '1 fatia', calories: 80, protein: 3, carbs: 15, fat: 1 },
+      { name: 'Queijo cottage', quantity: '50g', calories: 55, protein: 7, carbs: 2, fat: 2 },
+      { name: 'Tomate', quantity: '3 rodelas', calories: 10, protein: 0, carbs: 2, fat: 0 },
+      { name: 'Maçã', quantity: '1 unidade pequena', calories: 52, protein: 0, carbs: 14, fat: 0 }
+    ],
+    totals: { calories: 197, protein: 10, carbs: 33, fat: 3 }
   }
 ];
 
@@ -180,7 +226,7 @@ export const ReadyMealPlans = ({ onSelectPlan }: ReadyMealPlansProps) => {
           Cardápios Prontos
         </CardTitle>
         <CardDescription>
-          Selecione um cardápio pronto baseado no seu objetivo e personalize conforme necessário
+          Selecione um cardápio pronto baseado no seu objetivo nutricional
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -208,61 +254,67 @@ export const ReadyMealPlans = ({ onSelectPlan }: ReadyMealPlansProps) => {
                 const GoalIcon = goalIcons[plan.goal];
                 
                 return (
-                  <Card key={plan.id} className="bg-gradient-to-b from-muted/20 to-muted/10 border-white/10 hover:border-primary/30 transition-all duration-300 group">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                            <MealIcon className="h-4 w-4 text-primary" />
+                  <Card key={plan.id} className="bg-gradient-to-b from-muted/10 to-background/50 border-border/50 hover:border-primary/40 hover:shadow-lg transition-all duration-300 group">
+                    <CardHeader className="pb-4 space-y-3">
+                      {/* Header com ícone e badge */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2.5 rounded-xl bg-primary/15 group-hover:bg-primary/25 transition-colors">
+                            <MealIcon className="h-5 w-5 text-primary" />
                           </div>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="secondary" className="text-xs font-medium px-2.5 py-0.5">
                             {mealTypeLabels[plan.meal_type]}
                           </Badge>
                         </div>
-                        <GoalIcon className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {plan.name}
-                      </CardTitle>
-                      <CardDescription className="text-sm">
-                        {plan.description}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Nutritional Summary */}
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="text-center p-2 bg-background/50 rounded-lg">
-                          <div className="font-bold text-primary">{plan.totals.calories}</div>
-                          <div className="text-xs text-muted-foreground">kcal</div>
-                        </div>
-                        <div className="text-center p-2 bg-background/50 rounded-lg">
-                          <div className="font-bold text-blue-500">{plan.totals.protein}g</div>
-                          <div className="text-xs text-muted-foreground">proteína</div>
-                        </div>
                       </div>
 
-                      {/* Foods Preview */}
+                      {/* Nome e descrição */}
                       <div className="space-y-1">
-                        {plan.foods.slice(0, 3).map((food, index) => (
-                          <div key={index} className="text-xs text-muted-foreground flex justify-between">
-                            <span>{food.name}</span>
-                            <span>{food.calories} kcal</span>
-                          </div>
-                        ))}
-                        {plan.foods.length > 3 && (
-                          <div className="text-xs text-muted-foreground">
-                            +{plan.foods.length - 3} alimentos mais...
-                          </div>
-                        )}
+                        <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors leading-tight">
+                          {plan.name}
+                        </CardTitle>
+                        <CardDescription className="text-sm text-muted-foreground">
+                          {plan.description}
+                        </CardDescription>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4 pt-0">
+                      {/* Métricas principais em destaque */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="text-center p-3 bg-primary/5 rounded-lg border border-primary/10">
+                          <div className="text-2xl font-bold text-primary">{plan.totals.calories}</div>
+                          <div className="text-xs text-muted-foreground font-medium mt-0.5">kcal</div>
+                        </div>
+                        <div className="text-center p-3 bg-blue-500/5 rounded-lg border border-blue-500/10">
+                          <div className="text-2xl font-bold text-blue-500">{plan.totals.protein}g</div>
+                          <div className="text-xs text-muted-foreground font-medium mt-0.5">proteína</div>
+                        </div>
                       </div>
 
+                      {/* Lista de alimentos limpa */}
+                      <div className="space-y-2">
+                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          Alimentos
+                        </div>
+                        <div className="space-y-1.5 max-h-28 overflow-y-auto pr-1">
+                          {plan.foods.map((food, index) => (
+                            <div key={index} className="text-sm flex items-center justify-between py-1.5 px-2 rounded bg-muted/30 hover:bg-muted/50 transition-colors">
+                              <span className="text-foreground/90 font-medium truncate flex-1">{food.name}</span>
+                              <span className="text-muted-foreground text-xs ml-2 whitespace-nowrap">{food.calories} kcal</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Botão de ação */}
                       <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
-                        className="w-full gap-2 bg-background/50 hover:bg-primary/10 hover:border-primary/50"
+                        className="w-full gap-2 font-medium hover:scale-[1.02] transition-all"
                         onClick={() => onSelectPlan(plan)}
                       >
-                        <Plus className="h-3 w-3" />
+                        <CheckCircle2 className="h-4 w-4" />
                         Usar este Cardápio
                       </Button>
                     </CardContent>
