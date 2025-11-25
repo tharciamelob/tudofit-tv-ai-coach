@@ -2,21 +2,31 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Apple, MessageCircle, FileDown, Target, Clock, Brain, History } from "lucide-react";
+import { Apple, MessageCircle, FileDown, Target, Clock, Brain, History, Calendar } from "lucide-react";
 import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
 import { ConversationHistory } from "@/components/ConversationHistory";
 import { ReadyMealPlans } from "@/components/ReadyMealPlans";
+import { DailyMealPlan } from "@/components/DailyMealPlan";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConversationHistory } from "@/hooks/useConversationHistory";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
+import { useDailyMealPlan, MealPlan } from "@/hooks/useDailyMealPlan";
 
 export default function NutriIA() {
   const [showChat, setShowChat] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
+  const [showDailyPlan, setShowDailyPlan] = useState(false);
   const { user } = useAuth();
   const { generateNutritionPDF, isGenerating } = usePDFGeneration();
+  const { 
+    dailyPlan,
+    addMealToPlan,
+    substituteFood,
+    clearDailyPlan,
+    removeMealFromPlan
+  } = useDailyMealPlan();
   const { 
     currentConversation, 
     createConversation, 
@@ -60,6 +70,16 @@ export default function NutriIA() {
     } else {
       window.location.href = '/';
     }
+  };
+
+  const handleSelectMealPlan = (plan: MealPlan) => {
+    addMealToPlan(plan);
+    setShowDailyPlan(true);
+  };
+
+  const handleClearDailyPlan = () => {
+    clearDailyPlan();
+    setShowDailyPlan(false);
   };
 
   if (!user) {
@@ -219,10 +239,36 @@ export default function NutriIA() {
           </div>
         </div>
 
+        {/* Daily Plan Section */}
+        {dailyPlan && showDailyPlan && (
+          <div className="mb-8">
+            <DailyMealPlan 
+              dailyPlan={dailyPlan}
+              onSubstituteFood={substituteFood}
+              onRemoveMeal={removeMealFromPlan}
+              onClearPlan={handleClearDailyPlan}
+            />
+          </div>
+        )}
+
         {/* Cardápios Prontos */}
         <div className="mb-8">
-          <ReadyMealPlans onSelectPlan={() => {}} />
+          <ReadyMealPlans onSelectPlan={handleSelectMealPlan} />
         </div>
+
+        {/* Toggle Daily Plan Button */}
+        {dailyPlan && !showDailyPlan && (
+          <div className="mb-8 text-center">
+            <Button 
+              onClick={() => setShowDailyPlan(true)}
+              variant="outline"
+              className="gap-2"
+            >
+              <Calendar className="h-4 w-4" />
+              Ver Meu Plano de Hoje
+            </Button>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8 max-w-md mx-auto">
