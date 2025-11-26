@@ -28,6 +28,10 @@ export const DailyMealPlan = ({
   onRemoveMeal,
   onClearPlan 
 }: DailyMealPlanProps) => {
+  // Formatting functions for nutritional values
+  const formatKcal = (value: number) => Math.round(value);
+  const formatMacro = (value: number) => Number(value.toFixed(1));
+
   const [substitutionModal, setSubstitutionModal] = useState<{
     open: boolean;
     mealId: string;
@@ -137,19 +141,19 @@ export const DailyMealPlan = ({
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-background/50 rounded-lg">
-                  <div className="text-3xl font-bold text-primary">{dailyPlan.dailyTotals.calories}</div>
+                  <div className="text-3xl font-bold text-primary">{formatKcal(dailyPlan.dailyTotals.calories)}</div>
                   <div className="text-sm text-muted-foreground font-medium mt-1">kcal</div>
                 </div>
                 <div className="text-center p-4 bg-background/50 rounded-lg">
-                  <div className="text-3xl font-bold text-blue-500">{dailyPlan.dailyTotals.protein}g</div>
+                  <div className="text-3xl font-bold text-blue-500">{formatMacro(dailyPlan.dailyTotals.protein)}g</div>
                   <div className="text-sm text-muted-foreground font-medium mt-1">proteína</div>
                 </div>
                 <div className="text-center p-4 bg-background/50 rounded-lg">
-                  <div className="text-3xl font-bold text-amber-500">{dailyPlan.dailyTotals.carbs}g</div>
+                  <div className="text-3xl font-bold text-amber-500">{formatMacro(dailyPlan.dailyTotals.carbs)}g</div>
                   <div className="text-sm text-muted-foreground font-medium mt-1">carboidratos</div>
                 </div>
                 <div className="text-center p-4 bg-background/50 rounded-lg">
-                  <div className="text-3xl font-bold text-purple-500">{dailyPlan.dailyTotals.fat}g</div>
+                  <div className="text-3xl font-bold text-purple-500">{formatMacro(dailyPlan.dailyTotals.fat)}g</div>
                   <div className="text-sm text-muted-foreground font-medium mt-1">gorduras</div>
                 </div>
               </div>
@@ -173,7 +177,7 @@ export const DailyMealPlan = ({
                         <div>
                           <CardTitle className="text-lg">{meal.name}</CardTitle>
                           <CardDescription className="text-sm">
-                            {mealTypeLabels[meal.meal_type]} • {meal.totals.calories} kcal • {meal.totals.protein}g proteína
+                            {mealTypeLabels[meal.meal_type]} • {formatKcal(meal.totals.calories)} kcal • {formatMacro(meal.totals.protein)}g proteína
                           </CardDescription>
                         </div>
                       </div>
@@ -200,9 +204,9 @@ export const DailyMealPlan = ({
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-sm text-right">
-                            <span className="font-semibold">{food.calories} kcal</span>
+                            <span className="font-semibold">{formatKcal(food.calories)} kcal</span>
                             <div className="text-xs text-muted-foreground">
-                              P: {food.protein}g • C: {food.carbs}g • G: {food.fat}g
+                              P: {formatMacro(food.protein)}g • C: {formatMacro(food.carbs)}g • G: {formatMacro(food.fat)}g
                             </div>
                           </div>
                           <Button
