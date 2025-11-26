@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, Minus, Loader2, Sparkles } from 'lucide-react';
 import { Food } from '@/hooks/useDailyMealPlan';
+import { useFoodDatabase, FoodItem } from '@/hooks/useFoodDatabase';
 
 interface FoodSubstitutionModalProps {
   open: boolean;
@@ -64,6 +65,62 @@ export const FoodSubstitutionModal = ({
   onSubstitute 
 }: FoodSubstitutionModalProps) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<FoodItem[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const { searchFoods, searchOrCreateFood, loading } = useFoodDatabase();
+
+  // Debounced search
+  useEffect(() => {
+    if (!searchTerm || searchTerm.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      const results = await searchFoods(searchTerm);
+      setSearchResults(results);
+      setIsSearching(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const handleCreateFood = async () => {
+    if (!searchTerm) return;
+    
+    const newFood = await searchOrCreateFood(searchTerm);
+    if (newFood) {
+      // Convert FoodItem to Food format (with quantity)
+      const foodToSubstitute: Food = {
+        name: newFood.name,
+        quantity: currentFood.quantity, // Keep same quantity
+        calories: Math.round(newFood.kcal_per_100g * parseQuantity(currentFood.quantity) / 100),
+        protein: Math.round(newFood.protein_per_100g * parseQuantity(currentFood.quantity) / 100),
+        carbs: Math.round(newFood.carbs_per_100g * parseQuantity(currentFood.quantity) / 100),
+        fat: Math.round(newFood.fat_per_100g * parseQuantity(currentFood.quantity) / 100),
+      };
+      onSubstitute(foodToSubstitute);
+      onOpenChange(false);
+    }
+  };
+
+  const parseQuantity = (quantity: string): number => {
+    const match = quantity.match(/(\d+)/);
+    return match ? parseInt(match[1]) : 100;
+  };
+
+  const convertFoodItemToFood = (item: FoodItem): Food => {
+    const qty = parseQuantity(currentFood.quantity);
+    return {
+      name: item.name,
+      quantity: currentFood.quantity,
+      calories: Math.round(item.kcal_per_100g * qty / 100),
+      protein: Math.round(item.protein_per_100g * qty / 100),
+      carbs: Math.round(item.carbs_per_100g * qty / 100),
+      fat: Math.round(item.fat_per_100g * qty / 100),
+    };
+  };
 
   const getCategoryFromMacros = (food: Food): string => {
     const totalMacros = food.protein + food.carbs + food.fat;
@@ -98,13 +155,6 @@ export const FoodSubstitutionModal = ({
     return filtered.slice(0, 8);
   };
 
-  const searchFoods = (): Food[] => {
-    if (!searchTerm) return [];
-    
-    return foodDatabase.filter(food => 
-      food.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ).slice(0, 10);
-  };
 
   const getCalorieDifference = (newFood: Food) => {
     const diff = newFood.calories - currentFood.calories;
@@ -180,7 +230,6 @@ export const FoodSubstitutionModal = ({
   };
 
   const equivalentFoods = getEquivalentFoods();
-  const searchResults = searchFoods();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -245,19 +294,55 @@ export const FoodSubstitutionModal = ({
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
+              {isSearching && (
+                <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />
+              )}
             </div>
 
             {searchResults.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {searchResults.map((food, index) => (
-                  <FoodCard key={index} food={food} />
+                {searchResults.map((item) => (
+                  <FoodCard key={item.id} food={convertFoodItemToFood(item)} />
                 ))}
               </div>
-            ) : searchTerm ? (
-              <div className="text-center py-8">
+            ) : searchTerm && !isSearching && searchResults.length === 0 ? (
+              <div className="text-center py-8 space-y-4">
                 <p className="text-muted-foreground">
                   Nenhum alimento encontrado com "{searchTerm}"
                 </p>
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      <h4 className="font-semibold">Criar com IA</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Não encontramos esse alimento. A IA pode criar uma estimativa nutricional para você.
+                    </p>
+                    <Button 
+                      onClick={handleCreateFood}
+                      disabled={loading}
+                      className="w-full gap-2"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Criando...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4" />
+                          Criar "{searchTerm}" com IA
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : searchTerm && isSearching ? (
+              <div className="text-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+                <p className="text-sm text-muted-foreground mt-2">Buscando...</p>
               </div>
             ) : (
               <div className="text-center py-8">

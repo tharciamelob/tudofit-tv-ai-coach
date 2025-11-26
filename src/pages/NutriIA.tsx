@@ -2,16 +2,17 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Apple, MessageCircle, FileDown, Target, Clock, Brain, History, Calendar } from "lucide-react";
+import { Apple, MessageCircle, FileDown, Target, Clock, Brain, History, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import Header from "@/components/Header";
 import { ChatInterface } from "@/components/ChatInterface";
 import { ConversationHistory } from "@/components/ConversationHistory";
 import { ReadyMealPlans } from "@/components/ReadyMealPlans";
 import { DailyMealPlan } from "@/components/DailyMealPlan";
+import { NutriAIAssistant } from "@/components/NutriAIAssistant";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConversationHistory } from "@/hooks/useConversationHistory";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
-import { useDailyMealPlan, MealPlan } from "@/hooks/useDailyMealPlan";
+import { useDailyMealPlan, MealPlan, DailyPlan } from "@/hooks/useDailyMealPlan";
 
 export default function NutriIA() {
   const [showChat, setShowChat] = useState(false);
@@ -80,6 +81,13 @@ export default function NutriIA() {
   const handleClearDailyPlan = () => {
     clearDailyPlan();
     setShowDailyPlan(false);
+  };
+
+  const handleAIPlanGenerated = (plan: DailyPlan) => {
+    // Replace current daily plan with AI-generated plan
+    clearDailyPlan();
+    plan.meals.forEach(meal => addMealToPlan(meal));
+    setShowDailyPlan(true);
   };
 
   if (!user) {
@@ -208,9 +216,9 @@ export default function NutriIA() {
     <div className="min-h-screen bg-black">
       <Header />
       
-      <main className="container mx-auto px-2 sm:px-4 pt-20 pb-12">
+      <main className="container mx-auto px-2 sm:px-4 pt-20 pb-12 space-y-8">
         {/* Hero Section */}
-        <div className="text-center mb-16 relative">
+        <div className="text-center relative">
           <div className="absolute inset-0 -z-10">
             <div className="w-full h-full bg-gradient-to-r from-primary/5 via-transparent to-primary/5 rounded-3xl"></div>
           </div>
@@ -219,54 +227,72 @@ export default function NutriIA() {
               <Apple className="h-16 sm:h-20 w-16 sm:w-20 text-primary" />
             </div>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-6">
-            Nutri IA
+          <h1 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-4">
+            Nutrição IA
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
             Obtenha <span className="text-primary font-semibold">cardápios personalizados</span> e 
-            sugestões nutricionais criadas por inteligência artificial especializada.
+            sugestões nutricionais criadas por inteligência artificial.
           </p>
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-8">
-            <Badge variant="outline" className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
-              Cardápios Personalizados
-            </Badge>
-            <Badge variant="outline" className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
-              IA Nutricionista
-            </Badge>
-            <Badge variant="outline" className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium">
-              Relatórios em PDF
-            </Badge>
-          </div>
         </div>
 
-        {/* Daily Plan Section */}
-        {dailyPlan && showDailyPlan && (
-          <div className="mb-8">
-            <DailyMealPlan 
-              dailyPlan={dailyPlan}
-              onSubstituteFood={substituteFood}
-              onRemoveMeal={removeMealFromPlan}
-              onClearPlan={handleClearDailyPlan}
-            />
-          </div>
-        )}
+        {/* SEÇÃO 1 - Nutri AI Assistant */}
+        <div className="max-w-4xl mx-auto">
+          <NutriAIAssistant 
+            userGoal="manutencao"
+            onPlanGenerated={handleAIPlanGenerated}
+          />
+        </div>
 
-        {/* Cardápios Prontos */}
-        <div className="mb-8">
+        {/* SEÇÃO 2 - Cardápios Prontos */}
+        <div>
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold mb-2">Cardápios Prontos</h2>
+            <p className="text-muted-foreground">
+              Escolha entre nossos cardápios pré-definidos organizados por objetivo
+            </p>
+          </div>
           <ReadyMealPlans onSelectPlan={handleSelectMealPlan} />
         </div>
 
-        {/* Toggle Daily Plan Button */}
-        {dailyPlan && !showDailyPlan && (
-          <div className="mb-8 text-center">
-            <Button 
-              onClick={() => setShowDailyPlan(true)}
-              variant="outline"
-              className="gap-2"
-            >
-              <Calendar className="h-4 w-4" />
-              Ver Meu Plano de Hoje
-            </Button>
+        {/* SEÇÃO 3 - Plano Nutricional do Dia */}
+        {dailyPlan && (
+          <div>
+            <div className="flex items-center justify-between mb-4 max-w-4xl mx-auto">
+              <div>
+                <h2 className="text-2xl font-bold">Meu Plano de Hoje</h2>
+                <p className="text-sm text-muted-foreground">
+                  Seu plano nutricional personalizado para hoje
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDailyPlan(!showDailyPlan)}
+                className="gap-2"
+              >
+                {showDailyPlan ? (
+                  <>
+                    <ChevronUp className="h-4 w-4" />
+                    Ocultar
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4" />
+                    Mostrar
+                  </>
+                )}
+              </Button>
+            </div>
+            
+            {showDailyPlan && (
+              <DailyMealPlan 
+                dailyPlan={dailyPlan}
+                onSubstituteFood={substituteFood}
+                onRemoveMeal={removeMealFromPlan}
+                onClearPlan={handleClearDailyPlan}
+              />
+            )}
           </div>
         )}
 
@@ -334,39 +360,6 @@ export default function NutriIA() {
           </Card>
         </div>
 
-        {/* Chat CTA */}
-        <Card className="max-w-4xl mx-auto border-0 shadow-xl bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20">
-          <CardHeader className="text-center pb-6">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-              <div className="p-3 rounded-xl bg-primary/10">
-                <MessageCircle className="h-6 sm:h-8 w-6 sm:w-8 text-primary" />
-              </div>
-              <div className="text-center sm:text-left">
-                <CardTitle className="text-2xl sm:text-3xl text-foreground">Converse com o Nutri IA</CardTitle>
-                <p className="text-muted-foreground mt-1 text-sm sm:text-base">Planos nutricionais personalizados baseados em ciência</p>
-              </div>
-            </div>
-            <CardDescription className="text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
-              Nossa IA nutricionista cria planos alimentares personalizados baseados em seus objetivos, preferências e restrições alimentares.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center bg-gradient-to-r from-primary/5 to-primary/10 p-6 sm:p-8 rounded-2xl border border-primary/20">
-              <h3 className="text-lg sm:text-xl font-bold mb-3 text-foreground">Crie seu Plano Nutricional Ideal</h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto text-sm sm:text-base">
-                Uma conversa de 5 minutos para criar seu cardápio personalizado
-              </p>
-              <Button 
-                size="lg" 
-                className="w-full sm:w-auto px-6 sm:px-8 gap-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300" 
-                onClick={handleNewConversation}
-              >
-                <MessageCircle className="h-4 sm:h-5 w-4 sm:w-5" />
-                Iniciar Consulta Nutricional
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </main>
     </div>
   );
