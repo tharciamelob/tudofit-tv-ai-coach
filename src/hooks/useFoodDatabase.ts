@@ -10,6 +10,7 @@ export interface FoodItem {
   carbs_per_100g: number;
   fat_per_100g: number;
   source: string;
+  category?: string;
 }
 
 export const useFoodDatabase = () => {
