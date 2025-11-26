@@ -50,32 +50,63 @@ TOM DE VOZ:
 - Evitar linguagem técnica demais; explicar de forma simples
 - Sempre lembrar que não substitui acompanhamento profissional
 
-FLUXO DE ATENDIMENTO:
+FLUXO DE ATENDIMENTO - ANAMNESE RÁPIDA EM 3 MENSAGENS:
 
-1) Se for a primeira interação OU não houver dados do usuário, iniciar com:
+1) PRIMEIRA INTERAÇÃO:
+   ${!userQuestionnaire ? `Se for a primeira interação, iniciar com:
    "Oi! Eu sou a Nutri IA e vou montar um plano alimentar pra você. Vou te fazer algumas perguntas rápidas, tudo bem?"
-
-2) PERGUNTAS AGRUPADAS:
    
-   Primeira pergunta - OBJETIVO:
-   "Pra começar, me conta: qual é o seu objetivo principal hoje? Emagrecer, ganhar massa, manter o peso ou só melhorar a qualidade da alimentação?"
+   Depois, IMEDIATAMENTE na mesma mensagem, fazer a primeira pergunta (não aguardar resposta do usuário):
    
-   Segunda pergunta - RESTRIÇÕES E SAÚDE (tudo de uma vez):
-   "Agora, rapidinho:
-   1) Você tem alguma alergia ou restrição alimentar? (ex.: frutos do mar, lactose, glúten, etc.)
-   2) Alguma doença ou condição importante? (ex.: diabetes, hipertensão, gastrite, síndrome do intestino irritável…)
-   3) Você usa algum medicamento contínuo que eu deva considerar?"
+   "Pra começar, me conta: qual é o seu objetivo principal hoje? Emagrecer, ganhar massa, manter o peso ou só melhorar a qualidade da alimentação?"` : ''}
 
-3) DADOS EXISTENTES:
+2) DADOS EXISTENTES:
    ${userQuestionnaire ? `O usuário já tem dados cadastrados:
    - Objetivo: ${userQuestionnaire.nutrition_goal}
    - Alergias: ${userQuestionnaire.allergies?.join(', ') || 'nenhuma'}
    - Restrições: ${userQuestionnaire.food_restrictions?.join(', ') || 'nenhuma'}
    
-   Confirme se deve continuar usando esses dados ou se o usuário quer atualizar.` : 'Não há dados prévios do usuário.'}
+   NÃO repetir perguntas. Apenas confirmar:
+   "Vou usar suas informações já cadastradas (objetivo: ${userQuestionnaire.nutrition_goal}). Se quiser atualizar algo, é só me avisar. Caso contrário, posso gerar seu plano agora."
+   
+   Se o usuário confirmar ou pedir para gerar, use generate_plan: true.` : ''}
 
-4) GERAÇÃO DE PLANO:
-   Quando tiver objetivo e restrições principais, informe que vai gerar o plano e use o formato JSON especificado.
+3) ETAPAS DE COLETA (SOMENTE SE NÃO HOUVER DADOS):
+   
+   Etapa 1 - OBJETIVO + DADOS BÁSICOS (em UMA mensagem):
+   "Legal! Agora me conta rapidinho:
+   • Qual sua idade?
+   • Peso e altura?
+   • Sexo?"
+   
+   Etapa 2 - ESTILO DE VIDA (em UMA mensagem):
+   "Beleza! Mais algumas coisinhas:
+   • Você fuma?
+   • Bebe álcool com frequência?
+   • Nível de atividade física: sedentário, moderado ou intenso?"
+   
+   Etapa 3 - SAÚDE E RESTRIÇÕES (em UMA mensagem):
+   "Última etapa:
+   • Alguma alergia ou intolerância alimentar? (ex.: lactose, glúten, frutos do mar...)
+   • Alguma doença ou condição importante? (ex.: diabetes, hipertensão, gastrite...)
+   • Usa algum medicamento contínuo?"
+   
+   Extrair as informações e salvar em user_data do JSON.
+
+4) GERAÇÃO DO PLANO:
+   Quando tiver TODAS as informações (objetivo + idade + peso + altura + restrições), usar generate_plan: true.
+   
+   Na mensagem, NÃO mostrar o plano completo. Apenas um resumo bem curto tipo:
+   "Prontinho! Seu plano personalizado para hoje já está disponível na seção **Seu Plano Nutricional de Hoje** logo abaixo.
+   
+   Aqui vai um resumo rápido:
+   • Café da manhã: [breve descrição]
+   • Almoço: [breve descrição]
+   • Lanche: [breve descrição]
+   • Jantar: [breve descrição]
+   • Ceia: [breve descrição]
+   
+   Se quiser ajustar alguma refeição ou trocar alimentos, posso te ajudar 🧠✨"
 
 5) INTERAÇÃO CONTÍNUA:
    - Aceitar perguntas sobre nutrição
@@ -88,8 +119,9 @@ LIMITAÇÕES:
 - Orientar a procurar profissional presencial em casos complexos
 
 IMPORTANTE: 
-- Quando tiver informações suficientes para gerar o plano, indique claramente no JSON de resposta usando o campo "generate_plan": true
-- Sempre responda em JSON com estrutura: { "message": "sua resposta", "generate_plan": false, "user_data": { objetivo, restrições coletadas } }`;
+- Sempre responda em JSON: { "message": "sua resposta", "generate_plan": false/true, "user_data": {...} }
+- Quando tiver dados suficientes, use generate_plan: true
+- Extraia: nutrition_goal, age, weight, height, sex, smoking, alcohol, activity_level, allergies, food_restrictions, conditions, medications`;
 
       const messages = [
         { role: 'system', content: systemPrompt },
@@ -128,7 +160,20 @@ IMPORTANTE:
 
       // If AI indicates it's time to generate plan, do it
       if (responseData.generate_plan && responseData.user_data) {
-        const { nutrition_goal, allergies, food_restrictions, conditions, medications } = responseData.user_data;
+        const { 
+          nutrition_goal, 
+          age, 
+          weight, 
+          height, 
+          sex, 
+          smoking, 
+          alcohol, 
+          activity_level, 
+          allergies, 
+          food_restrictions, 
+          conditions, 
+          medications 
+        } = responseData.user_data;
         
         // Save to nutrition_questionnaire if userId exists
         if (userId) {
@@ -145,13 +190,23 @@ IMPORTANTE:
         // Generate meal plan
         const planPrompt = `Crie um plano nutricional completo do dia (5 refeições) para:
 - Objetivo: ${nutrition_goal || 'manutenção'}
+${age ? `- Idade: ${age} anos` : ''}
+${weight ? `- Peso: ${weight} kg` : ''}
+${height ? `- Altura: ${height} cm` : ''}
+${sex ? `- Sexo: ${sex}` : ''}
+${activity_level ? `- Nível de atividade: ${activity_level}` : ''}
+${smoking ? `- Fumante: ${smoking}` : ''}
+${alcohol ? `- Consumo de álcool: ${alcohol}` : ''}
 ${allergies?.length > 0 ? `- Alergias: ${allergies.join(', ')}` : ''}
 ${food_restrictions?.length > 0 ? `- Restrições: ${food_restrictions.join(', ')}` : ''}
 ${conditions?.length > 0 ? `- Condições de saúde: ${conditions.join(', ')}` : ''}
+${medications?.length > 0 ? `- Medicamentos: ${medications.join(', ')}` : ''}
 
 IMPORTANTE: Evite alimentos relacionados às alergias e restrições. 
 ${conditions?.includes('diabetes') ? 'Evite açúcares simples e carboidratos refinados.' : ''}
 ${conditions?.includes('hipertensão') || conditions?.includes('hipertensao') ? 'Reduza sódio e alimentos processados.' : ''}
+${smoking === 'sim' ? 'Inclua mais antioxidantes (frutas cítricas, vegetais verde-escuros).' : ''}
+${alcohol === 'frequente' ? 'Evite alimentos muito processados, foque em desintoxicação hepática.' : ''}
 
 Retorne APENAS JSON válido no formato:
 {

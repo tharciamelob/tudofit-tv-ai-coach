@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,8 +24,28 @@ export const NutriAIAssistant = ({ userGoal = 'manutencao', onPlanGenerated }: N
   const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isChatting, setIsChatting] = useState(false);
+  const [hasQuestionnaire, setHasQuestionnaire] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Check if user has questionnaire on mount
+  useEffect(() => {
+    const checkQuestionnaire = async () => {
+      if (!user?.id) return;
+      
+      const { data } = await supabase
+        .from('nutrition_questionnaire')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      setHasQuestionnaire(!!data);
+    };
+    
+    checkQuestionnaire();
+  }, [user?.id]);
 
   const transformPlanToDailyPlan = (generatedPlan: any, goal: 'emagrecimento' | 'ganho_massa' | 'manutencao'): DailyPlan => {
     const meals: MealPlan[] = generatedPlan.meals.map((meal: any) => ({
@@ -95,11 +115,21 @@ export const NutriAIAssistant = ({ userGoal = 'manutencao', onPlanGenerated }: N
       if (data.generate_plan && data.plan) {
         const dailyPlan = transformPlanToDailyPlan(data.plan, userGoal);
         onPlanGenerated(dailyPlan);
+        
+        setHasQuestionnaire(true);
 
         toast({
           title: "Plano gerado com sucesso!",
           description: `${data.plan.plan_name} foi criado para você.`,
         });
+
+        // Scroll to daily plan section
+        setTimeout(() => {
+          const planSection = document.getElementById('daily-plan-section');
+          if (planSection) {
+            planSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 300);
       }
 
     } catch (error) {
@@ -115,6 +145,22 @@ export const NutriAIAssistant = ({ userGoal = 'manutencao', onPlanGenerated }: N
   };
 
   const handleGeneratePlan = async () => {
+    // Check if user has questionnaire data
+    if (!hasQuestionnaire) {
+      // No data - prompt user to start chat
+      const noDataMessage = { 
+        role: 'assistant' as const, 
+        content: "Antes de montar seu plano, preciso de algumas informações suas.\nEscreva: **'quero montar um plano'** e eu te faço umas perguntas rapidinhas." 
+      };
+      setConversationHistory([noDataMessage]);
+      toast({
+        title: "Informações necessárias",
+        description: "Converse com a Nutri IA para coletar seus dados antes de gerar um plano.",
+      });
+      return;
+    }
+
+    // Has data - generate plan directly
     setIsGenerating(true);
     
     try {
@@ -131,10 +177,25 @@ export const NutriAIAssistant = ({ userGoal = 'manutencao', onPlanGenerated }: N
         const dailyPlan = transformPlanToDailyPlan(data.plan, userGoal);
         onPlanGenerated(dailyPlan);
 
+        // Add message to chat about plan being ready
+        const planReadyMessage = { 
+          role: 'assistant' as const, 
+          content: "Seu novo plano para hoje está pronto! Você pode vê-lo na seção **Seu Plano Nutricional de Hoje** logo abaixo." 
+        };
+        setConversationHistory(prev => [...prev, planReadyMessage]);
+
         toast({
           title: "Plano gerado com sucesso!",
           description: `${data.plan.plan_name} foi criado para você.`,
         });
+
+        // Scroll to daily plan section
+        setTimeout(() => {
+          const planSection = document.getElementById('daily-plan-section');
+          if (planSection) {
+            planSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 300);
       }
     } catch (error) {
       console.error('Error generating plan:', error);
@@ -187,6 +248,23 @@ export const NutriAIAssistant = ({ userGoal = 'manutencao', onPlanGenerated }: N
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                
+                {/* Show "Ver meu plano" button after plan generation */}
+                {msg.role === 'assistant' && msg.content.includes('Seu plano') && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 gap-2"
+                    onClick={() => {
+                      const planSection = document.getElementById('daily-plan-section');
+                      if (planSection) {
+                        planSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }}
+                  >
+                    Ver meu plano de hoje
+                  </Button>
+                )}
               </div>
             ))}
           </div>

@@ -328,12 +328,15 @@ export const ReadyMealPlans = ({ onSelectPlan }: ReadyMealPlansProps) => {
                     <CardHeader className="pb-4 space-y-3">
                       {/* Header com ícone e badge */}
                       <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <div className="p-2.5 rounded-xl bg-primary/15 group-hover:bg-primary/25 transition-colors">
                             <MealIcon className="h-5 w-5 text-primary" />
                           </div>
                           <Badge variant="secondary" className="text-xs font-medium px-2.5 py-0.5">
                             {mealTypeLabels[plan.meal_type]}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs font-medium px-2.5 py-0.5 border-primary/20 text-primary/90">
+                            Modelo pronto
                           </Badge>
                         </div>
                       </div>

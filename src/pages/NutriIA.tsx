@@ -74,8 +74,21 @@ export default function NutriIA() {
   };
 
   const handleSelectMealPlan = (plan: MealPlan) => {
-    addMealToPlan(plan);
+    // Store the base plan name when selecting from ready meals
+    const planWithBaseName = {
+      ...plan,
+      basePlanName: plan.name
+    };
+    addMealToPlan(planWithBaseName);
     setShowDailyPlan(true);
+    
+    // Scroll to daily plan section
+    setTimeout(() => {
+      const planSection = document.getElementById('daily-plan-section');
+      if (planSection) {
+        planSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 300);
   };
 
   const handleClearDailyPlan = () => {
@@ -244,25 +257,25 @@ export default function NutriIA() {
           />
         </div>
 
-        {/* SEÇÃO 2 - Cardápios Prontos */}
+        {/* SEÇÃO 2 - Cardápios Prontos (Modelos Sugeridos) */}
         <div>
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold mb-2">Cardápios Prontos</h2>
+            <h2 className="text-2xl font-bold mb-2">Cardápios Prontos (Modelos Sugeridos)</h2>
             <p className="text-muted-foreground">
-              Escolha entre nossos cardápios pré-definidos organizados por objetivo
+              Escolha entre nossos modelos de cardápios pré-definidos organizados por objetivo
             </p>
           </div>
           <ReadyMealPlans onSelectPlan={handleSelectMealPlan} />
         </div>
 
-        {/* SEÇÃO 3 - Plano Nutricional do Dia */}
+        {/* SEÇÃO 3 - Seu Plano Nutricional de Hoje (Personalizado) */}
         {dailyPlan && (
           <div>
             <div className="flex items-center justify-between mb-4 max-w-4xl mx-auto">
               <div>
-                <h2 className="text-2xl font-bold">Meu Plano de Hoje</h2>
+                <h2 className="text-2xl font-bold">Seu Plano Nutricional de Hoje (Personalizado)</h2>
                 <p className="text-sm text-muted-foreground">
-                  Seu plano nutricional personalizado para hoje
+                  Plano nutricional criado especialmente para você
                 </p>
               </div>
               <Button

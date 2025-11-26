@@ -83,7 +83,7 @@ export const DailyMealPlan = ({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" id="daily-plan-section">
       <Card className="bg-gradient-to-br from-background to-muted/20 border-white/10">
         <CardHeader>
           <div className="flex items-start justify-between flex-col sm:flex-row gap-4">
@@ -104,6 +104,14 @@ export const DailyMealPlan = ({
               </div>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="default" className="text-xs px-3 py-1 bg-primary/20 text-primary border-primary/30">
+                Criado para você
+              </Badge>
+              {dailyPlan.basePlanName && (
+                <Badge variant="outline" className="text-xs px-3 py-1">
+                  Baseado em: {dailyPlan.basePlanName}
+                </Badge>
+              )}
               <Badge variant="outline" className="text-sm px-3 py-1">
                 {goalLabels[dailyPlan.goal]}
               </Badge>
