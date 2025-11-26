@@ -72,7 +72,8 @@ serve(async (req) => {
                 "kcal_per_100g": número,
                 "protein_per_100g": número,
                 "carbs_per_100g": número,
-                "fat_per_100g": número
+                "fat_per_100g": número,
+                "category": "uma das categorias: fruta, legume_vegetal, grao_cereal, tuberculo, proteina_animal, proteina_vegetal, laticinio, oleaginosa_semente, bebida, doce_sobremesa, outros"
               }
               
               Importante: Retorne APENAS o JSON, sem texto adicional.`
@@ -100,6 +101,7 @@ serve(async (req) => {
           protein_per_100g: nutritionInfo.protein_per_100g,
           carbs_per_100g: nutritionInfo.carbs_per_100g,
           fat_per_100g: nutritionInfo.fat_per_100g,
+          category: nutritionInfo.category || 'outros',
           source: 'ai_estimated'
         }])
         .select()

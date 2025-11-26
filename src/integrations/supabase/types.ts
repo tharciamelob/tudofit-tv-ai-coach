@@ -292,6 +292,7 @@ export type Database = {
       foods: {
         Row: {
           carbs_per_100g: number
+          category: string | null
           created_at: string
           created_by: string | null
           fat_per_100g: number
@@ -304,6 +305,7 @@ export type Database = {
         }
         Insert: {
           carbs_per_100g: number
+          category?: string | null
           created_at?: string
           created_by?: string | null
           fat_per_100g: number
@@ -316,6 +318,7 @@ export type Database = {
         }
         Update: {
           carbs_per_100g?: number
+          category?: string | null
           created_at?: string
           created_by?: string | null
           fat_per_100g?: number

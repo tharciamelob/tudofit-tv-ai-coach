@@ -41,7 +41,10 @@ export const NutriAIAssistant = ({ userGoal = 'manutencao', onPlanGenerated }: N
           description: 'Gerado pela IA',
           goal: userGoal,
           meal_type: meal.meal_type,
-          foods: meal.foods,
+          foods: meal.foods.map((food: any) => ({
+            ...food,
+            portion_grams: parseFloat(food.quantity) || 100
+          })),
           totals: meal.foods.reduce((acc: any, food: any) => ({
             calories: acc.calories + food.calories,
             protein: acc.protein + food.protein,
@@ -107,7 +110,7 @@ export const NutriAIAssistant = ({ userGoal = 'manutencao', onPlanGenerated }: N
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">
             Tire dúvidas sobre nutrição, ajuste seu plano ou peça sugestões personalizadas:
@@ -126,17 +129,6 @@ export const NutriAIAssistant = ({ userGoal = 'manutencao', onPlanGenerated }: N
             <Send className="h-4 w-4" />
             Enviar Mensagem
           </Button>
-        </div>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              ou
-            </span>
-          </div>
         </div>
 
         <div className="bg-primary/5 p-6 rounded-xl border border-primary/20">

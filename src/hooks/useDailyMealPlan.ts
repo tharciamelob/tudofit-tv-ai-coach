@@ -4,8 +4,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface Food {
+  id?: string;
   name: string;
   quantity: string;
+  portion_grams: number;
   calories: number;
   protein: number;
   carbs: number;
