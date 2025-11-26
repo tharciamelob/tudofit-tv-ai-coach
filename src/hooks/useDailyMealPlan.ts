@@ -214,6 +214,14 @@ export const useDailyMealPlan = () => {
     });
   };
 
+  const setCompleteDailyPlan = (plan: DailyPlan) => {
+    setDailyPlan(plan);
+    toast({
+      title: "Plano atualizado!",
+      description: `${plan.meals.length} refeições carregadas com sucesso.`,
+    });
+  };
+
   return {
     dailyPlan,
     loading,
@@ -221,6 +229,7 @@ export const useDailyMealPlan = () => {
     addMealToPlan,
     substituteFood,
     clearDailyPlan,
-    removeMealFromPlan
+    removeMealFromPlan,
+    setCompleteDailyPlan
   };
 };
