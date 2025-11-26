@@ -26,7 +26,8 @@ export default function NutriIA() {
     addMealToPlan,
     substituteFood,
     clearDailyPlan,
-    removeMealFromPlan
+    removeMealFromPlan,
+    setCompleteDailyPlan
   } = useDailyMealPlan();
   const { 
     currentConversation, 
@@ -97,10 +98,17 @@ export default function NutriIA() {
   };
 
   const handleAIPlanGenerated = (plan: DailyPlan) => {
-    // Replace current daily plan with AI-generated plan
-    clearDailyPlan();
-    plan.meals.forEach(meal => addMealToPlan(meal));
+    // Replace current daily plan with AI-generated complete plan (5 meals)
+    setCompleteDailyPlan(plan);
     setShowDailyPlan(true);
+    
+    // Scroll to daily plan section
+    setTimeout(() => {
+      const planSection = document.getElementById('daily-plan-section');
+      if (planSection) {
+        planSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 300);
   };
 
   if (!user) {
