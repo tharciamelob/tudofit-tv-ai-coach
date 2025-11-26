@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, foodName, userGoal, userProfile } = await req.json();
+    const { action, foodName, userGoal, userProfile, message, conversationHistory, userId } = await req.json();
     
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     if (!OPENAI_API_KEY) {
@@ -23,6 +23,189 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Action: Chat with nutritionist AI
+    if (action === 'chat') {
+      console.log('Chat message received:', message);
+      
+      // Get user's nutrition questionnaire data if exists
+      let userQuestionnaire = null;
+      if (userId) {
+        const { data } = await supabase
+          .from('nutrition_questionnaire')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        userQuestionnaire = data;
+      }
+
+      const systemPrompt = `Você é a Nutri IA, uma nutricionista virtual simpática, direta e sucinta.
+
+TOM DE VOZ:
+- Educado e acolhedor, sem linguagem infantilizada
+- Mensagens curtas e diretas, sem textão
+- Evitar linguagem técnica demais; explicar de forma simples
+- Sempre lembrar que não substitui acompanhamento profissional
+
+FLUXO DE ATENDIMENTO:
+
+1) Se for a primeira interação OU não houver dados do usuário, iniciar com:
+   "Oi! Eu sou a Nutri IA e vou montar um plano alimentar pra você. Vou te fazer algumas perguntas rápidas, tudo bem?"
+
+2) PERGUNTAS AGRUPADAS:
+   
+   Primeira pergunta - OBJETIVO:
+   "Pra começar, me conta: qual é o seu objetivo principal hoje? Emagrecer, ganhar massa, manter o peso ou só melhorar a qualidade da alimentação?"
+   
+   Segunda pergunta - RESTRIÇÕES E SAÚDE (tudo de uma vez):
+   "Agora, rapidinho:
+   1) Você tem alguma alergia ou restrição alimentar? (ex.: frutos do mar, lactose, glúten, etc.)
+   2) Alguma doença ou condição importante? (ex.: diabetes, hipertensão, gastrite, síndrome do intestino irritável…)
+   3) Você usa algum medicamento contínuo que eu deva considerar?"
+
+3) DADOS EXISTENTES:
+   ${userQuestionnaire ? `O usuário já tem dados cadastrados:
+   - Objetivo: ${userQuestionnaire.nutrition_goal}
+   - Alergias: ${userQuestionnaire.allergies?.join(', ') || 'nenhuma'}
+   - Restrições: ${userQuestionnaire.food_restrictions?.join(', ') || 'nenhuma'}
+   
+   Confirme se deve continuar usando esses dados ou se o usuário quer atualizar.` : 'Não há dados prévios do usuário.'}
+
+4) GERAÇÃO DE PLANO:
+   Quando tiver objetivo e restrições principais, informe que vai gerar o plano e use o formato JSON especificado.
+
+5) INTERAÇÃO CONTÍNUA:
+   - Aceitar perguntas sobre nutrição
+   - Sugerir substituições quando solicitado
+   - Manter respostas curtas e práticas
+
+LIMITAÇÕES:
+- NÃO dar diagnóstico médico
+- NÃO recomendar, alterar ou suspender medicamentos
+- Orientar a procurar profissional presencial em casos complexos
+
+IMPORTANTE: 
+- Quando tiver informações suficientes para gerar o plano, indique claramente no JSON de resposta usando o campo "generate_plan": true
+- Sempre responda em JSON com estrutura: { "message": "sua resposta", "generate_plan": false, "user_data": { objetivo, restrições coletadas } }`;
+
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        ...(conversationHistory || []),
+        { role: 'user', content: message }
+      ];
+
+      const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: messages,
+          temperature: 0.7,
+        }),
+      });
+
+      const aiData = await aiResponse.json();
+      const aiMessage = aiData.choices[0].message.content;
+      
+      console.log('AI response:', aiMessage);
+
+      // Try to parse as JSON, if not, wrap in standard format
+      let responseData;
+      try {
+        responseData = JSON.parse(aiMessage);
+      } catch {
+        responseData = { 
+          message: aiMessage, 
+          generate_plan: false 
+        };
+      }
+
+      // If AI indicates it's time to generate plan, do it
+      if (responseData.generate_plan && responseData.user_data) {
+        const { nutrition_goal, allergies, food_restrictions, conditions, medications } = responseData.user_data;
+        
+        // Save to nutrition_questionnaire if userId exists
+        if (userId) {
+          await supabase
+            .from('nutrition_questionnaire')
+            .upsert({
+              user_id: userId,
+              nutrition_goal: nutrition_goal || 'manutencao',
+              allergies: allergies || [],
+              food_restrictions: food_restrictions || [],
+            });
+        }
+
+        // Generate meal plan
+        const planPrompt = `Crie um plano nutricional completo do dia (5 refeições) para:
+- Objetivo: ${nutrition_goal || 'manutenção'}
+${allergies?.length > 0 ? `- Alergias: ${allergies.join(', ')}` : ''}
+${food_restrictions?.length > 0 ? `- Restrições: ${food_restrictions.join(', ')}` : ''}
+${conditions?.length > 0 ? `- Condições de saúde: ${conditions.join(', ')}` : ''}
+
+IMPORTANTE: Evite alimentos relacionados às alergias e restrições. 
+${conditions?.includes('diabetes') ? 'Evite açúcares simples e carboidratos refinados.' : ''}
+${conditions?.includes('hipertensão') || conditions?.includes('hipertensao') ? 'Reduza sódio e alimentos processados.' : ''}
+
+Retorne APENAS JSON válido no formato:
+{
+  "plan_name": "Nome do Plano",
+  "meals": [
+    {
+      "meal_type": "cafe_da_manha|almoco|lanche|jantar|ceia",
+      "name": "Nome",
+      "foods": [
+        {
+          "name": "Nome do Alimento",
+          "quantity": "100g",
+          "calories": número,
+          "protein": número,
+          "carbs": número,
+          "fat": número
+        }
+      ]
+    }
+  ]
+}`;
+
+        const planResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'Você é um nutricionista. Retorne APENAS JSON válido.' },
+              { role: 'user', content: planPrompt }
+            ],
+            temperature: 0.7,
+          }),
+        });
+
+        const planData = await planResponse.json();
+        const mealPlan = JSON.parse(planData.choices[0].message.content);
+
+        return new Response(JSON.stringify({
+          message: responseData.message,
+          plan: mealPlan,
+          generate_plan: true
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify(responseData), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Action: Search or create food
     if (action === 'search_or_create_food') {
