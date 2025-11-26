@@ -28,6 +28,9 @@ verify_jwt = false
 [functions.get-signed-url]
 verify_jwt = false
 
+[functions.nutri-ai]
+verify_jwt = false
+
 [db]
 port = 54322
 shadow_port = 54320
