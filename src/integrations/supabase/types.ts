@@ -289,57 +289,6 @@ export type Database = {
         }
         Relationships: []
       }
-      food_diary: {
-        Row: {
-          calories: number | null
-          carbs: number | null
-          created_at: string
-          date: string
-          fat: number | null
-          food_name: string
-          id: string
-          item_name: string | null
-          meal_type: string
-          photo_url: string | null
-          protein: number | null
-          quantity: number | null
-          unit: string | null
-          user_id: string
-        }
-        Insert: {
-          calories?: number | null
-          carbs?: number | null
-          created_at?: string
-          date?: string
-          fat?: number | null
-          food_name: string
-          id?: string
-          item_name?: string | null
-          meal_type: string
-          photo_url?: string | null
-          protein?: number | null
-          quantity?: number | null
-          unit?: string | null
-          user_id: string
-        }
-        Update: {
-          calories?: number | null
-          carbs?: number | null
-          created_at?: string
-          date?: string
-          fat?: number | null
-          food_name?: string
-          id?: string
-          item_name?: string | null
-          meal_type?: string
-          photo_url?: string | null
-          protein?: number | null
-          quantity?: number | null
-          unit?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       foods: {
         Row: {
           carbs_per_100g: number
