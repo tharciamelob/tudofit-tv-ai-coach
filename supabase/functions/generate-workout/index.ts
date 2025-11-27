@@ -13,74 +13,71 @@ serve(async (req) => {
   }
 
   try {
-    const { questionnaireId } = await req.json();
+    const { conversationId, userId, messages } = await req.json();
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Buscar dados do questionário
-    const { data: questionnaire, error: qError } = await supabase
-      .from('personal_questionnaire')
-      .select('*')
-      .eq('id', questionnaireId)
-      .single();
-
-    if (qError || !questionnaire) {
-      throw new Error('Questionário não encontrado');
-    }
-
     // Buscar dados do perfil do usuário
     const { data: profile, error: pError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('user_id', questionnaire.user_id)
+      .eq('user_id', userId)
       .single();
 
-    // Construir prompt baseado nos dados
-    const equipmentList = questionnaire.equipment_access || 'nenhum equipamento';
-    const restrictions = questionnaire.physical_restrictions || 'nenhuma restrição';
+    if (pError) {
+      console.error('Erro ao buscar perfil:', pError);
+    }
+
+    // Construir contexto da conversa
+    const conversationContext = messages
+      ?.map((msg: any) => `${msg.role === 'user' ? 'Usuário' : 'IA'}: ${msg.content}`)
+      .join('\n') || '';
+
     const weight = profile?.weight || 'não informado';
     const height = profile?.height || 'não informado';
+    const fitness_goal = profile?.fitness_goal || 'não especificado';
     
     const prompt = `
-    Você é um PERSONAL TRAINER ESPECIALISTA CREF com 15 anos de experiência em treinamento físico. Crie um plano de treino detalhado de 7 dias baseado nos seguintes dados:
+    Você é um PERSONAL TRAINER ESPECIALISTA CREF com 15 anos de experiência em treinamento físico. Com base na conversa abaixo, crie um plano de treino detalhado.
     
-    DADOS DO CLIENTE:
-    - Objetivo: ${questionnaire.fitness_goal}
-    - Nível de experiência: ${questionnaire.experience_level}
-    - Atividade atual: ${questionnaire.current_activity}
-    - Tempo disponível: ${questionnaire.available_time} minutos por treino
-    - Equipamentos disponíveis: ${equipmentList}
-    - Restrições físicas: ${restrictions}
+    CONTEXTO DA CONVERSA:
+    ${conversationContext}
+    
+    DADOS DO USUÁRIO (se disponíveis):
     - Peso: ${weight}kg
     - Altura: ${height}cm
+    - Objetivo geral: ${fitness_goal}
 
     INSTRUÇÕES IMPORTANTES:
-    - Periodização adequada com progressão
-    - Exercícios seguros e eficazes para o nível
-    - Variação de estímulos (força, resistência, flexibilidade)
-    - Aquecimento e alongamento obrigatórios
-    - Adaptações para equipamentos disponíveis
-    - Tempo de descanso adequado entre séries
-    - Progressão gradual ao longo da semana
+    - Analise a conversa para entender objetivo, nível, tempo disponível, equipamentos e restrições
+    - Crie um plano progressivo e seguro para o nível do usuário
+    - Inclua aquecimento e alongamento quando apropriado
+    - Adapte para os equipamentos disponíveis mencionados
+    - Se não houver informação clara, use valores padrão sensatos (ex: iniciante, 30-40min, sem equipamento)
 
     Retorne APENAS um JSON válido no seguinte formato:
     {
-      "plan_name": "Nome do Plano",
-      "description": "Descrição do plano",
-      "workouts": [
+      "name": "Nome do Plano de Treino",
+      "objective": "Objetivo principal (ex: Emagrecimento, Hipertrofia, Condicionamento)",
+      "level": "iniciante|intermediario|avancado",
+      "durationMinutes": 35,
+      "type": "Sem equipamento|Com halteres|Academia",
+      "series": [
         {
-          "day": "Segunda",
-          "name": "Treino A",
+          "id": "serie-1",
+          "name": "Série A – Nome",
+          "summary": "3 séries · 40s ON / 20s OFF · 5 exercícios",
           "exercises": [
             {
+              "id": "ex-1",
               "name": "Nome do exercício",
-              "sets": 3,
-              "reps": "12-15",
+              "repsOrTime": "12 reps" ou "40s",
               "rest": "60s",
-              "instructions": "Como executar"
+              "sets": 3,
+              "equipment": "sem_equipamento|com_equipamento"
             }
           ]
         }
@@ -127,25 +124,41 @@ serve(async (req) => {
       throw new Error('Formato de resposta inválido da IA');
     }
 
+    // Adicionar timestamps e IDs se necessário
+    const planToSave = {
+      ...workoutPlan,
+      createdAt: new Date().toISOString()
+    };
+
     // Salvar o plano no banco
     const { data: savedPlan, error: saveError } = await supabase
       .from('workout_plans')
       .insert({
-        user_id: questionnaire.user_id,
-        questionnaire_id: questionnaireId,
-        plan_name: workoutPlan.plan_name,
-        plan_data: workoutPlan
+        user_id: userId,
+        conversation_id: conversationId,
+        plan_name: workoutPlan.name,
+        plan_data: planToSave
       })
       .select()
       .single();
 
     if (saveError) {
+      console.error('Erro ao salvar plano:', saveError);
       throw new Error('Erro ao salvar plano');
     }
 
     return new Response(JSON.stringify({ 
       success: true, 
-      plan: savedPlan 
+      plan: {
+        id: savedPlan.id,
+        name: workoutPlan.name,
+        objective: workoutPlan.objective,
+        level: workoutPlan.level,
+        durationMinutes: workoutPlan.durationMinutes,
+        type: workoutPlan.type,
+        series: workoutPlan.series,
+        createdAt: savedPlan.created_at
+      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
