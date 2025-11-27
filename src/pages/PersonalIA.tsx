@@ -20,6 +20,7 @@ import {
   Bot,
   User
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { ConversationHistory } from "@/components/ConversationHistory";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +40,7 @@ export default function PersonalIA() {
   const [expandedSeriesIds, setExpandedSeriesIds] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   
   const { user } = useAuth();
   const { sendMessage, isLoading: isChatLoading } = useChatConversation({ 
@@ -163,6 +165,61 @@ export default function PersonalIA() {
         workoutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 100);
+  };
+
+  const handleGenerateWorkoutPlan = async () => {
+    if (!user || !currentConversation || messages.length === 0) return;
+    
+    setIsGeneratingPlan(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-workout', {
+        body: {
+          conversationId: currentConversation.id,
+          userId: user.id,
+          messages: messages.map(msg => ({
+            role: msg.type === 'user' ? 'user' : 'assistant',
+            content: msg.content
+          }))
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.plan) {
+        // Save the workout plan
+        await saveWorkoutPlan(data.plan, currentConversation.id);
+        selectWorkout(data.plan);
+        
+        // Show success message in chat
+        const successMessage: ChatMessage = {
+          id: `msg-${Date.now()}-success`,
+          type: 'ai',
+          content: `✅ Plano de treino "${data.plan.name}" gerado com sucesso! Confira abaixo os detalhes do seu treino personalizado.`,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, successMessage]);
+
+        // Scroll to workout section
+        setTimeout(() => {
+          const workoutSection = document.getElementById('current-workout-section');
+          if (workoutSection) {
+            workoutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 500);
+      }
+    } catch (error: any) {
+      console.error('Erro ao gerar plano:', error);
+      const errorMessage: ChatMessage = {
+        id: `msg-${Date.now()}-error`,
+        type: 'ai',
+        content: 'Desculpe, houve um erro ao gerar seu plano de treino. Pode tentar novamente?',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsGeneratingPlan(false);
+    }
   };
 
   if (!user) {
@@ -316,6 +373,32 @@ export default function PersonalIA() {
                     )}
                   </div>
                 </ScrollArea>
+
+                {/* Generate Workout Plan Button */}
+                <div className="border-t border-white/10 p-3">
+                  <Button
+                    onClick={handleGenerateWorkoutPlan}
+                    disabled={messages.length === 0 || isGeneratingPlan || isChatLoading}
+                    className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold py-3 rounded-xl shadow-lg transition-all duration-300"
+                  >
+                    {isGeneratingPlan ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        Gerando plano de treino...
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="h-5 w-5 mr-2" />
+                        Gerar Plano de Treino com IA
+                      </>
+                    )}
+                  </Button>
+                  {messages.length === 0 && (
+                    <p className="text-xs text-muted-foreground text-center mt-2">
+                      Converse com a IA antes de gerar um plano
+                    </p>
+                  )}
+                </div>
 
                 {/* Input form */}
                 <form
