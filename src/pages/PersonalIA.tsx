@@ -25,7 +25,7 @@ import { ConversationHistory } from "@/components/ConversationHistory";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConversationHistory } from "@/hooks/useConversationHistory";
 import { useChatConversation } from "@/hooks/useChatConversation";
-import { useWorkoutPlans, WorkoutPlan, WorkoutSeries } from "@/hooks/useWorkoutPlans";
+import { useWorkoutPlans, WorkoutPlan } from "@/hooks/useWorkoutPlans";
 
 interface ChatMessage {
   id: string;
@@ -47,7 +47,6 @@ export default function PersonalIA() {
   });
   
   const { 
-    conversations,
     currentConversation, 
     createConversation, 
     selectConversation, 
@@ -203,356 +202,430 @@ export default function PersonalIA() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050509] text-white">
+    <div className="min-h-screen bg-black">
       <Header />
       
-      <main className="container mx-auto px-4 py-8 lg:px-12 pt-20">
-        <div className="max-w-6xl mx-auto space-y-8">
-          {/* Título principal */}
-          <header className="space-y-2">
-            <h1 className="text-2xl md:text-3xl font-semibold">
-              Personal IA TudoFit
-            </h1>
-            <p className="text-sm md:text-base text-gray-400 max-w-2xl">
-              Treinos personalizados com base em ciência, adaptados ao seu
-              objetivo, tempo e nível. Converse com sua IA especialista e receba
-              séries prontas para treinar.
-            </p>
-          </header>
+      <main className="container mx-auto px-2 sm:px-4 pt-20 pb-12 space-y-8">
+        {/* Hero Section */}
+        <div className="text-center relative">
+          <div className="absolute inset-0 -z-10">
+            <div className="w-full h-full bg-gradient-to-r from-primary/5 via-transparent to-primary/5 rounded-3xl"></div>
+          </div>
+          <div className="flex justify-center mb-6">
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 shadow-lg">
+              <Dumbbell className="h-16 sm:h-20 w-16 sm:w-20 text-primary" />
+            </div>
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-4">
+            Personal IA
+          </h1>
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
+            Treinos <span className="text-primary font-semibold">personalizados por IA</span> adaptados ao seu objetivo, tempo e nível de condicionamento.
+          </p>
+        </div>
 
-          {/* Topo: Chat + Card "Seu Treino de Hoje" */}
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Coluna esquerda: Chat */}
-            <div className="lg:col-span-2 bg-gradient-to-b from-[#16121f] to-[#0b0812] border border-[#2b203a] rounded-2xl p-4 md:p-6 shadow-lg shadow-black/40">
-              {/* Header do chat */}
-              <div className="flex items-center justify-between gap-3 mb-4">
+        {/* Chat Section */}
+        <div className="max-w-4xl mx-auto">
+          <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10">
+            <CardHeader>
+              <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg md:text-xl font-semibold">
-                    Converse com seu Personal IA
-                  </h2>
-                  <p className="text-xs md:text-sm text-gray-400">
-                    Tire dúvidas, ajuste seu treino e peça novas séries sempre que
-                    precisar.
-                  </p>
+                  <CardTitle className="text-xl sm:text-2xl">Converse com seu Personal IA</CardTitle>
+                  <CardDescription>Tire dúvidas e gere treinos personalizados através do chat</CardDescription>
                 </div>
                 <Button
                   onClick={handleNewConversation}
                   size="sm"
-                  className="text-xs md:text-sm px-3 py-2 rounded-full bg-pink-600 hover:bg-pink-700 transition font-medium"
+                  variant="outline"
+                  className="border-primary/30 text-primary hover:bg-primary/10"
                 >
                   Nova conversa
                 </Button>
               </div>
-
-              {/* Botões / Histórico */}
-              <div className="flex justify-between items-center mb-3">
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* History button */}
+              <div className="flex justify-end">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowHistory(true)}
-                  className="text-xs md:text-sm text-gray-300 hover:underline"
+                  className="text-xs text-muted-foreground hover:text-primary"
                 >
                   <History className="h-4 w-4 mr-1" />
-                  {showHistory ? "Fechar histórico" : "Ver histórico de conversas"}
+                  Ver histórico
                 </Button>
               </div>
 
-              {/* Área de mensagens */}
-              <div className="h-72 md:h-80 border border-[#2b203a] rounded-2xl bg-black/40 flex flex-col overflow-hidden">
-                <ScrollArea className="flex-1 p-3 space-y-2 text-xs md:text-sm">
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex mb-3 ${
-                        msg.type === "user" ? "justify-end" : "justify-start"
-                      }`}
-                    >
-                      {msg.type === 'ai' && (
-                        <div className="flex-shrink-0 mr-2">
-                          <div className="w-7 h-7 bg-pink-600 rounded-full flex items-center justify-center">
-                            <Bot className="h-4 w-4 text-white" />
-                          </div>
-                        </div>
-                      )}
-                      
+              {/* Messages area */}
+              <div className="border border-white/10 rounded-xl bg-black/40 h-96 flex flex-col overflow-hidden">
+                <ScrollArea className="flex-1 p-4">
+                  <div className="space-y-4">
+                    {messages.map((msg) => (
                       <div
-                        className={`max-w-[80%] rounded-2xl px-3 py-2 ${
-                          msg.type === "user"
-                            ? "bg-pink-600 text-white"
-                            : "bg-[#1c1426] text-gray-100"
+                        key={msg.id}
+                        className={`flex ${
+                          msg.type === "user" ? "justify-end" : "justify-start"
                         }`}
                       >
-                        <p className="whitespace-pre-line">{msg.content}</p>
-                        <span className="block mt-1 text-[10px] opacity-70">
-                          {msg.timestamp.toLocaleTimeString("pt-BR", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
+                        {msg.type === 'ai' && (
+                          <div className="flex-shrink-0 mr-2">
+                            <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                              <Bot className="h-4 w-4 text-primary" />
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div
+                          className={`max-w-[75%] rounded-2xl px-4 py-2 ${
+                            msg.type === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-foreground"
+                          }`}
+                        >
+                          <p className="whitespace-pre-line text-sm">{msg.content}</p>
+                          <span className="block mt-1 text-xs opacity-70">
+                            {msg.timestamp.toLocaleTimeString("pt-BR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
 
-                      {msg.type === 'user' && (
-                        <div className="flex-shrink-0 ml-2">
-                          <div className="w-7 h-7 bg-gray-600 rounded-full flex items-center justify-center">
-                            <User className="h-4 w-4 text-white" />
+                        {msg.type === 'user' && (
+                          <div className="flex-shrink-0 ml-2">
+                            <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                              <User className="h-4 w-4" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {isChatLoading && (
+                      <div className="flex justify-start">
+                        <div className="flex-shrink-0 mr-2">
+                          <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                            <Bot className="h-4 w-4 text-primary" />
                           </div>
                         </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {isChatLoading && (
-                    <div className="flex justify-start">
-                      <div className="flex-shrink-0 mr-2">
-                        <div className="w-7 h-7 bg-pink-600 rounded-full flex items-center justify-center">
-                          <Bot className="h-4 w-4 text-white" />
+                        <div className="bg-muted rounded-2xl px-4 py-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
                         </div>
                       </div>
-                      <div className="bg-[#1c1426] rounded-2xl px-3 py-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-pink-400" />
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </ScrollArea>
 
-                {/* Input de mensagem */}
+                {/* Input form */}
                 <form
                   onSubmit={handleSendMessage}
-                  className="border-t border-[#2b203a] p-2 flex gap-2"
+                  className="border-t border-white/10 p-3 flex gap-2"
                 >
                   <Input
                     type="text"
-                    placeholder="Digite sua mensagem para a Personal IA..."
-                    className="flex-1 bg-transparent text-xs md:text-sm px-3 py-2 rounded-full border border-[#2b203a] focus:outline-none focus:border-pink-500 text-white"
+                    placeholder="Digite sua mensagem..."
+                    className="flex-1 bg-muted/50"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                   />
                   <Button
                     type="submit"
                     size="sm"
-                    className="px-3 md:px-4 py-2 rounded-full bg-pink-600 hover:bg-pink-700 text-xs md:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!inputValue.trim() || isChatLoading}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
                 </form>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </div>
 
-            {/* Coluna direita: Resumo do treino atual */}
-            <div id="current-workout-section" className="bg-gradient-to-b from-[#16121f] to-[#0b0812] border border-[#2b203a] rounded-2xl p-4 md:p-6 shadow-lg shadow-black/40">
-              <h2 className="text-base md:text-lg font-semibold mb-2">
-                Seu Treino de Hoje
-              </h2>
-              {currentWorkout ? (
-                <div className="space-y-3 text-sm">
+        {/* Current Workout Summary */}
+        {currentWorkout && (
+          <div id="current-workout-section" className="max-w-4xl mx-auto">
+            <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10">
+              <CardHeader>
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-pink-400 text-xs uppercase tracking-wide mb-1">
-                      Treino atual
-                    </p>
-                    <p className="font-semibold text-sm md:text-base">
-                      {currentWorkout.name}
-                    </p>
+                    <CardTitle>Seu Treino Atual</CardTitle>
+                    <CardDescription>Plano personalizado gerado por IA</CardDescription>
                   </div>
-                  <div className="space-y-1 text-gray-300 text-xs md:text-sm">
-                    <p>
-                      <span className="font-medium">Objetivo: </span>
-                      {currentWorkout.objective}
-                    </p>
-                    <p>
-                      <span className="font-medium">Nível: </span>
-                      {currentWorkout.level === "iniciante"
-                        ? "Iniciante"
-                        : currentWorkout.level === "intermediario"
-                        ? "Intermediário"
-                        : "Avançado"}
-                    </p>
-                    <p>
-                      <span className="font-medium">Duração: </span>
-                      {currentWorkout.durationMinutes} min
-                    </p>
-                    <p>
-                      <span className="font-medium">Tipo: </span>
-                      {currentWorkout.type}
-                    </p>
-                    <p className="text-[11px] text-gray-400">
-                      Gerado em{" "}
-                      {new Date(currentWorkout.createdAt).toLocaleString(
-                        "pt-BR"
-                      )}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm"
-                      variant="outline"
-                      className="flex-1 text-xs md:text-sm"
-                      onClick={() => {
-                        const seriesSection = document.getElementById('series-section');
-                        if (seriesSection) {
-                          seriesSection.scrollIntoView({ behavior: 'smooth' });
-                        }
-                      }}
-                    >
-                      Ver séries
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => clearCurrentWorkout()}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-950/20"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => clearCurrentWorkout()}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-950/20"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-              ) : (
-                <p className="text-xs md:text-sm text-gray-400">
-                  Nenhum treino gerado ainda. Converse com a Personal IA para
-                  criar seu primeiro plano de treino.
-                </p>
-              )}
-            </div>
-          </section>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div>
+                    <Badge variant="outline" className="mb-2 border-primary/30 text-primary">
+                      {currentWorkout.type}
+                    </Badge>
+                    <h3 className="text-xl font-semibold">{currentWorkout.name}</h3>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                    <div className="space-y-1">
+                      <p className="text-muted-foreground text-xs">Objetivo</p>
+                      <p className="font-medium">{currentWorkout.objective}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-muted-foreground text-xs">Nível</p>
+                      <p className="font-medium capitalize">{currentWorkout.level}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-muted-foreground text-xs">Duração</p>
+                      <p className="font-medium">{currentWorkout.durationMinutes} min</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-muted-foreground text-xs">Criado em</p>
+                      <p className="font-medium text-xs">
+                        {new Date(currentWorkout.createdAt).toLocaleDateString("pt-BR")}
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    className="w-full mt-4"
+                    onClick={() => {
+                      const seriesSection = document.getElementById('series-section');
+                      if (seriesSection) {
+                        seriesSection.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                  >
+                    Ver séries e exercícios
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-          {/* Séries do treino atual */}
-          {currentWorkout && (
-            <section id="series-section" className="space-y-4">
-              <h2 className="text-lg font-semibold">Séries do treino</h2>
-              <div className="space-y-3">
-                {currentWorkout.series.map((serie) => {
-                  const expanded = expandedSeriesIds.includes(serie.id);
-                  return (
-                    <div
-                      key={serie.id}
-                      className="bg-[#0b0812] border border-[#2b203a] rounded-2xl overflow-hidden"
+        {/* Workout Series Details */}
+        {currentWorkout && (
+          <section id="series-section" className="max-w-4xl mx-auto space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Séries do Treino</h2>
+              <p className="text-muted-foreground text-sm">
+                Detalhamento completo de cada série e exercício
+              </p>
+            </div>
+            <div className="space-y-3">
+              {currentWorkout.series.map((serie) => {
+                const expanded = expandedSeriesIds.includes(serie.id);
+                return (
+                  <Card key={serie.id} className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10">
+                    <CardHeader 
+                      className="cursor-pointer hover:bg-white/5 transition-colors"
+                      onClick={() => toggleSeries(serie.id)}
                     >
-                      <button
-                        type="button"
-                        className="w-full flex items-center justify-between px-4 py-3 text-left text-sm md:text-base hover:bg-white/5 transition-colors"
-                        onClick={() => toggleSeries(serie.id)}
-                      >
+                      <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium">{serie.name}</p>
-                          <p className="text-xs text-gray-400">
-                            {serie.summary}
-                          </p>
+                          <CardTitle className="text-base sm:text-lg">{serie.name}</CardTitle>
+                          <CardDescription className="text-xs">{serie.summary}</CardDescription>
                         </div>
                         {expanded ? (
-                          <ChevronUp className="h-4 w-4 text-gray-400" />
+                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
                         ) : (
-                          <ChevronDown className="h-4 w-4 text-gray-400" />
+                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
                         )}
-                      </button>
-                      {expanded && (
-                        <div className="border-t border-[#2b203a] px-4 py-3 space-y-2 text-xs md:text-sm">
+                      </div>
+                    </CardHeader>
+                    {expanded && (
+                      <CardContent>
+                        <div className="space-y-3">
                           {serie.exercises.map((ex) => (
                             <div
                               key={ex.id}
-                              className="flex items-center justify-between gap-3 py-2 border-b border-white/5 last:border-b-0"
+                              className="flex items-start justify-between gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
                             >
-                              <div className="flex-1">
-                                <p className="font-medium">{ex.name}</p>
-                                <p className="text-[11px] text-gray-400">
-                                  {ex.equipment === "sem_equipamento"
-                                    ? "Peso corporal · Sem equipamento"
-                                    : "Com equipamento"}
-                                </p>
-                                {ex.instructions && (
-                                  <p className="text-[11px] text-gray-500 mt-1">
-                                    {ex.instructions}
-                                  </p>
-                                )}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm sm:text-base">{ex.name}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {ex.equipment === "sem_equipamento" ? "Sem equipamento" : "Com equipamento"}
+                                  </Badge>
+                                </div>
                               </div>
-                              <div className="text-right text-[11px] text-gray-300">
-                                <p>{ex.repsOrTime}</p>
-                                <p className="text-gray-500">
+                              <div className="text-right text-xs sm:text-sm flex-shrink-0">
+                                <p className="font-semibold text-primary">{ex.repsOrTime}</p>
+                                <p className="text-muted-foreground">
                                   Descanso: {ex.rest}
                                 </p>
+                                {ex.sets && (
+                                  <p className="text-muted-foreground">
+                                    {ex.sets} séries
+                                  </p>
+                                )}
                               </div>
                             </div>
                           ))}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          {/* Histórico de treinos personalizados */}
-          <section className="space-y-4">
-            <h2 className="text-lg font-semibold">Seus Treinos Personalizados</h2>
-            {isLoadingWorkouts ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-pink-400" />
-              </div>
-            ) : workoutPlans.length === 0 ? (
-              <Card className="bg-[#0b0812] border border-[#2b203a]">
-                <CardContent className="text-center py-12">
-                  <div className="p-4 rounded-2xl bg-[#2b203a]/30 w-fit mx-auto mb-4">
-                    <Dumbbell className="h-12 w-12 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">Nenhum treino criado ainda</h3>
-                  <p className="text-xs md:text-sm text-gray-400 mb-4">
-                    Converse com a Personal IA para criar seu primeiro treino personalizado
-                  </p>
-                  <Button onClick={handleNewConversation} className="gap-2">
-                    <MessageCircle className="h-4 w-4" />
-                    Criar Primeiro Treino
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {workoutPlans.map((treino) => (
-                  <Card
-                    key={treino.id}
-                    className="bg-[#0b0812] border border-[#2b203a] hover:border-pink-600/50 transition-colors cursor-pointer"
-                    onClick={() => handleSelectWorkoutFromHistory(treino)}
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between mb-2">
-                        <Badge variant="outline" className="text-[11px] text-pink-400 border-pink-600/30">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          {new Date(treino.createdAt).toLocaleDateString("pt-BR")}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteWorkoutPlan(treino.id);
-                          }}
-                          className="h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-red-950/20"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <CardTitle className="text-sm md:text-base line-clamp-2">
-                        {treino.name}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-xs">
-                      <div className="flex items-center gap-2 text-gray-300">
-                        <Target className="h-3 w-3 text-pink-400" />
-                        <span>{treino.objective}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-300">
-                        <Clock className="h-3 w-3 text-pink-400" />
-                        <span>{treino.durationMinutes} min</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-300">
-                        <Dumbbell className="h-3 w-3 text-pink-400" />
-                        <span>{treino.type}</span>
-                      </div>
-                    </CardContent>
+                      </CardContent>
+                    )}
                   </Card>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
           </section>
+        )}
+
+        {/* Seus Treinos Personalizados */}
+        <section className="space-y-4">
+          <div className="text-center max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold mb-2">Seus Treinos Personalizados</h2>
+            <p className="text-muted-foreground">
+              Todos os treinos gerados pela Personal IA adaptados ao seu perfil
+            </p>
+          </div>
+          
+          {workoutPlans.length === 0 ? (
+            <div className="max-w-2xl mx-auto text-center py-12">
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-6">
+                <Dumbbell className="h-16 w-16 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">
+                Nenhum treino personalizado ainda
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Converse com a Personal IA para gerar seu primeiro plano de treino
+              </p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
+              {workoutPlans.map((treino) => (
+                <Card 
+                  key={treino.id} 
+                  className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500 cursor-pointer"
+                  onClick={() => handleSelectWorkoutFromHistory(treino)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <Badge variant="outline" className="border-primary/30 text-primary text-xs">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        {new Date(treino.createdAt).toLocaleDateString("pt-BR")}
+                      </Badge>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 hover:bg-red-950/20 hover:text-red-400"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteWorkoutPlan(treino.id);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <CardTitle className="text-base sm:text-lg line-clamp-2 group-hover:text-primary transition-colors">
+                      {treino.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Target className="h-4 w-4 text-primary" />
+                        <span className="line-clamp-1">{treino.objective}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="h-4 w-4 text-primary" />
+                        <span>{treino.durationMinutes} minutos</span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="secondary" className="text-xs">
+                          {treino.type}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs capitalize">
+                          {treino.level}
+                        </Badge>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full text-xs border-primary/30 hover:bg-primary/10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectWorkoutFromHistory(treino);
+                      }}
+                    >
+                      Ver Treino Completo
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+          <Button 
+            onClick={() => setShowHistory(true)}
+            variant="outline"
+            className="flex items-center gap-2 border-primary/30 text-primary hover:bg-primary/10"
+          >
+            <History className="h-4 w-4" />
+            Histórico de Conversas
+          </Button>
+          <Button 
+            onClick={handleNewConversation}
+            className="flex items-center gap-2"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Nova Conversa
+          </Button>
+        </div>
+
+        {/* Features Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16 max-w-6xl mx-auto">
+          <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500">
+            <CardHeader className="text-center pb-4">
+              <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
+                <Target className="h-10 sm:h-12 w-10 sm:w-12 text-primary" />
+              </div>
+              <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors">Treinos Personalizados</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-center leading-relaxed text-sm sm:text-base">
+                <span className="text-primary font-medium">Planos adaptados</span> ao seu objetivo, nível e equipamentos disponíveis.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500">
+            <CardHeader className="text-center pb-4">
+              <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
+                <Clock className="h-10 sm:h-12 w-10 sm:w-12 text-primary" />
+              </div>
+              <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors">Geração Rápida</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-center leading-relaxed text-sm sm:text-base">
+                Treinos <span className="text-primary font-medium">criados em minutos</span> através da nossa IA especialista.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-xl bg-gradient-to-b from-black via-black to-slate-800 border-white/10 group hover:shadow-2xl transition-all duration-500 sm:col-span-2 lg:col-span-1">
+            <CardHeader className="text-center pb-4">
+              <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 w-fit mx-auto mb-4 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
+                <Brain className="h-10 sm:h-12 w-10 sm:w-12 text-primary" />
+              </div>
+              <CardTitle className="text-lg sm:text-xl group-hover:text-primary transition-colors">Baseado em Ciência</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-center leading-relaxed text-sm sm:text-base">
+                Converse com nossa <span className="text-primary font-medium">Personal IA</span> e receba treinos baseados em evidências científicas.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
