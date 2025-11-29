@@ -41,7 +41,7 @@ serve(async (req) => {
     const fitness_goal = profile?.fitness_goal || 'não especificado';
     
     const prompt = `
-    Você é um PERSONAL TRAINER ESPECIALISTA CREF com 15 anos de experiência em treinamento físico. Com base na conversa abaixo, crie um plano de treino detalhado.
+    Você é um PERSONAL TRAINER ESPECIALISTA CREF com 15 anos de experiência em treinamento físico. Com base na conversa abaixo, crie um PLANO DE TREINO COMPLETO com MÚLTIPLOS DIAS.
     
     CONTEXTO DA CONVERSA:
     ${conversationContext}
@@ -52,24 +52,27 @@ serve(async (req) => {
     - Objetivo geral: ${fitness_goal}
 
     INSTRUÇÕES IMPORTANTES:
-    - Analise a conversa para entender objetivo, nível, tempo disponível, equipamentos e restrições
-    - Crie um plano progressivo e seguro para o nível do usuário
-    - Inclua aquecimento e alongamento quando apropriado
+    - Analise a conversa para entender objetivo, nível, tempo disponível, equipamentos, frequência semanal e restrições
+    - Crie um plano com MÚLTIPLOS DIAS DE TREINO (ex: 3x, 4x, 5x por semana)
+    - Cada dia deve ter um foco específico (ex: "Dia 1 - Pernas e Glúteos", "Dia 2 - Superior Push", etc.)
+    - Inclua aquecimento quando apropriado
     - Adapte para os equipamentos disponíveis mencionados
-    - Se não houver informação clara, use valores padrão sensatos (ex: iniciante, 30-40min, sem equipamento)
+    - Se não houver informação clara, use valores padrão sensatos (ex: 4x semana, iniciante, 40min, sem equipamento)
 
     Retorne APENAS um JSON válido no seguinte formato:
     {
-      "name": "Nome do Plano de Treino",
+      "name": "Nome do Plano (ex: Treino Hipertrofia 4x/semana)",
       "objective": "Objetivo principal (ex: Emagrecimento, Hipertrofia, Condicionamento)",
       "level": "iniciante|intermediario|avancado",
-      "durationMinutes": 35,
+      "weeklyFrequency": 4,
       "type": "Sem equipamento|Com halteres|Academia",
-      "series": [
+      "days": [
         {
-          "id": "serie-1",
-          "name": "Série A – Nome",
-          "summary": "3 séries · 40s ON / 20s OFF · 5 exercícios",
+          "id": "day-1",
+          "dayNumber": 1,
+          "name": "Pernas e Glúteos",
+          "focus": "Inferiores",
+          "durationMinutes": 40,
           "exercises": [
             {
               "id": "ex-1",
@@ -77,7 +80,8 @@ serve(async (req) => {
               "repsOrTime": "12 reps" ou "40s",
               "rest": "60s",
               "sets": 3,
-              "equipment": "sem_equipamento|com_equipamento"
+              "equipment": "sem_equipamento|com_equipamento",
+              "instructions": "Instruções breves de execução"
             }
           ]
         }
@@ -154,9 +158,9 @@ serve(async (req) => {
         name: workoutPlan.name,
         objective: workoutPlan.objective,
         level: workoutPlan.level,
-        durationMinutes: workoutPlan.durationMinutes,
+        weeklyFrequency: workoutPlan.weeklyFrequency,
         type: workoutPlan.type,
-        series: workoutPlan.series,
+        days: workoutPlan.days,
         createdAt: savedPlan.created_at
       }
     }), {
