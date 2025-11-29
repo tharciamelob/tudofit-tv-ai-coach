@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,6 +73,7 @@ export default function PersonalIA() {
   const [currentPlan, setCurrentPlan] = useState<WorkoutPlan | null>(null);
   const [planHistory, setPlanHistory] = useState<WorkoutPlan[]>([]);
   const [expandedDays, setExpandedDays] = useState<string[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -128,6 +129,11 @@ export default function PersonalIA() {
       console.error('Erro ao carregar histórico:', error);
     }
   };
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // Initialize chat with welcome message
   useEffect(() => {
@@ -209,8 +215,18 @@ export default function PersonalIA() {
   };
 
   const handleGenerateWorkoutPlan = async () => {
-    if (!user || !currentConversation || messages.length === 0) return;
+    if (!user || messages.length === 0) return;
     
+    // Send automatic message to chat
+    const autoMessage = "Monte um plano de treinos completo para mim, com base nas minhas preferências e objetivos que conversamos.";
+    const userMessage: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      type: 'user',
+      content: autoMessage,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
     setIsGeneratingPlan(true);
     
     try {
@@ -420,6 +436,7 @@ export default function PersonalIA() {
                         </div>
                       </div>
                     )}
+                    <div ref={messagesEndRef} />
                   </div>
                 </ScrollArea>
 
@@ -612,15 +629,15 @@ export default function PersonalIA() {
         )}
 
         {/* 3. HISTÓRICO DE PLANOS (PARTE DE BAIXO) */}
-        {planHistory.length > 0 && (
+        {planHistory.length > 1 && (
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="text-center">
               <h2 className="text-3xl font-bold mb-2">Histórico de Planos de Treino</h2>
-              <p className="text-muted-foreground">Todos os seus planos gerados pela IA</p>
+              <p className="text-muted-foreground">Todos os seus planos anteriores criados pela Personal IA</p>
             </div>
 
             <div className="grid gap-4">
-              {planHistory.map((plan) => (
+              {planHistory.slice(1).map((plan) => (
                 <Card key={plan.id} className="border-0 shadow-xl bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 border-white/10 hover:border-primary/20 transition-all cursor-pointer group">
                   <CardHeader onClick={() => handleSelectPlanFromHistory(plan)}>
                     <div className="flex items-start justify-between">
