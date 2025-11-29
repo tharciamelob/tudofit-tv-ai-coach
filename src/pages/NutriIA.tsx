@@ -13,12 +13,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useConversationHistory } from "@/hooks/useConversationHistory";
 import { usePDFGeneration } from "@/hooks/usePDFGeneration";
 import { useDailyMealPlan, MealPlan, DailyPlan } from "@/hooks/useDailyMealPlan";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function NutriIA() {
   const [showChat, setShowChat] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [showDailyPlan, setShowDailyPlan] = useState(false);
+  const [mealPlanHistory, setMealPlanHistory] = useState<any[]>([]);
   const { user } = useAuth();
   const { generateNutritionPDF, isGenerating } = usePDFGeneration();
   const { 
@@ -36,6 +39,31 @@ export default function NutriIA() {
     clearCurrentConversation,
     loadConversationMessages
   } = useConversationHistory('nutrition');
+
+  // Load meal plan history
+  useEffect(() => {
+    if (user) {
+      loadMealPlanHistory();
+    }
+  }, [user]);
+
+  const loadMealPlanHistory = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('meal_plans')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setMealPlanHistory(data || []);
+    } catch (error: any) {
+      console.error('Erro ao carregar histórico:', error);
+    }
+  };
 
   const handlePlanGenerated = (plan: any) => {
     setGeneratedPlan(plan);
@@ -278,7 +306,7 @@ export default function NutriIA() {
 
         {/* SEÇÃO 3 - Seu Plano Nutricional de Hoje (Personalizado) */}
         {dailyPlan && (
-          <div>
+          <div id="daily-plan-section">
             <div className="flex items-center justify-between mb-4 max-w-4xl mx-auto">
               <div>
                 <h2 className="text-2xl font-bold">Seu Plano Nutricional de Hoje (Personalizado)</h2>
@@ -314,6 +342,56 @@ export default function NutriIA() {
                 onClearPlan={handleClearDailyPlan}
               />
             )}
+          </div>
+        )}
+
+        {/* SEÇÃO 4 - Histórico de Planos Nutricionais */}
+        {mealPlanHistory.length > 0 && (
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-2">Histórico de Planos Nutricionais</h2>
+              <p className="text-muted-foreground">Todos os seus planos anteriores criados pela Nutri IA</p>
+            </div>
+
+            <div className="grid gap-4">
+              {mealPlanHistory.map((plan) => (
+                <Card key={plan.id} className="border-0 shadow-xl bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 border-white/10 hover:border-primary/20 transition-all">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                            {plan.plan_type || 'Personalizado'}
+                          </Badge>
+                          {plan.is_favorite && (
+                            <Badge variant="secondary" className="text-xs">
+                              Favorito
+                            </Badge>
+                          )}
+                        </div>
+                        <h4 className="text-lg font-bold">
+                          {plan.plan_name}
+                        </h4>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>{new Date(plan.created_at).toLocaleDateString('pt-BR')}</span>
+                          </div>
+                          <span>{plan.plan_data?.meals?.length || 0} refeições</span>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-primary hover:bg-primary/10"
+                      >
+                        Ver plano
+                      </Button>
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
 

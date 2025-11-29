@@ -50,23 +50,17 @@ export const ConversationHistory = ({
     setDeleteId('');
   };
 
-  const getIcon = () => {
-    return conversationType === 'personal' ? Brain : Apple;
-  };
-
   const getTitle = () => {
     return conversationType === 'personal' ? 'Personal IA' : 'Nutri IA';
   };
 
-  const getColor = () => {
-    return conversationType === 'personal' ? 'blue' : 'green';
-  };
+  const IconComponent = conversationType === 'personal' ? Brain : Apple;
 
   return (
     <Card className="h-full bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-3">
-          {getIcon()({ className: "h-6 w-6 text-primary" })}
+          <IconComponent className="h-6 w-6 text-primary" />
           <div className="flex flex-col">
             <span>Histórico - {getTitle()}</span>
             <p className="text-sm text-muted-foreground font-normal">
