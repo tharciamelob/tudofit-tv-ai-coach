@@ -6,20 +6,20 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import MonthlyProgressCard from '@/components/MonthlyProgressCard';
-import { useMonthlyStats } from '@/hooks/useMonthlyStats';
 import { useProfile } from '@/hooks/useProfile';
+import { useUserSummary } from '@/hooks/useUserSummary';
 import { SupportModal } from '@/components/SupportModal';
 import { ProfileEditModal } from '@/components/ProfileEditModal';
 import { GeneralSettingsModal } from '@/components/GeneralSettingsModal';
 import { PrivacySettingsModal } from '@/components/PrivacySettingsModal';
 import { SubscriptionModal } from '@/components/SubscriptionModal';
-import { User, Settings, Crown, CreditCard, LogOut, Shield, MessageSquare, Calendar } from 'lucide-react';
+import { User, Settings, Crown, CreditCard, LogOut, Shield, MessageSquare, Activity, Droplets, Target, TrendingUp, Scale } from 'lucide-react';
 
 const Profile = () => {
   const { user, signOut } = useAuth();
   const { loading: guardLoading } = useAuthGuard();
-  const { stats } = useMonthlyStats();
   const { profileData, loading } = useProfile();
+  const { summary, loading: summaryLoading, getGoalLabel } = useUserSummary();
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showGeneralSettingsModal, setShowGeneralSettingsModal] = useState(false);
@@ -52,8 +52,8 @@ const Profile = () => {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Informações do Usuário */}
-            <div className="md:col-span-2 space-y-6">{/* Added space-y-6 for better spacing */}
-              <Card className="mb-6 bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
+            <div className="md:col-span-2 space-y-6">
+              <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -113,30 +113,85 @@ const Profile = () => {
                 </CardContent>
               </Card>
 
-              {/* Estatísticas */}
+              {/* Resumo Geral do Usuário */}
               <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
                 <CardHeader>
-                  <CardTitle>Suas Estatísticas do Mês</CardTitle>
+                  <CardTitle className="flex items-center">
+                    <Activity className="h-5 w-5 mr-2 text-primary" />
+                    Resumo Geral do Usuário
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-4 gap-6 text-center">
-                    <div>
-                      <p className="text-2xl font-bold text-primary">{stats.workouts.totalWorkouts}</p>
-                      <p className="text-sm text-muted-foreground">Planos criados</p>
+                  {summaryLoading ? (
+                    <div className="text-center py-4 text-muted-foreground">Carregando...</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Consistência */}
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                        <div className="p-2 rounded-full bg-primary/20">
+                          <TrendingUp className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Consistência</p>
+                          <p className="text-lg font-bold">{summary.activeDays} dias ativos</p>
+                        </div>
+                      </div>
+
+                      {/* Último peso */}
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                        <div className="p-2 rounded-full bg-green-500/20">
+                          <Scale className="h-5 w-5 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Último peso</p>
+                          <p className="text-lg font-bold">
+                            {summary.lastWeight ? `${summary.lastWeight} kg` : '—'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Meta principal */}
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                        <div className="p-2 rounded-full bg-yellow-500/20">
+                          <Target className="h-5 w-5 text-yellow-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Meta principal</p>
+                          <p className="text-lg font-bold">{getGoalLabel(summary.mainGoal)}</p>
+                        </div>
+                      </div>
+
+                      {/* Água (meta) */}
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                        <div className="p-2 rounded-full bg-blue-500/20">
+                          <Droplets className="h-5 w-5 text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Água (meta)</p>
+                          <p className="text-lg font-bold">{summary.waterGoalDays} dias no mês</p>
+                        </div>
+                      </div>
+
+                      {/* Cumprimento geral - span full width on mobile */}
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 md:col-span-2">
+                        <div className="p-2 rounded-full bg-purple-500/20">
+                          <Activity className="h-5 w-5 text-purple-500" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground">Cumprimento geral</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-lg font-bold">{summary.overallCompletionRate}% das metas</p>
+                            <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-primary to-purple-500 transition-all duration-500"
+                                style={{ width: `${summary.overallCompletionRate}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-2xl font-bold text-green-500">{stats.walking.totalDistance} km</p>
-                      <p className="text-sm text-muted-foreground">Distância caminhada</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-blue-500">{stats.waterIntake.total}L</p>
-                      <p className="text-sm text-muted-foreground">Água consumida</p>
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-yellow-500">{stats.sleep.avgHours}h</p>
-                      <p className="text-sm text-muted-foreground">Média de sono</p>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
