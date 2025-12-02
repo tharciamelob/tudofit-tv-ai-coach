@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,12 +6,51 @@ import { useAuth } from '@/contexts/AuthContext';
 export const useSleepTracking = () => {
   const [loading, setLoading] = useState(false);
   const [todaySleep, setTodaySleep] = useState<any>(null);
-  const [sleepGoal, setSleepGoal] = useState(8); // Meta padrão de 8 horas
+  const [sleepGoal, setSleepGoal] = useState(8);
   const [weeklyData, setWeeklyData] = useState<Array<{day: string, date: string, hours: string, quality: number, progress: number, data: any}>>([]);
   const { toast } = useToast();
   const { user } = useAuth();
+  const channelRef = useRef<string | null>(null);
 
-  const fetchTodaySleep = async () => {
+  const parseDurationToHours = useCallback((duration: string): number => {
+    if (!duration) return 0;
+    
+    const timeMatch = duration.match(/^(\d{2}):(\d{2}):(\d{2})$/);
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1]);
+      const minutes = parseInt(timeMatch[2]);
+      return hours + (minutes / 60);
+    }
+    
+    const textMatch = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
+    if (textMatch) {
+      const hours = parseInt(textMatch[1]);
+      const minutes = parseInt(textMatch[2]);
+      return hours + (minutes / 60);
+    }
+    
+    return 0;
+  }, []);
+
+  const formatSleepDuration = useCallback((duration: string) => {
+    if (!duration) return "0h 0m";
+    
+    const timeMatch = duration.match(/^(\d{2}):(\d{2}):(\d{2})$/);
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1]);
+      const minutes = parseInt(timeMatch[2]);
+      return `${hours}h ${minutes}m`;
+    }
+    
+    const textMatch = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
+    if (textMatch) {
+      return `${textMatch[1]}h ${textMatch[2]}m`;
+    }
+    
+    return duration;
+  }, []);
+
+  const fetchTodaySleep = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -27,31 +66,29 @@ export const useSleepTracking = () => {
       
       setTodaySleep(data);
 
-      // Buscar meta de sono do perfil do usuário
       const { data: profile } = await supabase
         .from('profiles')
-        .select('*')
+        .select('sleep_goal')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (profile && (profile as any).sleep_goal) {
-        setSleepGoal((profile as any).sleep_goal);
+      if (profile?.sleep_goal) {
+        setSleepGoal(profile.sleep_goal);
       }
     } catch (error: any) {
       console.error('Erro ao buscar dados de sono:', error);
     }
-  };
+  }, [user]);
 
-  const fetchWeeklyData = async () => {
+  const fetchWeeklyData = useCallback(async () => {
     if (!user) return;
 
     try {
       const days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
       
-      // Calcular os dias da semana atual (segunda a domingo)
       const today = new Date();
-      const currentDay = today.getDay(); // 0 = domingo, 1 = segunda, etc.
-      const mondayOffset = currentDay === 0 ? -6 : -(currentDay - 1); // Offset para segunda-feira
+      const currentDay = today.getDay();
+      const mondayOffset = currentDay === 0 ? -6 : -(currentDay - 1);
       
       const dates = Array.from({ length: 7 }, (_, i) => {
         const date = new Date(today);
@@ -69,54 +106,11 @@ export const useSleepTracking = () => {
 
       if (error) throw error;
 
-      const formatSleepDuration = (duration: string) => {
-        if (!duration) return "0h 0m";
-        
-        // Handle time format (HH:MM:SS)
-        const timeMatch = duration.match(/^(\d{2}):(\d{2}):(\d{2})$/);
-        if (timeMatch) {
-          const hours = parseInt(timeMatch[1]);
-          const minutes = parseInt(timeMatch[2]);
-          return `${hours}h ${minutes}m`;
-        }
-        
-        // Handle text format (X hours Y minutes)
-        const textMatch = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
-        if (textMatch) {
-          return `${textMatch[1]}h ${textMatch[2]}m`;
-        }
-        
-        return duration;
-      };
-
-      const parseDurationToHours = (duration: string): number => {
-        if (!duration) return 0;
-        
-        // Handle time format (HH:MM:SS)
-        const timeMatch = duration.match(/^(\d{2}):(\d{2}):(\d{2})$/);
-        if (timeMatch) {
-          const hours = parseInt(timeMatch[1]);
-          const minutes = parseInt(timeMatch[2]);
-          return hours + (minutes / 60);
-        }
-        
-        // Handle text format (X hours Y minutes)
-        const textMatch = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
-        if (textMatch) {
-          const hours = parseInt(textMatch[1]);
-          const minutes = parseInt(textMatch[2]);
-          return hours + (minutes / 60);
-        }
-        
-        return 0;
-      };
-
       const weeklyData = dates.map((date, index) => {
         const dayData = data?.find(entry => entry.date === date);
         
         let progressPercent = 0;
         if (dayData?.sleep_duration) {
-          // Calcular progresso baseado na duração vs meta
           const duration = dayData.sleep_duration;
           if (typeof duration === 'string') {
             const totalHours = parseDurationToHours(duration);
@@ -138,7 +132,11 @@ export const useSleepTracking = () => {
     } catch (error: any) {
       console.error('Erro ao buscar dados semanais de sono:', error);
     }
-  };
+  }, [user, sleepGoal, parseDurationToHours, formatSleepDuration]);
+
+  const refetch = useCallback(async () => {
+    await Promise.all([fetchTodaySleep(), fetchWeeklyData()]);
+  }, [fetchTodaySleep, fetchWeeklyData]);
 
   const addSleep = async (sleepData: {
     bedtime: string;
@@ -150,23 +148,17 @@ export const useSleepTracking = () => {
 
     setLoading(true);
     try {
-      console.log('Registrando sono:', sleepData); // Debug log
-
       const bedtime = new Date(sleepData.bedtime);
       const wakeTime = new Date(sleepData.wakeTime);
       
-      // Calcular duração do sono com lógica inteligente
       let duration;
       if (bedtime.getTime() > wakeTime.getTime()) {
-        // Se bedtime > wakeTime, significa que acordou no dia seguinte
         duration = wakeTime.getTime() - bedtime.getTime() + (24 * 60 * 60 * 1000);
       } else {
-        // Caso normal: mesmo dia
         duration = wakeTime.getTime() - bedtime.getTime();
       }
 
-      // Se a duração for negativa ou muito pequena, assumir que cruzou a meia-noite
-      if (duration < 0 || duration < 2 * 60 * 60 * 1000) { // Menos de 2 horas
+      if (duration < 0 || duration < 2 * 60 * 60 * 1000) {
         duration = duration + (24 * 60 * 60 * 1000);
       }
 
@@ -180,20 +172,17 @@ export const useSleepTracking = () => {
           date: sleepData.date || new Date().toISOString().split('T')[0]
         });
 
-      if (error) {
-        console.error('Erro ao inserir sono:', error); // Debug log
-        throw error;
-      }
+      if (error) throw error;
 
-      // Atualizar dados em tempo real
-      await Promise.all([fetchTodaySleep(), fetchWeeklyData()]);
+      // Atualizar dados imediatamente após insert
+      await refetch();
       
       toast({
         title: "Sono registrado!",
         description: "Seus dados de sono foram salvos com sucesso.",
       });
     } catch (error: any) {
-      console.error('Erro completo:', error); // Debug log
+      console.error('Erro completo:', error);
       toast({
         title: "Erro ao registrar sono",
         description: error.message,
@@ -217,6 +206,8 @@ export const useSleepTracking = () => {
       if (error) throw error;
 
       setSleepGoal(newGoal);
+      await refetch();
+      
       toast({
         title: "Meta atualizada!",
         description: `Nova meta de sono: ${newGoal} horas por noite.`,
@@ -232,39 +223,15 @@ export const useSleepTracking = () => {
     }
   };
 
-  const parseDurationToHours = (duration: string): number => {
-    if (!duration) return 0;
-    
-    // Handle time format (HH:MM:SS)
-    const timeMatch = duration.match(/^(\d{2}):(\d{2}):(\d{2})$/);
-    if (timeMatch) {
-      const hours = parseInt(timeMatch[1]);
-      const minutes = parseInt(timeMatch[2]);
-      return hours + (minutes / 60);
-    }
-    
-    // Handle text format (X hours Y minutes)
-    const textMatch = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
-    if (textMatch) {
-      const hours = parseInt(textMatch[1]);
-      const minutes = parseInt(textMatch[2]);
-      return hours + (minutes / 60);
-    }
-    
-    return 0;
-  };
-
-  const getSleepProgress = () => {
+  const getSleepProgress = useCallback(() => {
     if (!todaySleep?.sleep_duration) return 0;
     
-    // Converter duration para horas decimais
     const duration = todaySleep.sleep_duration;
     if (typeof duration === 'string') {
       const totalHours = parseDurationToHours(duration);
       return Math.min((totalHours / sleepGoal) * 100, 100);
     }
     
-    // Se for um objeto interval do PostgreSQL
     if (duration && typeof duration === 'object') {
       const milliseconds = duration.milliseconds || 0;
       const totalHours = milliseconds / (1000 * 60 * 60);
@@ -272,7 +239,7 @@ export const useSleepTracking = () => {
     }
     
     return 0;
-  };
+  }, [todaySleep, sleepGoal, parseDurationToHours]);
 
   const deleteSleepEntry = async () => {
     if (!user || !todaySleep) return;
@@ -287,8 +254,7 @@ export const useSleepTracking = () => {
 
       if (error) throw error;
 
-      await fetchTodaySleep();
-      await fetchWeeklyData();
+      await refetch();
       toast({
         title: "Registro excluído!",
         description: "Registro de sono removido com sucesso.",
@@ -317,8 +283,7 @@ export const useSleepTracking = () => {
 
       if (error) throw error;
 
-      await fetchTodaySleep();
-      await fetchWeeklyData();
+      await refetch();
       toast({
         title: "Registro excluído!",
         description: "Registro de sono removido com sucesso.",
@@ -340,9 +305,12 @@ export const useSleepTracking = () => {
     fetchTodaySleep();
     fetchWeeklyData();
 
-    // Set up real-time listener for sleep tracking
+    // Create unique channel name for this instance
+    const uniqueChannelId = `sleep-tracking-${user.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    channelRef.current = uniqueChannelId;
+
     const channel = supabase
-      .channel('sleep-tracking-changes')
+      .channel(uniqueChannelId)
       .on(
         'postgres_changes',
         {
@@ -353,7 +321,6 @@ export const useSleepTracking = () => {
         },
         (payload) => {
           console.log('Sleep tracking real-time update:', payload);
-          // Refresh data when changes occur
           fetchTodaySleep();
           fetchWeeklyData();
         }
@@ -363,28 +330,7 @@ export const useSleepTracking = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
-
-  // Format sleep duration helper function
-  const formatSleepDuration = (duration: string) => {
-    if (!duration) return "0h 0m";
-    
-    // Handle time format (HH:MM:SS)
-    const timeMatch = duration.match(/^(\d{2}):(\d{2}):(\d{2})$/);
-    if (timeMatch) {
-      const hours = parseInt(timeMatch[1]);
-      const minutes = parseInt(timeMatch[2]);
-      return `${hours}h ${minutes}m`;
-    }
-    
-    // Handle text format (X hours Y minutes)
-    const textMatch = duration.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/);
-    if (textMatch) {
-      return `${textMatch[1]}h ${textMatch[2]}m`;
-    }
-    
-    return duration;
-  };
+  }, [user, fetchTodaySleep, fetchWeeklyData]);
 
   return {
     todaySleep,
@@ -396,6 +342,7 @@ export const useSleepTracking = () => {
     deleteSleepEntry,
     deleteSleepByDate,
     formatSleepDuration,
+    refetch,
     progress: getSleepProgress()
   };
 };

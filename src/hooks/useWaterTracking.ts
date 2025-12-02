@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,8 +10,9 @@ export const useWaterTracking = () => {
   const [weeklyData, setWeeklyData] = useState<Array<{day: string, date: string, progress: number, total: number, entries: any[]}>>([]);
   const { toast } = useToast();
   const { user } = useAuth();
+  const channelRef = useRef<string | null>(null);
 
-  const fetchTodayWater = async () => {
+  const fetchTodayWater = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -32,18 +33,17 @@ export const useWaterTracking = () => {
     } catch (error: any) {
       console.error('Erro ao buscar dados de hidratação:', error);
     }
-  };
+  }, [user]);
 
-  const fetchWeeklyData = async () => {
+  const fetchWeeklyData = useCallback(async () => {
     if (!user) return;
 
     try {
       const days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
       
-      // Calcular os dias da semana atual (segunda a domingo)
       const today = new Date();
-      const currentDay = today.getDay(); // 0 = domingo, 1 = segunda, etc.
-      const mondayOffset = currentDay === 0 ? -6 : -(currentDay - 1); // Offset para segunda-feira
+      const currentDay = today.getDay();
+      const mondayOffset = currentDay === 0 ? -6 : -(currentDay - 1);
       
       const dates = Array.from({ length: 7 }, (_, i) => {
         const date = new Date(today);
@@ -80,7 +80,11 @@ export const useWaterTracking = () => {
     } catch (error: any) {
       console.error('Erro ao buscar dados semanais de hidratação:', error);
     }
-  };
+  }, [user]);
+
+  const refetch = useCallback(async () => {
+    await Promise.all([fetchTodayWater(), fetchWeeklyData()]);
+  }, [fetchTodayWater, fetchWeeklyData]);
 
   const addWater = async (amount: number, date?: string) => {
     if (!user) return;
@@ -98,8 +102,8 @@ export const useWaterTracking = () => {
 
       if (error) throw error;
 
-      // Atualizar dados em tempo real
-      await Promise.all([fetchTodayWater(), fetchWeeklyData()]);
+      // Atualizar dados imediatamente após insert
+      await refetch();
       
       toast({
         title: "Água registrada!",
@@ -121,7 +125,6 @@ export const useWaterTracking = () => {
 
     setLoading(true);
     try {
-      // Update goal in database by inserting a new record with current date and 0 amount
       const today = new Date().toISOString().split('T')[0];
       const { error } = await supabase
         .from('water_tracking')
@@ -135,6 +138,8 @@ export const useWaterTracking = () => {
       if (error) throw error;
 
       setDailyGoal(newGoal);
+      await refetch();
+      
       toast({
         title: "Meta atualizada!",
         description: `Sua nova meta diária é ${newGoal}ml.`,
@@ -163,8 +168,7 @@ export const useWaterTracking = () => {
 
       if (error) throw error;
 
-      await fetchTodayWater();
-      await fetchWeeklyData();
+      await refetch();
       toast({
         title: "Registro excluído!",
         description: "Registro de água removido com sucesso.",
@@ -193,8 +197,7 @@ export const useWaterTracking = () => {
 
       if (error) throw error;
 
-      await fetchTodayWater();
-      await fetchWeeklyData();
+      await refetch();
       toast({
         title: "Registros excluídos!",
         description: "Todos os registros de água do dia foram removidos.",
@@ -216,9 +219,12 @@ export const useWaterTracking = () => {
     fetchTodayWater();
     fetchWeeklyData();
 
-    // Set up real-time listener for water tracking
+    // Create unique channel name for this instance
+    const uniqueChannelId = `water-tracking-${user.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    channelRef.current = uniqueChannelId;
+
     const channel = supabase
-      .channel('water-tracking-changes')
+      .channel(uniqueChannelId)
       .on(
         'postgres_changes',
         {
@@ -229,7 +235,6 @@ export const useWaterTracking = () => {
         },
         (payload) => {
           console.log('Water tracking real-time update:', payload);
-          // Refresh data when changes occur
           fetchTodayWater();
           fetchWeeklyData();
         }
@@ -239,7 +244,7 @@ export const useWaterTracking = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, fetchTodayWater, fetchWeeklyData]);
 
   return {
     todayWater,
@@ -250,6 +255,7 @@ export const useWaterTracking = () => {
     updateDailyGoal,
     deleteWaterEntry,
     deleteAllWaterForDate,
+    refetch,
     progress: Math.min((todayWater / dailyGoal) * 100, 100)
   };
 };
