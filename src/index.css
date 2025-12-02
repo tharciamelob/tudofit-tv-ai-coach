@@ -108,29 +108,32 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    @apply transition-colors duration-200;
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
-    background: #000000;
     min-height: 100vh;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
   
-  /* Global App Layout - Dark Netflix Style */
+  /* Global App Layout - Theme Aware */
   .app-container {
-    background: #000000;
+    @apply bg-background;
     min-height: 100vh;
   }
   
-  /* Enhanced Card Styles - Dark Theme */
+  /* Enhanced Card Styles - Theme Aware */
   .card-dark {
     @apply bg-card border-border;
-    background: linear-gradient(135deg, hsl(var(--netflix-dark-gray)), hsl(var(--netflix-medium-gray)));
     border: 1px solid hsl(var(--border));
     box-shadow: var(--shadow-card);
     backdrop-filter: blur(10px);
   }
   
   .card-dark:hover {
-    box-shadow: 0 12px 48px hsl(var(--netflix-black) / 0.8);
+    box-shadow: 0 12px 48px hsl(var(--background) / 0.5);
     transform: translateY(-4px);
     transition: var(--transition-smooth);
   }

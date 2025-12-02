@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useLayoutEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -12,27 +12,41 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// Apply theme to document immediately (can be called before React mounts)
+const applyThemeToDocument = (newTheme: Theme) => {
+  const root = document.documentElement;
+  root.classList.remove('light', 'dark');
+  root.classList.add(newTheme);
+  localStorage.setItem('tudofit-theme', newTheme);
+};
+
+// Get initial theme from localStorage
+const getInitialTheme = (): Theme => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('tudofit-theme');
+    if (stored === 'light' || stored === 'dark') {
+      return stored;
+    }
+  }
+  return 'dark';
+};
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const [theme, setThemeState] = useState<Theme>(() => {
-    // Try to get from localStorage first for fast initial load
-    const stored = localStorage.getItem('tudofit-theme');
-    return (stored === 'light' || stored === 'dark') ? stored : 'dark';
-  });
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Apply theme to document
-  const applyTheme = useCallback((newTheme: Theme) => {
-    const root = document.documentElement;
-    if (newTheme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    localStorage.setItem('tudofit-theme', newTheme);
+  // Apply theme immediately on mount (before paint)
+  useLayoutEffect(() => {
+    applyThemeToDocument(theme);
   }, []);
 
-  // Load theme from user settings
+  // Apply theme whenever it changes
+  useEffect(() => {
+    applyThemeToDocument(theme);
+  }, [theme]);
+
+  // Load theme from user settings when user logs in
   useEffect(() => {
     const loadThemeFromSettings = async () => {
       if (!user) {
@@ -50,7 +64,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (!error && data?.theme) {
           const userTheme = data.theme as Theme;
           setThemeState(userTheme);
-          applyTheme(userTheme);
+          applyThemeToDocument(userTheme);
         }
       } catch (err) {
         console.error('Error loading theme:', err);
@@ -60,16 +74,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     loadThemeFromSettings();
-  }, [user, applyTheme]);
-
-  // Apply theme whenever it changes
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme, applyTheme]);
+  }, [user]);
 
   const setTheme = useCallback(async (newTheme: Theme) => {
     setThemeState(newTheme);
-    applyTheme(newTheme);
+    applyThemeToDocument(newTheme);
 
     // Save to Supabase if user is logged in
     if (user) {
@@ -94,7 +103,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         console.error('Error saving theme:', err);
       }
     }
-  }, [user, applyTheme]);
+  }, [user]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, isLoading }}>
