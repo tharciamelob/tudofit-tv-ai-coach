@@ -8,14 +8,13 @@ import {
   Moon, 
   Footprints, 
   Utensils,
-  Dumbbell,
   Calendar,
   TrendingUp,
   Target
 } from 'lucide-react';
 
 const MonthlyProgressCard = () => {
-  const { stats, loading, monthName, getProgressPercentage } = useMonthlyStats();
+  const { stats, loading, monthName } = useMonthlyStats();
 
   if (loading) {
     return (
@@ -43,22 +42,25 @@ const MonthlyProgressCard = () => {
   const currentMonth = new Date().getDate();
   const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
 
+  // Format water total in liters
+  const waterTotalLiters = (stats.waterIntake.total / 1000).toFixed(1);
+
   const progressData = [
     {
       icon: Droplets,
       title: 'Hidratação',
-      value: `${stats.waterIntake.total}L`,
-      subtitle: `${stats.waterIntake.daysWithGoal} dias com meta`,
-      progress: getProgressPercentage(stats.waterIntake.daysWithGoal, currentMonth),
+      value: `${waterTotalLiters}L`,
+      subtitle: `${stats.waterIntake.daysWithGoal} dias com meta batida`,
+      progress: stats.waterIntake.progressPercent,
       color: 'text-blue-500',
       bgColor: 'from-blue-500 to-cyan-600'
     },
     {
       icon: Moon,
       title: 'Sono',
-      value: `${stats.sleep.avgHours}h`,
-      subtitle: `${stats.sleep.daysWithGoal} noites com 8h+`,
-      progress: getProgressPercentage(stats.sleep.daysWithGoal, currentMonth),
+      value: `${stats.sleep.avgHours}h média`,
+      subtitle: `${stats.sleep.totalNights} noites registradas`,
+      progress: stats.sleep.progressPercent,
       color: 'text-purple-500',
       bgColor: 'from-purple-500 to-indigo-600'
     },
@@ -67,7 +69,7 @@ const MonthlyProgressCard = () => {
       title: 'Caminhadas',
       value: `${stats.walking.totalDistance}km`,
       subtitle: `${stats.walking.totalSessions} sessões`,
-      progress: getProgressPercentage(stats.walking.totalSessions, 20), // Target: 20 sessions/month
+      progress: stats.walking.progressPercent,
       color: 'text-green-500',
       bgColor: 'from-green-500 to-emerald-600'
     },
@@ -76,11 +78,22 @@ const MonthlyProgressCard = () => {
       title: 'Alimentação',
       value: `${stats.foodDiary.activeDays} dias`,
       subtitle: `${stats.foodDiary.totalEntries} registros`,
-      progress: getProgressPercentage(stats.foodDiary.activeDays, currentMonth),
+      progress: 0, // No food tracking data yet
       color: 'text-orange-500',
       bgColor: 'from-orange-500 to-red-600'
     }
   ];
+
+  // Calculate average progress (only from metrics with data)
+  const activeMetrics = [
+    stats.waterIntake.progressPercent,
+    stats.sleep.progressPercent,
+    stats.walking.progressPercent,
+  ].filter(p => p > 0 || stats.waterIntake.total > 0 || stats.sleep.totalNights > 0 || stats.walking.totalSessions > 0);
+  
+  const avgProgress = activeMetrics.length > 0 
+    ? Math.round(activeMetrics.reduce((a, b) => a + b, 0) / Math.max(activeMetrics.length, 1))
+    : 0;
 
   return (
     <Card className="bg-gradient-to-b from-black via-black to-slate-800 border-white/10 shadow-xl">
@@ -136,16 +149,13 @@ const MonthlyProgressCard = () => {
             </div>
             <div className="text-right">
               <p className="font-medium">
-                {Math.round((
-                  getProgressPercentage(stats.waterIntake.daysWithGoal, currentMonth) +
-                  getProgressPercentage(stats.sleep.daysWithGoal, currentMonth) +
-                  getProgressPercentage(stats.walking.totalSessions, 20) +
-                  getProgressPercentage(stats.foodDiary.activeDays, currentMonth)
-                ) / 4)}% das metas
+                {avgProgress}% das metas
               </p>
-              <p className="text-xs text-muted-foreground">
-                {stats.walking.totalCalories > 0 && `${stats.walking.totalCalories} calorias queimadas`}
-              </p>
+              {stats.walking.totalCalories > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {stats.walking.totalCalories} calorias queimadas
+                </p>
+              )}
             </div>
           </div>
         </div>
