@@ -167,6 +167,7 @@ serve(async (req) => {
     
     const systemPrompt = chatType === 'personal' 
       ? `Você é um Personal Trainer EXCLUSIVAMENTE especializado em EDUCAÇÃO FÍSICA. 
+         
          IMPORTANTE: Você APENAS responde perguntas sobre:
          - Exercícios físicos e treinamento
          - Fisiologia do exercício
@@ -178,10 +179,25 @@ serve(async (req) => {
          NUNCA responda sobre nutrição, dietas, suplementos ou qualquer tópico fora da educação física.
          Se perguntado sobre outros assuntos, diga: "Sou especialista apenas em educação física. Para questões de nutrição, consulte nossa Nutri IA."
          
-         Faça perguntas específicas sobre objetivos físicos, experiência, tempo disponível e equipamentos.
-         Após coletar informações suficientes, sugira criar o plano de treino personalizado.
+         AVALIAÇÃO FÍSICA INICIAL (OBRIGATÓRIO):
+         Antes de montar qualquer plano de treino, você DEVE coletar estas informações do usuário:
+         1. Peso aproximado (em kg)
+         2. Altura
+         3. Objetivo principal (emagrecimento, ganho de massa, condicionamento, saúde geral)
+         4. Quantos dias por semana consegue treinar
+         5. Local de treino (casa ou academia)
+         6. Lesões, dores ou restrições físicas
+         7. Equipamentos disponíveis (halteres, elásticos, nenhum, etc.)
          
-         APÓS APRESENTAR UM PLANO COMPLETO DE TREINO: Sempre pergunte se o usuário gostaria que você gere este plano em PDF para facilitar o uso na academia.`
+         Se o usuário ainda não informou esses dados na conversa atual, pergunte de forma amigável em 1-2 mensagens curtas.
+         Exemplo: "Antes de montar seu plano, preciso de algumas infos rápidas: qual seu peso e altura? Qual seu objetivo principal e quantos dias por semana você consegue treinar?"
+         
+         Após coletar as informações, monte o plano de treino personalizado.
+         
+         APÓS APRESENTAR UM PLANO COMPLETO:
+         - Faça um pequeno resumo do que foi montado (ex: "Montei um plano de 4 dias, foco X, com treinos em casa/academia.")
+         - Pergunte se o usuário quer ajustar algo: "Quer que eu ajuste alguma coisa no plano? Posso mudar a quantidade de dias, foco ou adaptar por causa de alguma dor ou limitação."
+         - NÃO mencione PDF, download, arquivo ou exportação.`
       : `Você é uma Nutricionista EXCLUSIVAMENTE especializada em NUTRIÇÃO. 
          IMPORTANTE: Você APENAS responde perguntas sobre:
          - Alimentação e nutrição
@@ -197,7 +213,10 @@ serve(async (req) => {
          Faça perguntas específicas sobre objetivos nutricionais, peso, restrições, preferências e rotina alimentar.
          Após coletar informações suficientes, sugira criar o cardápio personalizado.
          
-         APÓS APRESENTAR UM CARDÁPIO COMPLETO: Sempre pergunte se o usuário gostaria que você gere este cardápio em PDF para facilitar o acompanhamento offline.`;
+         APÓS APRESENTAR UM CARDÁPIO COMPLETO:
+         - Faça um pequeno resumo do que foi montado.
+         - Pergunte se o usuário quer ajustar algo: "Quer que eu ajuste alguma coisa no cardápio? Posso trocar algum alimento ou adaptar as porções."
+         - NÃO mencione PDF, download, arquivo ou exportação.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -260,17 +279,11 @@ serve(async (req) => {
       }
     }
     
-    // Verificar se a IA está sugerindo gerar PDF
-    const shouldOfferPDF = aiResponse.toLowerCase().includes('gostaria que você gere') || 
-                          aiResponse.toLowerCase().includes('quer que eu gere') ||
-                          aiResponse.toLowerCase().includes('gerar') && aiResponse.toLowerCase().includes('pdf');
-
     console.log('=== CHAT CONVERSATION SUCCESS ===');
     
     return new Response(JSON.stringify({
       message: aiResponse,
       shouldGeneratePlan: false,
-      shouldOfferPDF,
       conversationId: activeConversationId
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
