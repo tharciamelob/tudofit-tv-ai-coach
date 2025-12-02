@@ -8,12 +8,29 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('=== GENERATE-WORKOUT START ===');
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { conversationId, userId, messages } = await req.json();
+    const body = await req.json();
+    const { conversationId, userId, messages } = body;
+    
+    console.log('Request received:', {
+      conversationId: conversationId || 'NULL',
+      userId: userId || 'NULL',
+      messagesCount: messages?.length || 0
+    });
+    
+    if (!userId) {
+      console.error('userId is required');
+      return new Response(JSON.stringify({ error: 'userId é obrigatório' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -29,7 +46,10 @@ serve(async (req) => {
 
     if (pError) {
       console.error('Erro ao buscar perfil:', pError);
+      // Continue anyway, profile is optional
     }
+    
+    console.log('Profile loaded:', profile ? 'yes' : 'no');
 
     // Construir contexto da conversa
     const conversationContext = messages
@@ -113,18 +133,28 @@ serve(async (req) => {
       }),
     });
 
+    console.log('OpenAI response status:', openAIResponse.status);
+    
     if (!openAIResponse.ok) {
-      throw new Error(`OpenAI API error: ${openAIResponse.status}`);
+      const errorText = await openAIResponse.text();
+      console.error('OpenAI API error:', errorText);
+      throw new Error(`OpenAI API error: ${openAIResponse.status} - ${errorText}`);
     }
 
     const aiData = await openAIResponse.json();
-    const generatedContent = aiData.choices[0].message.content;
+    const generatedContent = aiData.choices[0]?.message?.content;
+    
+    console.log('AI response received, length:', generatedContent?.length || 0);
     
     let workoutPlan;
     try {
       workoutPlan = JSON.parse(generatedContent);
+      console.log('Workout plan parsed successfully:', {
+        name: workoutPlan.name,
+        daysCount: workoutPlan.days?.length || 0
+      });
     } catch (parseError) {
-      console.error('Erro ao parsear JSON:', generatedContent);
+      console.error('Erro ao parsear JSON:', generatedContent?.substring(0, 500));
       throw new Error('Formato de resposta inválido da IA');
     }
 
@@ -135,21 +165,34 @@ serve(async (req) => {
     };
 
     // Salvar o plano no banco
+    console.log('Saving workout plan to database...');
+    
+    const insertData: any = {
+      user_id: userId,
+      plan_name: workoutPlan.name || 'Plano de Treino',
+      plan_data: planToSave
+    };
+    
+    // Only add conversation_id if it's not null
+    if (conversationId) {
+      insertData.conversation_id = conversationId;
+    }
+    
+    console.log('Insert data:', JSON.stringify(insertData, null, 2));
+    
     const { data: savedPlan, error: saveError } = await supabase
       .from('workout_plans')
-      .insert({
-        user_id: userId,
-        conversation_id: conversationId,
-        plan_name: workoutPlan.name,
-        plan_data: planToSave
-      })
+      .insert(insertData)
       .select()
       .single();
 
     if (saveError) {
       console.error('Erro ao salvar plano:', saveError);
-      throw new Error('Erro ao salvar plano');
+      console.error('Save error details:', JSON.stringify(saveError, null, 2));
+      throw new Error(`Erro ao salvar plano: ${saveError.message}`);
     }
+    
+    console.log('Plan saved successfully:', savedPlan?.id);
 
     return new Response(JSON.stringify({ 
       success: true, 
