@@ -26,6 +26,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { useUserSummary } from '@/hooks/useUserSummary';
 import { useMonthlyStats } from '@/hooks/useMonthlyStats';
+import { useTheme } from '@/contexts/ThemeContext';
+import { scheduleDefaultReminders, applyLanguagePreference } from '@/utils/reminders';
 import { Settings, Bell, Palette, Moon, Sun, Target, Clock, Database, Download, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -41,6 +43,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
   const { settings, loading, saveSettings, exportData, resetMonthlyProgress } = useUserSettings();
   const { refetch: refetchSummary } = useUserSummary();
   const { refetch: refetchMonthly } = useMonthlyStats();
+  const { theme, setTheme } = useTheme();
   
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -48,7 +51,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
   
   // Local state for form
   const [formData, setFormData] = useState({
-    theme: 'dark',
+    theme: 'dark' as 'light' | 'dark',
     language: 'pt-BR',
     push_notifications_enabled: true,
     fitness_goal: '',
@@ -56,9 +59,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
     sleep_goal_hours: 8,
     walk_goal_km_week: 10,
     reminder_water_enabled: false,
-    reminder_water_time: '',
     reminder_sleep_enabled: false,
-    reminder_sleep_time: '',
     reminder_walk_enabled: false,
     auto_save_enabled: true,
   });
@@ -67,7 +68,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
   useEffect(() => {
     if (settings) {
       setFormData({
-        theme: settings.theme || 'dark',
+        theme: (settings.theme as 'light' | 'dark') || 'dark',
         language: settings.language || 'pt-BR',
         push_notifications_enabled: settings.push_notifications_enabled ?? true,
         fitness_goal: settings.fitness_goal || '',
@@ -75,22 +76,43 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
         sleep_goal_hours: settings.sleep_goal_hours || 8,
         walk_goal_km_week: settings.walk_goal_km_week || 10,
         reminder_water_enabled: settings.reminder_water_enabled ?? false,
-        reminder_water_time: settings.reminder_water_time || '',
         reminder_sleep_enabled: settings.reminder_sleep_enabled ?? false,
-        reminder_sleep_time: settings.reminder_sleep_time || '',
         reminder_walk_enabled: settings.reminder_walk_enabled ?? false,
         auto_save_enabled: settings.auto_save_enabled ?? true,
       });
     }
   }, [settings]);
 
+  // Sync theme from context
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, theme }));
+  }, [theme]);
+
   const handleChange = (key: string, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
+    
+    // Apply theme immediately when changed
+    if (key === 'theme') {
+      setTheme(value as 'light' | 'dark');
+    }
   };
 
   const handleSave = async () => {
     setIsSaving(true);
+    
+    // Save settings to Supabase
     await saveSettings(formData);
+    
+    // Apply language preference
+    applyLanguagePreference(formData.language);
+    
+    // Schedule reminders based on settings
+    await scheduleDefaultReminders({
+      ...settings,
+      ...formData,
+      user_id: settings?.user_id || '',
+    });
+    
     setIsSaving(false);
     onClose();
   };
@@ -292,7 +314,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
               </CardContent>
             </Card>
 
-            {/* Lembretes */}
+            {/* Lembretes - Simplified (ON/OFF only) */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -300,7 +322,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                   Lembretes
                 </CardTitle>
                 <CardDescription>
-                  Configure lembretes para suas atividades
+                  Ative lembretes para suas atividades (horários padrão)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -308,7 +330,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                   <div className="space-y-0.5">
                     <Label>Lembrete de beber água</Label>
                     <p className="text-sm text-muted-foreground">
-                      Receba lembretes para se hidratar
+                      Lembretes às 9h, 14h e 20h
                     </p>
                   </div>
                   <Switch
@@ -316,22 +338,12 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                     onCheckedChange={(checked) => handleChange('reminder_water_enabled', checked)}
                   />
                 </div>
-                {formData.reminder_water_enabled && (
-                  <div className="ml-4 space-y-2">
-                    <Label>Horário do lembrete</Label>
-                    <Input
-                      type="time"
-                      value={formData.reminder_water_time}
-                      onChange={(e) => handleChange('reminder_water_time', e.target.value)}
-                    />
-                  </div>
-                )}
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Lembrete de dormir</Label>
                     <p className="text-sm text-muted-foreground">
-                      Receba lembretes na hora de descansar
+                      Lembrete às 22h
                     </p>
                   </div>
                   <Switch
@@ -339,22 +351,12 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                     onCheckedChange={(checked) => handleChange('reminder_sleep_enabled', checked)}
                   />
                 </div>
-                {formData.reminder_sleep_enabled && (
-                  <div className="ml-4 space-y-2">
-                    <Label>Horário do lembrete</Label>
-                    <Input
-                      type="time"
-                      value={formData.reminder_sleep_time}
-                      onChange={(e) => handleChange('reminder_sleep_time', e.target.value)}
-                    />
-                  </div>
-                )}
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Lembrete de caminhar</Label>
                     <p className="text-sm text-muted-foreground">
-                      Receba lembretes para se exercitar
+                      Lembrete às 17h
                     </p>
                   </div>
                   <Switch

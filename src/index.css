@@ -8,41 +8,84 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* TudoFit TV Netflix-style Colors - Blue/Gray Tones */
-    --background: 220 15% 6%;
-    --foreground: 0 0% 100%;
+    /* TudoFit TV Light Theme */
+    --background: 0 0% 98%;
+    --foreground: 220 15% 10%;
 
-    --card: 220 15% 10%;
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 10%;
 
-    --popover: 220 15% 10%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 10%;
 
     /* Netflix Red Primary */
     --primary: 348 86% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* Dark Secondary */
-    --secondary: 220 10% 14%;
-    --secondary-foreground: 0 0% 100%;
+    /* Light Secondary */
+    --secondary: 220 10% 94%;
+    --secondary-foreground: 220 15% 10%;
 
-    /* Muted Blue-Grays */
-    --muted: 220 10% 14%;
-    --muted-foreground: 0 0% 70%;
+    /* Muted Light */
+    --muted: 220 10% 94%;
+    --muted-foreground: 220 10% 40%;
 
-    --accent: 220 12% 18%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 220 12% 90%;
+    --accent-foreground: 220 15% 10%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 10% 18%;
-    --input: 220 10% 14%;
+    --border: 220 10% 88%;
+    --input: 220 10% 94%;
     --ring: 348 86% 45%;
 
     --radius: 0.5rem;
 
-    /* TudoFit TV Custom Tokens - Netflix Blue-Gray Palette */
+    /* TudoFit TV Custom Tokens - Light Mode */
+    --netflix-red: 348 86% 45%;
+    --netflix-black: 220 15% 6%;
+    --netflix-dark-gray: 220 12% 10%;
+    --netflix-medium-gray: 220 10% 14%;
+    --netflix-light-gray: 220 10% 40%;
+    
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 98%), hsl(220 10% 94%));
+    --gradient-card: linear-gradient(180deg, transparent, hsl(0 0% 98% / 0.8));
+    --gradient-overlay: linear-gradient(0deg, hsl(0 0% 98%) 0%, transparent 100%);
+    
+    /* Shadows */
+    --shadow-card: 0 8px 32px hsl(220 15% 10% / 0.1);
+    --shadow-hero: 0 0 60px hsl(var(--netflix-red) / 0.2);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .dark {
+    /* TudoFit TV Dark Theme - Blue/Gray Tones */
+    --background: 220 15% 6%;
+    --foreground: 0 0% 100%;
+    --card: 220 15% 10%;
+    --card-foreground: 0 0% 100%;
+    --popover: 220 15% 10%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 348 86% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 10% 14%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 10% 14%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 220 12% 18%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 10% 18%;
+    --input: 220 10% 14%;
+    --ring: 348 86% 45%;
+    
+    /* TudoFit TV Custom Tokens - Dark Mode */
     --netflix-red: 348 86% 45%;
     --netflix-black: 220 15% 6%;
     --netflix-dark-gray: 220 12% 10%;
@@ -57,33 +100,6 @@ All colors MUST be HSL.
     /* Shadows */
     --shadow-card: 0 8px 32px hsl(var(--netflix-black) / 0.6);
     --shadow-hero: 0 0 60px hsl(var(--netflix-red) / 0.3);
-    
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-
-  .dark {
-    /* Same as root - TudoFit TV is always dark theme - Blue/Gray Tones */
-    --background: 220 15% 6%;
-    --foreground: 0 0% 100%;
-    --card: 220 15% 10%;
-    --card-foreground: 0 0% 100%;
-    --popover: 220 15% 10%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 348 86% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 10% 14%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 220 10% 14%;
-    --muted-foreground: 0 0% 70%;
-    --accent: 220 12% 18%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 10% 18%;
-    --input: 220 10% 14%;
-    --ring: 348 86% 45%;
   }
 }
 
