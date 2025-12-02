@@ -577,6 +577,66 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          auto_save_enabled: boolean | null
+          created_at: string
+          fitness_goal: string | null
+          id: string
+          language: string | null
+          push_notifications_enabled: boolean | null
+          reminder_sleep_enabled: boolean | null
+          reminder_sleep_time: string | null
+          reminder_walk_enabled: boolean | null
+          reminder_water_enabled: boolean | null
+          reminder_water_time: string | null
+          sleep_goal_hours: number | null
+          theme: string | null
+          updated_at: string
+          user_id: string
+          walk_goal_km_week: number | null
+          water_goal_ml: number | null
+        }
+        Insert: {
+          auto_save_enabled?: boolean | null
+          created_at?: string
+          fitness_goal?: string | null
+          id?: string
+          language?: string | null
+          push_notifications_enabled?: boolean | null
+          reminder_sleep_enabled?: boolean | null
+          reminder_sleep_time?: string | null
+          reminder_walk_enabled?: boolean | null
+          reminder_water_enabled?: boolean | null
+          reminder_water_time?: string | null
+          sleep_goal_hours?: number | null
+          theme?: string | null
+          updated_at?: string
+          user_id: string
+          walk_goal_km_week?: number | null
+          water_goal_ml?: number | null
+        }
+        Update: {
+          auto_save_enabled?: boolean | null
+          created_at?: string
+          fitness_goal?: string | null
+          id?: string
+          language?: string | null
+          push_notifications_enabled?: boolean | null
+          reminder_sleep_enabled?: boolean | null
+          reminder_sleep_time?: string | null
+          reminder_walk_enabled?: boolean | null
+          reminder_water_enabled?: boolean | null
+          reminder_water_time?: string | null
+          sleep_goal_hours?: number | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string
+          walk_goal_km_week?: number | null
+          water_goal_ml?: number | null
+        }
+        Relationships: []
+      }
       walk_sessions: {
         Row: {
           average_pace: number | null
