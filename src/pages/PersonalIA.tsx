@@ -230,9 +230,18 @@ export default function PersonalIA() {
     setIsGeneratingPlan(true);
     
     try {
+      // Get conversation ID safely - it may be null if no conversation was started
+      const conversationId = currentConversation?.id || null;
+      
+      console.log('Chamando generate-workout com:', {
+        conversationId,
+        userId: user.id,
+        messagesCount: messages.length
+      });
+
       const { data, error } = await supabase.functions.invoke('generate-workout', {
         body: {
-          conversationId: currentConversation.id,
+          conversationId,
           userId: user.id,
           messages: messages.map(msg => ({
             role: msg.type === 'user' ? 'user' : 'assistant',
@@ -241,7 +250,12 @@ export default function PersonalIA() {
         }
       });
 
-      if (error) throw error;
+      console.log('Resposta do generate-workout:', { data, error });
+
+      if (error) {
+        console.error('Erro da edge function:', error);
+        throw error;
+      }
 
       if (data?.plan) {
         setCurrentPlan(data.plan);
@@ -267,9 +281,17 @@ export default function PersonalIA() {
             planSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         }, 500);
+      } else if (data?.error) {
+        console.error('Erro no response:', data.error);
+        throw new Error(data.error);
       }
     } catch (error: any) {
-      console.error('Erro ao gerar plano:', error);
+      console.error('Erro ao gerar plano (detalhado):', {
+        message: error?.message,
+        name: error?.name,
+        stack: error?.stack,
+        error
+      });
       const errorMessage: ChatMessage = {
         id: `msg-${Date.now()}-error`,
         type: 'ai',
@@ -280,7 +302,7 @@ export default function PersonalIA() {
       
       toast({
         title: "Erro ao gerar plano",
-        description: "Tente novamente em alguns instantes.",
+        description: error?.message || "Tente novamente em alguns instantes.",
         variant: "destructive",
       });
     } finally {
