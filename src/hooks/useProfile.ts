@@ -45,19 +45,38 @@ export const useProfile = () => {
     
     setLoading(true);
     try {
+      // Formatar data corretamente se existir
+      const formattedUpdates = {
+        ...updates,
+        birth_date: updates.birth_date 
+          ? new Date(updates.birth_date).toISOString().split('T')[0] 
+          : undefined,
+      };
+
+      // Remove campos undefined para não sobrescrever com null
+      const cleanUpdates = Object.fromEntries(
+        Object.entries(formattedUpdates).filter(([_, v]) => v !== undefined)
+      );
+
       const { error } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user.id,
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
+        .upsert(
+          {
+            user_id: user.id,
+            ...cleanUpdates,
+            updated_at: new Date().toISOString()
+          },
+          { onConflict: 'user_id' }
+        )
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error details:', error);
+        throw error;
+      }
 
-      setProfileData(prev => ({ ...prev, ...updates }));
+      setProfileData(prev => ({ ...prev, ...cleanUpdates }));
       toast({
         title: "Perfil atualizado",
         description: "Suas informações foram salvas com sucesso!",
@@ -68,7 +87,7 @@ export const useProfile = () => {
       console.error('Erro ao atualizar perfil:', error);
       toast({
         title: "Erro ao atualizar",
-        description: "Não foi possível salvar as informações. Tente novamente.",
+        description: error?.message || "Não foi possível salvar as informações. Tente novamente.",
         variant: "destructive",
       });
       return false;
