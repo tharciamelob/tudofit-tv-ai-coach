@@ -27,7 +27,8 @@ import { useUserSettings } from '@/hooks/useUserSettings';
 import { useUserSummary } from '@/hooks/useUserSummary';
 import { useMonthlyStats } from '@/hooks/useMonthlyStats';
 import { useTheme } from '@/contexts/ThemeContext';
-import { scheduleDefaultReminders, applyLanguagePreference } from '@/utils/reminders';
+import { useI18n } from '@/contexts/I18nContext';
+import { scheduleDefaultReminders } from '@/utils/reminders';
 import { Settings, Bell, Palette, Moon, Sun, Target, Clock, Database, Download, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
@@ -45,15 +46,14 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
   const { refetch: refetchSummary } = useUserSummary();
   const { refetch: refetchMonthly } = useMonthlyStats();
   const { theme, setTheme } = useTheme();
+  const { language, setLanguage, t } = useI18n();
   
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   
-  // Local state for form
+  // Local state for form (only for non-context values)
   const [formData, setFormData] = useState({
-    theme: 'dark' as 'light' | 'dark',
-    language: 'pt-BR',
     push_notifications_enabled: true,
     fitness_goal: '',
     water_goal_ml: 2000,
@@ -69,8 +69,6 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
   useEffect(() => {
     if (settings) {
       setFormData({
-        theme: (settings.theme as 'light' | 'dark') || 'dark',
-        language: settings.language || 'pt-BR',
         push_notifications_enabled: settings.push_notifications_enabled ?? true,
         fitness_goal: settings.fitness_goal || '',
         water_goal_ml: settings.water_goal_ml || 2000,
@@ -84,42 +82,49 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
     }
   }, [settings]);
 
-  // Sync theme from context
-  useEffect(() => {
-    setFormData(prev => ({ ...prev, theme }));
-  }, [theme]);
-
   const handleChange = (key: string, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
-    
-    // Apply theme immediately when changed
-    if (key === 'theme') {
-      setTheme(value as 'light' | 'dark');
-    }
+  };
+
+  // Handle theme change - uses global context
+  const handleThemeChange = (newTheme: 'light' | 'dark') => {
+    setTheme(newTheme);
+  };
+
+  // Handle language change - uses global context
+  const handleLanguageChange = (newLanguage: 'pt-BR' | 'en-US' | 'es-ES') => {
+    setLanguage(newLanguage);
   };
 
   const handleSave = async () => {
     setIsSaving(true);
     
     try {
-      await saveSettings(formData);
-      applyLanguagePreference(formData.language);
+      // Save all settings including current theme and language from contexts
+      await saveSettings({
+        ...formData,
+        theme,
+        language,
+      });
+      
       await scheduleDefaultReminders({
         ...settings,
         ...formData,
+        theme,
+        language,
         user_id: settings?.user_id || '',
       });
       
       toast({
-        title: "Configurações salvas",
-        description: "Suas preferências foram atualizadas com sucesso.",
+        title: t('settings.saved'),
+        description: t('settings.savedDesc'),
       });
       
       onClose();
     } catch (error) {
       toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar as configurações.",
+        title: t('settings.error'),
+        description: t('settings.errorDesc'),
         variant: "destructive",
       });
     } finally {
@@ -138,7 +143,6 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
     setShowResetConfirm(false);
     
     if (!error) {
-      // Refresh data in other components
       refetchSummary();
       refetchMonthly();
     }
@@ -151,7 +155,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              Configurações Gerais
+              {t('settings.title')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
@@ -171,10 +175,10 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              Configurações Gerais
+              {t('settings.title')}
             </DialogTitle>
             <DialogDescription>
-              Personalize sua experiência no aplicativo
+              {t('settings.description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -184,17 +188,17 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Palette className="h-4 w-4" />
-                  Aparência
+                  {t('settings.appearance')}
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  Escolha o tema e o idioma do aplicativo
+                  {t('settings.appearanceDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="theme">Tema</Label>
-                    <Select value={formData.theme} onValueChange={(value) => handleChange('theme', value)}>
+                    <Label htmlFor="theme">{t('settings.theme')}</Label>
+                    <Select value={theme} onValueChange={(value) => handleThemeChange(value as 'light' | 'dark')}>
                       <SelectTrigger id="theme">
                         <SelectValue />
                       </SelectTrigger>
@@ -202,13 +206,13 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                         <SelectItem value="light">
                           <div className="flex items-center gap-2">
                             <Sun className="h-4 w-4" />
-                            Claro
+                            {t('settings.themeLight')}
                           </div>
                         </SelectItem>
                         <SelectItem value="dark">
                           <div className="flex items-center gap-2">
                             <Moon className="h-4 w-4" />
-                            Escuro
+                            {t('settings.themeDark')}
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -216,8 +220,8 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="language">Idioma</Label>
-                    <Select value={formData.language} onValueChange={(value) => handleChange('language', value)}>
+                    <Label htmlFor="language">{t('settings.language')}</Label>
+                    <Select value={language} onValueChange={(value) => handleLanguageChange(value as 'pt-BR' | 'en-US' | 'es-ES')}>
                       <SelectTrigger id="language">
                         <SelectValue />
                       </SelectTrigger>
@@ -237,18 +241,18 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Bell className="h-4 w-4" />
-                  Notificações
+                  {t('settings.notifications')}
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  Configure como você quer receber alertas
+                  {t('settings.notificationsDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="notifications">Notificações Push</Label>
+                    <Label htmlFor="notifications">{t('settings.pushNotifications')}</Label>
                     <p className="text-sm text-muted-foreground">
-                      Receba lembretes e alertas importantes
+                      {t('settings.pushDesc')}
                     </p>
                   </div>
                   <Switch
@@ -265,31 +269,31 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Target className="h-4 w-4" />
-                  Metas e Preferências
+                  {t('settings.goals')}
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  Defina seu objetivo principal e metas diárias
+                  {t('settings.goalsDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fitness_goal">Objetivo</Label>
+                    <Label htmlFor="fitness_goal">{t('settings.objective')}</Label>
                     <Select value={formData.fitness_goal} onValueChange={(value) => handleChange('fitness_goal', value)}>
                       <SelectTrigger id="fitness_goal">
-                        <SelectValue placeholder="Selecione" />
+                        <SelectValue placeholder={t('settings.selectObjective')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="perder_peso">Perder peso</SelectItem>
-                        <SelectItem value="ganhar_massa">Ganhar massa</SelectItem>
-                        <SelectItem value="manter_peso">Manter peso</SelectItem>
-                        <SelectItem value="condicionamento">Melhorar condicionamento</SelectItem>
+                        <SelectItem value="perder_peso">{t('settings.loseWeight')}</SelectItem>
+                        <SelectItem value="ganhar_massa">{t('settings.gainMass')}</SelectItem>
+                        <SelectItem value="manter_peso">{t('settings.maintainWeight')}</SelectItem>
+                        <SelectItem value="condicionamento">{t('settings.conditioning')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="water_goal">Meta de água (ml)</Label>
+                    <Label htmlFor="water_goal">{t('settings.waterGoal')}</Label>
                     <Input
                       id="water_goal"
                       type="number"
@@ -302,7 +306,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="sleep_goal">Meta de sono (horas)</Label>
+                    <Label htmlFor="sleep_goal">{t('settings.sleepGoal')}</Label>
                     <Input
                       id="sleep_goal"
                       type="number"
@@ -313,7 +317,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="walk_goal">Meta de caminhada (km/semana)</Label>
+                    <Label htmlFor="walk_goal">{t('settings.walkGoal')}</Label>
                     <Input
                       id="walk_goal"
                       type="number"
@@ -331,17 +335,17 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Clock className="h-4 w-4" />
-                  Lembretes
+                  {t('settings.reminders')}
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  Lembretes automáticos durante o dia
+                  {t('settings.remindersDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Lembrete de água</Label>
-                    <p className="text-xs text-muted-foreground">9h, 14h e 20h</p>
+                    <Label>{t('settings.waterReminder')}</Label>
+                    <p className="text-xs text-muted-foreground">9h, 14h, 20h</p>
                   </div>
                   <Switch
                     checked={formData.reminder_water_enabled}
@@ -351,7 +355,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Lembrete de sono</Label>
+                    <Label>{t('settings.sleepReminder')}</Label>
                     <p className="text-xs text-muted-foreground">22h</p>
                   </div>
                   <Switch
@@ -362,7 +366,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Lembrete de caminhada</Label>
+                    <Label>{t('settings.walkReminder')}</Label>
                     <p className="text-xs text-muted-foreground">17h</p>
                   </div>
                   <Switch
@@ -378,18 +382,18 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Database className="h-4 w-4" />
-                  Dados
+                  {t('settings.data')}
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  Gerencie seus dados e exportações
+                  {t('settings.dataDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="autosave">Salvamento Automático</Label>
+                    <Label htmlFor="autosave">{t('settings.autoSave')}</Label>
                     <p className="text-sm text-muted-foreground">
-                      Salva automaticamente suas informações
+                      {t('settings.autoSaveDesc')}
                     </p>
                   </div>
                   <Switch
@@ -406,7 +410,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                     onClick={handleExport}
                   >
                     <Download className="h-4 w-4" />
-                    Exportar dados
+                    {t('settings.export')}
                   </Button>
                   
                   <Button 
@@ -415,7 +419,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                     onClick={() => setShowResetConfirm(true)}
                   >
                     <Trash2 className="h-4 w-4" />
-                    Resetar progresso do mês
+                    {t('settings.reset')}
                   </Button>
                 </div>
               </CardContent>
@@ -424,10 +428,10 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
 
           <DialogFooter className="pt-2">
             <Button variant="outline" onClick={onClose}>
-              Cancelar
+              {t('settings.cancel')}
             </Button>
             <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? 'Salvando...' : 'Salvar Configurações'}
+              {isSaving ? t('settings.saving') : t('settings.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -437,20 +441,19 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
       <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Resetar progresso?</AlertDialogTitle>
+            <AlertDialogTitle>{t('reset.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Isso vai apagar todos os registros de água, sono, caminhadas e alimentação deste mês. 
-              Essa ação não pode ser desfeita.
+              {t('reset.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isResetting}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isResetting}>{t('settings.cancel')}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleResetConfirm}
               disabled={isResetting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isResetting ? 'Apagando...' : 'Confirmar'}
+              {isResetting ? t('reset.deleting') : t('reset.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

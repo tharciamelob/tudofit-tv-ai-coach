@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { useI18n } from "@/contexts/I18nContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -15,9 +16,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
-  const [activeTab, setActiveTab] = useState("Início");
+  const [activeTab, setActiveTab] = useState("nav.home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -41,19 +43,19 @@ const Header = () => {
   };
 
   const tabs = [
-    { label: "Início", path: "/" },
-    { label: "Caminhada", path: "/caminhada" }, 
-    { label: "Personal IA", path: "/personal-ia" },
-    { label: "Nutrição", path: "/nutri-ia" },
-    { label: "Monitoramento", path: "/monitoramento" }
+    { labelKey: "nav.home", path: "/" },
+    { labelKey: "nav.walking", path: "/caminhada" }, 
+    { labelKey: "nav.personal", path: "/personal-ia" },
+    { labelKey: "nav.nutrition", path: "/nutri-ia" },
+    { labelKey: "nav.monitoring", path: "/monitoramento" }
   ];
 
-  const handleTabClick = (tab: { label: string; path: string }) => {
+  const handleTabClick = (tab: { labelKey: string; path: string }) => {
     if (!user && tab.path !== "/") {
       navigate("/auth");
       return;
     }
-    setActiveTab(tab.label);
+    setActiveTab(tab.labelKey);
     navigate(tab.path);
   };
 
@@ -70,15 +72,15 @@ const Header = () => {
           <nav className="hidden lg:flex items-center space-x-8">
             {tabs.map((tab) => (
               <button
-                key={tab.label}
+                key={tab.labelKey}
                 onClick={() => handleTabClick(tab)}
                 className={`text-sm font-medium transition-colors hover:text-foreground ${
-                  activeTab === tab.label
+                  activeTab === tab.labelKey
                     ? "text-foreground"
                     : "text-muted-foreground"
                 }`}
               >
-                {tab.label}
+                {t(tab.labelKey)}
               </button>
             ))}
           </nav>
@@ -106,16 +108,16 @@ const Header = () => {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => navigate("/perfil")}>
                     <User className="mr-2 h-4 w-4" />
-                    Perfil
+                    {t('nav.profile')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     <Settings className="mr-2 h-4 w-4" />
-                    Configurações
+                    {t('nav.settings')}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sair
+                    {t('nav.logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -146,18 +148,18 @@ const Header = () => {
             <nav className="flex flex-col space-y-4">
               {tabs.map((tab) => (
                 <button
-                  key={tab.label}
+                  key={tab.labelKey}
                   onClick={() => {
                     handleTabClick(tab);
                     setIsMobileMenuOpen(false);
                   }}
                   className={`text-left text-sm font-medium transition-colors hover:text-foreground ${
-                    activeTab === tab.label
+                    activeTab === tab.labelKey
                       ? "text-foreground"
                       : "text-muted-foreground"
                   }`}
                 >
-                  {tab.label}
+                  {t(tab.labelKey)}
                 </button>
               ))}
             </nav>
@@ -183,16 +185,16 @@ const Header = () => {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => {navigate("/perfil"); setIsMobileMenuOpen(false);}}>
                       <User className="mr-2 h-4 w-4" />
-                      Perfil
+                      {t('nav.profile')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {navigate("/settings"); setIsMobileMenuOpen(false);}}>
                       <Settings className="mr-2 h-4 w-4" />
-                      Configurações
+                      {t('nav.settings')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
-                      Sair
+                      {t('nav.logout')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
