@@ -30,6 +30,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { scheduleDefaultReminders, applyLanguagePreference } from '@/utils/reminders';
 import { Settings, Bell, Palette, Moon, Sun, Target, Clock, Database, Download, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/hooks/use-toast';
 
 interface GeneralSettingsModalProps {
   isOpen: boolean;
@@ -100,21 +101,30 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
   const handleSave = async () => {
     setIsSaving(true);
     
-    // Save settings to Supabase
-    await saveSettings(formData);
-    
-    // Apply language preference
-    applyLanguagePreference(formData.language);
-    
-    // Schedule reminders based on settings
-    await scheduleDefaultReminders({
-      ...settings,
-      ...formData,
-      user_id: settings?.user_id || '',
-    });
-    
-    setIsSaving(false);
-    onClose();
+    try {
+      await saveSettings(formData);
+      applyLanguagePreference(formData.language);
+      await scheduleDefaultReminders({
+        ...settings,
+        ...formData,
+        user_id: settings?.user_id || '',
+      });
+      
+      toast({
+        title: "Configurações salvas",
+        description: "Suas preferências foram atualizadas com sucesso.",
+      });
+      
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar as configurações.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleExport = async () => {
@@ -137,7 +147,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
   if (loading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
@@ -145,8 +155,8 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-20 w-full" />
             <Skeleton className="h-32 w-full" />
           </div>
         </DialogContent>
@@ -157,7 +167,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
@@ -168,24 +178,24 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
-            {/* Aparência */}
+          <div className="space-y-4 py-2">
+            {/* CARD 1 — Aparência */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Palette className="h-4 w-4" />
                   Aparência
                 </CardTitle>
-                <CardDescription>
-                  Configure o tema e aparência do aplicativo
+                <CardDescription className="text-sm">
+                  Escolha o tema e o idioma do aplicativo
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="theme">Tema</Label>
                     <Select value={formData.theme} onValueChange={(value) => handleChange('theme', value)}>
-                      <SelectTrigger>
+                      <SelectTrigger id="theme">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -208,13 +218,13 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                   <div className="space-y-2">
                     <Label htmlFor="language">Idioma</Label>
                     <Select value={formData.language} onValueChange={(value) => handleChange('language', value)}>
-                      <SelectTrigger>
+                      <SelectTrigger id="language">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="pt-BR">Português (BR)</SelectItem>
                         <SelectItem value="en-US">English (US)</SelectItem>
-                        <SelectItem value="es-ES">Español</SelectItem>
+                        <SelectItem value="es-ES">Español (ES)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -222,15 +232,15 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
               </CardContent>
             </Card>
 
-            {/* Notificações */}
+            {/* CARD 2 — Notificações */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Bell className="h-4 w-4" />
                   Notificações
                 </CardTitle>
-                <CardDescription>
-                  Configure como você quer receber notificações
+                <CardDescription className="text-sm">
+                  Configure como você quer receber alertas
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -238,7 +248,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                   <div className="space-y-0.5">
                     <Label htmlFor="notifications">Notificações Push</Label>
                     <p className="text-sm text-muted-foreground">
-                      Receba lembretes de treinos e refeições
+                      Receba lembretes e alertas importantes
                     </p>
                   </div>
                   <Switch
@@ -250,62 +260,64 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
               </CardContent>
             </Card>
 
-            {/* Metas & Preferências */}
+            {/* CARD 3 — Metas & Preferências */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Target className="h-4 w-4" />
-                  Metas & Preferências
+                  Metas e Preferências
                 </CardTitle>
-                <CardDescription>
-                  Defina seus objetivos e metas diárias
+                <CardDescription className="text-sm">
+                  Defina seu objetivo principal e metas diárias
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Objetivo principal</Label>
-                  <Select value={formData.fitness_goal} onValueChange={(value) => handleChange('fitness_goal', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione seu objetivo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="perder_peso">Perder peso</SelectItem>
-                      <SelectItem value="ganhar_massa">Ganhar massa</SelectItem>
-                      <SelectItem value="manter_peso">Manter peso</SelectItem>
-                      <SelectItem value="condicionamento">Melhorar condicionamento</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="water_goal">Meta diária de água (ml)</Label>
+                    <Label htmlFor="fitness_goal">Objetivo</Label>
+                    <Select value={formData.fitness_goal} onValueChange={(value) => handleChange('fitness_goal', value)}>
+                      <SelectTrigger id="fitness_goal">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="perder_peso">Perder peso</SelectItem>
+                        <SelectItem value="ganhar_massa">Ganhar massa</SelectItem>
+                        <SelectItem value="manter_peso">Manter peso</SelectItem>
+                        <SelectItem value="condicionamento">Melhorar condicionamento</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="water_goal">Meta de água (ml)</Label>
                     <Input
                       id="water_goal"
                       type="number"
-                      placeholder="ex: 2000"
+                      placeholder="2000"
                       value={formData.water_goal_ml}
                       onChange={(e) => handleChange('water_goal_ml', parseInt(e.target.value) || 0)}
                     />
                   </div>
-                  
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="sleep_goal">Meta diária de sono (h)</Label>
+                    <Label htmlFor="sleep_goal">Meta de sono (horas)</Label>
                     <Input
                       id="sleep_goal"
                       type="number"
-                      placeholder="ex: 8"
+                      placeholder="8"
                       value={formData.sleep_goal_hours}
                       onChange={(e) => handleChange('sleep_goal_hours', parseFloat(e.target.value) || 0)}
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="walk_goal">Meta semanal caminhada (km)</Label>
+                    <Label htmlFor="walk_goal">Meta de caminhada (km/semana)</Label>
                     <Input
                       id="walk_goal"
                       type="number"
-                      placeholder="ex: 10"
+                      placeholder="10"
                       value={formData.walk_goal_km_week}
                       onChange={(e) => handleChange('walk_goal_km_week', parseFloat(e.target.value) || 0)}
                     />
@@ -314,24 +326,22 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
               </CardContent>
             </Card>
 
-            {/* Lembretes - Simplified (ON/OFF only) */}
+            {/* CARD 4 — Lembretes */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Clock className="h-4 w-4" />
                   Lembretes
                 </CardTitle>
-                <CardDescription>
-                  Ative lembretes para suas atividades (horários padrão)
+                <CardDescription className="text-sm">
+                  Lembretes automáticos durante o dia
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Lembrete de beber água</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Lembretes às 9h, 14h e 20h
-                    </p>
+                    <Label>Lembrete de água</Label>
+                    <p className="text-xs text-muted-foreground">9h, 14h e 20h</p>
                   </div>
                   <Switch
                     checked={formData.reminder_water_enabled}
@@ -341,10 +351,8 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Lembrete de dormir</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Lembrete às 22h
-                    </p>
+                    <Label>Lembrete de sono</Label>
+                    <p className="text-xs text-muted-foreground">22h</p>
                   </div>
                   <Switch
                     checked={formData.reminder_sleep_enabled}
@@ -354,10 +362,8 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Lembrete de caminhar</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Lembrete às 17h
-                    </p>
+                    <Label>Lembrete de caminhada</Label>
+                    <p className="text-xs text-muted-foreground">17h</p>
                   </div>
                   <Switch
                     checked={formData.reminder_walk_enabled}
@@ -367,15 +373,15 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
               </CardContent>
             </Card>
 
-            {/* Dados */}
+            {/* CARD 5 — Dados */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
                   <Database className="h-4 w-4" />
                   Dados
                 </CardTitle>
-                <CardDescription>
-                  Gerencie seus dados e preferências de salvamento
+                <CardDescription className="text-sm">
+                  Gerencie seus dados e exportações
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -416,7 +422,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
             </Card>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="pt-2">
             <Button variant="outline" onClick={onClose}>
               Cancelar
             </Button>
