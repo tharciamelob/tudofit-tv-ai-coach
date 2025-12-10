@@ -26,10 +26,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { useUserSummary } from '@/hooks/useUserSummary';
 import { useMonthlyStats } from '@/hooks/useMonthlyStats';
-import { useTheme } from '@/contexts/ThemeContext';
 import { useI18n } from '@/contexts/I18nContext';
 import { scheduleDefaultReminders } from '@/utils/reminders';
-import { Settings, Bell, Palette, Moon, Sun, Target, Clock, Database, Download, Trash2 } from 'lucide-react';
+import { Settings, Bell, Palette, Target, Clock, Database, Download, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 
@@ -45,7 +44,6 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
   const { settings, loading, saveSettings, exportData, resetMonthlyProgress } = useUserSettings();
   const { refetch: refetchSummary } = useUserSummary();
   const { refetch: refetchMonthly } = useMonthlyStats();
-  const { theme, setTheme } = useTheme();
   const { language, setLanguage, t } = useI18n();
   
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -86,11 +84,6 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
-  // Handle theme change - uses global context
-  const handleThemeChange = (newTheme: 'light' | 'dark') => {
-    setTheme(newTheme);
-  };
-
   // Handle language change - uses global context
   const handleLanguageChange = (newLanguage: 'pt-BR' | 'en-US' | 'es-ES') => {
     setLanguage(newLanguage);
@@ -100,17 +93,15 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
     setIsSaving(true);
     
     try {
-      // Save all settings including current theme and language from contexts
+      // Save all settings including language from context
       await saveSettings({
         ...formData,
-        theme,
         language,
       });
       
       await scheduleDefaultReminders({
         ...settings,
         ...formData,
-        theme,
         language,
         user_id: settings?.user_id || '',
       });
@@ -191,47 +182,22 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                   {t('settings.appearance')}
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  {t('settings.appearanceDesc')}
+                  Escolha o idioma do aplicativo
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="theme">{t('settings.theme')}</Label>
-                    <Select value={theme} onValueChange={(value) => handleThemeChange(value as 'light' | 'dark')}>
-                      <SelectTrigger id="theme">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="light">
-                          <div className="flex items-center gap-2">
-                            <Sun className="h-4 w-4" />
-                            {t('settings.themeLight')}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="dark">
-                          <div className="flex items-center gap-2">
-                            <Moon className="h-4 w-4" />
-                            {t('settings.themeDark')}
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="language">{t('settings.language')}</Label>
-                    <Select value={language} onValueChange={(value) => handleLanguageChange(value as 'pt-BR' | 'en-US' | 'es-ES')}>
-                      <SelectTrigger id="language">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pt-BR">Português (BR)</SelectItem>
-                        <SelectItem value="en-US">English (US)</SelectItem>
-                        <SelectItem value="es-ES">Español (ES)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="language">{t('settings.language')}</Label>
+                  <Select value={language} onValueChange={(value) => handleLanguageChange(value as 'pt-BR' | 'en-US' | 'es-ES')}>
+                    <SelectTrigger id="language">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pt-BR">Português (BR)</SelectItem>
+                      <SelectItem value="en-US">English (US)</SelectItem>
+                      <SelectItem value="es-ES">Español (ES)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
             </Card>
