@@ -1,124 +1,117 @@
-import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { Mail, Clock } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { HelpCircle, Mail } from 'lucide-react';
 
 interface SupportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const faqItems = [
+  {
+    question: "Como atualizar meus dados pessoais?",
+    answer: "Vá até Perfil → Editar Informações Pessoais. Lá você pode alterar altura, peso, sexo, data de nascimento e seu objetivo."
+  },
+  {
+    question: "Como redefinir minha senha?",
+    answer: "Na tela de login, toque em 'Esqueci minha senha'. Você receberá um e-mail para criar uma nova senha."
+  },
+  {
+    question: "Como funcionam as metas de água, sono e caminhada?",
+    answer: "Você pode ajustar suas metas em Configurações → Metas & Preferências. O app calcula seu progresso automaticamente com base nos registros feitos ao longo do mês."
+  },
+  {
+    question: "Como funciona o progresso mensal?",
+    answer: "O TudoFit TV registra sua hidratação, sono, caminhadas e alimentação (se disponível) e exibe seu desempenho no painel de Monitoramento."
+  },
+  {
+    question: "Como excluir minha conta?",
+    answer: "Vá até Perfil → Privacidade → Excluir minha conta. Isso removerá todos os seus dados do TudoFit TV."
+  },
+  {
+    question: "Como resetar meu progresso do mês?",
+    answer: "Acesse Configurações → Progresso → Resetar progresso do mês. Apenas os dados do mês atual serão apagados."
+  },
+  {
+    question: "Por que não estou recebendo lembretes?",
+    answer: "O TudoFit TV ainda não envia notificações ou lembretes. Estamos trabalhando para trazer isso futuramente."
+  }
+];
+
 export const SupportModal = ({ isOpen, onClose }: SupportModalProps) => {
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
-  const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!subject.trim() || !message.trim()) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha o assunto e a mensagem.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase.functions.invoke('send-support-email', {
-        body: {
-          userEmail: user?.email,
-          userName: user?.user_metadata?.full_name || 'Usuário',
-          subject: subject.trim(),
-          message: message.trim(),
-        }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Mensagem enviada!",
-        description: "Sua solicitação foi enviada. Responderemos em até 24 horas.",
-      });
-
-      setSubject('');
-      setMessage('');
-      onClose();
-    } catch (error: any) {
-      console.error('Erro ao enviar suporte:', error);
-      toast({
-        title: "Erro ao enviar",
-        description: "Não foi possível enviar sua mensagem. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleEmailSupport = () => {
+    window.location.href = 'mailto:suporte.tudofittv@gmail.com?subject=Suporte%20TudoFit%20TV';
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Suporte Técnico
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <HelpCircle className="h-6 w-6 text-primary" />
+            Suporte
           </DialogTitle>
-          <DialogDescription className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4" />
-            Resposta em até 24 horas
-          </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="subject">Assunto</Label>
-            <Input
-              id="subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Descreva brevemente o problema"
-              disabled={loading}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="message">Mensagem</Label>
-            <Textarea
-              id="message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Descreva detalhadamente sua solicitação ou problema..."
-              rows={5}
-              disabled={loading}
-            />
-          </div>
-          
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Enviando...' : 'Enviar Mensagem'}
-            </Button>
-          </div>
-        </form>
+        <div className="space-y-6 mt-4">
+          {/* Card FAQ */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <HelpCircle className="h-5 w-5 text-primary" />
+                Perguntas Frequentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible className="w-full">
+                {faqItems.map((item, index) => (
+                  <AccordionItem key={index} value={`item-${index}`} className="border-white/10">
+                    <AccordionTrigger className="text-left text-sm hover:no-underline">
+                      {item.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground text-sm">
+                      {item.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </CardContent>
+          </Card>
+
+          {/* Card Fale Conosco */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Mail className="h-5 w-5 text-primary" />
+                Fale Conosco
+              </CardTitle>
+              <CardDescription>
+                Se você não encontrou sua resposta, entre em contato com o suporte.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={handleEmailSupport}
+                className="w-full"
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Enviar e-mail ao suporte
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </DialogContent>
     </Dialog>
   );
