@@ -44,7 +44,7 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
   const { settings, loading, saveSettings, exportData, resetMonthlyProgress } = useUserSettings();
   const { refetch: refetchSummary } = useUserSummary();
   const { refetch: refetchMonthly } = useMonthlyStats();
-  const { language, setLanguage, t } = useI18n();
+  const { language, t } = useI18n();
   
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -84,10 +84,6 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
-  // Handle language change - uses global context
-  const handleLanguageChange = (newLanguage: 'pt-BR' | 'en-US' | 'es-ES') => {
-    setLanguage(newLanguage);
-  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -182,20 +178,18 @@ export const GeneralSettingsModal: React.FC<GeneralSettingsModalProps> = ({
                   {t('settings.appearance')}
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  Escolha o idioma do aplicativo
+                  {t('settings.appearanceDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <Label htmlFor="language">{t('settings.language')}</Label>
-                  <Select value={language} onValueChange={(value) => handleLanguageChange(value as 'pt-BR' | 'en-US' | 'es-ES')}>
-                    <SelectTrigger id="language">
+                  <Select value={language} disabled>
+                    <SelectTrigger id="language" className="opacity-70">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pt-BR">Português (BR)</SelectItem>
-                      <SelectItem value="en-US">English (US)</SelectItem>
-                      <SelectItem value="es-ES">Español (ES)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
