@@ -1,10 +1,16 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export type SeriesExercise = {
   slug: string;
   name: string | null;
   media_url: string | null;
   media_type: string | null;
+  equipment: string | null;
+  equipment_required: boolean | null;
+  sets: number | null;
+  reps: number | null;
+  work_seconds: number | null;
+  rest_seconds: number | null;
 };
 
 export type SeriesCard = {
