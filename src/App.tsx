@@ -17,6 +17,7 @@ import ExerciseExplorer from "./pages/ExerciseExplorer";
 import ExerciseDetail from "./pages/ExerciseDetail";
 import AdminExercises from "./pages/AdminExercises";
 import Serie from "./pages/Serie";
+import MediaReport from "./pages/MediaReport";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { I18nProvider } from "./contexts/I18nContext";
@@ -47,6 +48,7 @@ const App = () => (
                   <Route path="/refeicoes" element={<Meals />} />
                   <Route path="/perfil" element={<Profile />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/admin/media-report" element={<MediaReport />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
