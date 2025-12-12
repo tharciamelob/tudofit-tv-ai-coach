@@ -7,6 +7,7 @@ export type SeriesExercise = {
   media_type: string | null;
   equipment: string | null;
   equipment_required: boolean | null;
+  has_valid_media?: boolean | null;
   sets: number | null;
   reps: number | null;
   work_seconds: number | null;

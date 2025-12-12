@@ -230,6 +230,7 @@ export type Database = {
           duration_seconds: number | null
           equipment: string | null
           equipment_required: boolean | null
+          has_valid_media: boolean | null
           id: string
           level: string | null
           media_type: string | null
@@ -253,6 +254,7 @@ export type Database = {
           duration_seconds?: number | null
           equipment?: string | null
           equipment_required?: boolean | null
+          has_valid_media?: boolean | null
           id?: string
           level?: string | null
           media_type?: string | null
@@ -276,6 +278,7 @@ export type Database = {
           duration_seconds?: number | null
           equipment?: string | null
           equipment_required?: boolean | null
+          has_valid_media?: boolean | null
           id?: string
           level?: string | null
           media_type?: string | null
@@ -831,6 +834,22 @@ export type Database = {
           name: string | null
           slug: string | null
         }
+        Insert: {
+          category_slug?: string | null
+          cover_url?: never
+          description?: string | null
+          exercises?: never
+          name?: string | null
+          slug?: string | null
+        }
+        Update: {
+          category_slug?: string | null
+          cover_url?: never
+          description?: string | null
+          exercises?: never
+          name?: string | null
+          slug?: string | null
+        }
         Relationships: []
       }
     }
@@ -848,6 +867,14 @@ export type Database = {
         }[]
       }
       auto_tag_exercises: { Args: never; Returns: undefined }
+      backfill_series_with_valid_exercises: {
+        Args: never
+        Returns: {
+          exercises_added: number
+          final_count: number
+          series_slug: string
+        }[]
+      }
       é_usuário_admin: { Args: never; Returns: boolean }
       ensure_varied_series: {
         Args: {
