@@ -75,14 +75,17 @@ export type Database = {
       }
       app_categories: {
         Row: {
+          is_no_equipment: boolean | null
           slug: string
           title: string
         }
         Insert: {
+          is_no_equipment?: boolean | null
           slug: string
           title: string
         }
         Update: {
+          is_no_equipment?: boolean | null
           slug?: string
           title?: string
         }
@@ -226,6 +229,7 @@ export type Database = {
           difficulty: string | null
           duration_seconds: number | null
           equipment: string | null
+          equipment_required: boolean | null
           id: string
           level: string | null
           media_type: string | null
@@ -248,6 +252,7 @@ export type Database = {
           difficulty?: string | null
           duration_seconds?: number | null
           equipment?: string | null
+          equipment_required?: boolean | null
           id?: string
           level?: string | null
           media_type?: string | null
@@ -270,6 +275,7 @@ export type Database = {
           difficulty?: string | null
           duration_seconds?: number | null
           equipment?: string | null
+          equipment_required?: boolean | null
           id?: string
           level?: string | null
           media_type?: string | null
