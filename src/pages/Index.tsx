@@ -12,7 +12,7 @@ const CATEGORIAS = [
   { slug: 'series-de-academia-fisioculturismo', title: 'Séries de academia - fisioculturismo' },
   { slug: 'series-para-ganho-de-massa-muscular', title: 'Séries para ganho de massa muscular' },
   { slug: 'treinos-em-casa-sem-equipamento', title: 'Treinos em casa - sem equipamento' },
-  { slug: 'treino-de-pilates-sem-equipamentos', title: 'Treino de pilates - sem equipamentos' },
+  { slug: 'alongamento-e-mobilidade', title: 'Alongamento e Mobilidade' },
   { slug: 'funcional-de-15-minutos', title: 'Funcional de 15 minutos' },
   { slug: 'calistenia', title: 'Calistenia' },
 ];
