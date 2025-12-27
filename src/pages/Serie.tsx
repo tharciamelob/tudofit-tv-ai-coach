@@ -1,10 +1,11 @@
 'use client';
-import React from 'react';
+import React, { useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchSeriesDetails, type SeriesCard } from '@/hooks/useCategoryExercises';
 import { ExerciseImage } from '@/components/ExerciseImage';
+import { cn } from '@/lib/utils';
 
 export default function SeriePage() {
   const params = useParams();
@@ -13,6 +14,8 @@ export default function SeriePage() {
   const [series, setSeries] = React.useState<SeriesCard | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const featuredRef = useRef<HTMLDivElement>(null);
 
   const slug = params?.slug as string;
 
@@ -61,6 +64,14 @@ export default function SeriePage() {
     );
   }
 
+  const selectedExercise = series.exercises?.[selectedIndex] || series.exercises?.[0];
+
+  const handleSelectExercise = (index: number) => {
+    setSelectedIndex(index);
+    // Scroll suave até o destaque
+    featuredRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -73,24 +84,37 @@ export default function SeriePage() {
           Voltar
         </Button>
 
-        <div className="mb-8">
+        {/* Exercício em Destaque */}
+        <div ref={featuredRef} className="mb-8">
           <div className="grid md:grid-cols-2 gap-8 items-start">
             <div className="relative aspect-video rounded-lg overflow-hidden bg-black shadow-xl">
               <ExerciseImage
-                src={series.cover_url}
-                alt={series.name ?? series.slug}
+                src={selectedExercise?.media_url || series.cover_url}
+                alt={selectedExercise?.name ?? selectedExercise?.slug ?? series.name ?? series.slug}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              
+              {/* Badge do exercício atual */}
+              {selectedExercise && (
+                <div className="absolute bottom-4 left-4 bg-primary/90 backdrop-blur-sm text-primary-foreground text-sm px-3 py-1 rounded-full font-medium">
+                  Exercício {selectedIndex + 1} de {series.exercises?.length}
+                </div>
+              )}
             </div>
             
             <div className="space-y-4">
-              <h1 className="text-4xl font-bold text-foreground leading-tight">
-                {series.name ?? series.slug}
-              </h1>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">{series.name ?? series.slug}</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
+                  {selectedExercise?.name ?? selectedExercise?.slug ?? series.name ?? series.slug}
+                </h1>
+              </div>
+              
               <p className="text-lg text-muted-foreground leading-relaxed">
                 {series.description ?? 'Série de exercícios para seu treino.'}
               </p>
+              
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{series.exercises?.length || 0}</span>
@@ -120,13 +144,20 @@ export default function SeriePage() {
           </div>
         </div>
 
+        {/* Lista de Exercícios */}
         <div>
           <h2 className="text-2xl font-semibold mb-6 text-foreground">Exercícios da Série</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {series.exercises?.map((exercise, index) => (
               <div 
-                key={exercise.slug} 
-                className="bg-card rounded-lg overflow-hidden border border-border/50 hover:border-border transition-all duration-300 group cursor-pointer"
+                key={exercise.slug}
+                onClick={() => handleSelectExercise(index)}
+                className={cn(
+                  "bg-card rounded-lg overflow-hidden border-2 transition-all duration-300 group cursor-pointer",
+                  selectedIndex === index 
+                    ? "border-primary ring-2 ring-primary/30 scale-[1.02]" 
+                    : "border-border/50 hover:border-border"
+                )}
               >
                 <div className="relative aspect-video bg-muted">
                   <ExerciseImage
@@ -137,25 +168,31 @@ export default function SeriePage() {
                   />
                   
                   {/* Número do exercício */}
-                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded">
+                  <div className={cn(
+                    "absolute top-2 left-2 backdrop-blur-sm text-white text-xs px-2 py-1 rounded font-medium",
+                    selectedIndex === index ? "bg-primary" : "bg-black/70"
+                  )}>
                     {index + 1}
                   </div>
                   
                   {/* Play button overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
+                  <div className={cn(
+                    "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
+                    selectedIndex === index ? "opacity-100 bg-black/30" : "opacity-0 group-hover:opacity-100 bg-black/20"
+                  )}>
                     <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-                      <Play className="w-6 h-6 text-white fill-white" />
+                      <Play className="w-5 h-5 text-white fill-white" />
                     </div>
                   </div>
                 </div>
                 
-                <div className="p-4">
-                  <h3 className="font-medium text-foreground line-clamp-2 mb-1 group-hover:text-primary transition-colors">
+                <div className="p-3">
+                  <h3 className={cn(
+                    "font-medium line-clamp-2 text-sm transition-colors",
+                    selectedIndex === index ? "text-primary" : "text-foreground group-hover:text-primary"
+                  )}>
                     {exercise.name ?? exercise.slug}
                   </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Exercício {index + 1} de {series.exercises?.length}
-                  </p>
                 </div>
               </div>
             ))}
