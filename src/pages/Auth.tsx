@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import DiagnosticPanel from '@/components/DiagnosticPanel';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -188,6 +189,9 @@ const Auth = () => {
           <p>Depois apenas R$ 99,99/mês. Cancele quando quiser.</p>
         </div>
       </div>
+
+      {/* Diagnostic panel - shows in dev mode or can be forced with showAlways */}
+      <DiagnosticPanel showAlways={true} />
     </div>
   );
 };
