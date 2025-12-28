@@ -1,6 +1,6 @@
 import { Search, Bell, User, Menu, Settings, LogOut } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,12 +15,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// Definição centralizada das rotas do menu
+const navTabs = [
+  { labelKey: "nav.home", path: "/", matchPrefixes: ["/", "/serie", "/exercicio"] },
+  { labelKey: "nav.walking", path: "/caminhada", matchPrefixes: ["/caminhada"] },
+  { labelKey: "nav.personal", path: "/personal-ia", matchPrefixes: ["/personal-ia"] },
+  { labelKey: "nav.nutrition", path: "/nutri-ia", matchPrefixes: ["/nutri-ia", "/nutricao", "/refeicoes"] },
+  { labelKey: "nav.monitoring", path: "/monitoramento", matchPrefixes: ["/monitoramento"] }
+];
+
 const Header = () => {
-  const [activeTab, setActiveTab] = useState("nav.home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user } = useAuth();
   const { t } = useI18n();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     try {
@@ -42,20 +51,35 @@ const Header = () => {
     }
   };
 
-  const tabs = [
-    { labelKey: "nav.home", path: "/" },
-    { labelKey: "nav.walking", path: "/caminhada" }, 
-    { labelKey: "nav.personal", path: "/personal-ia" },
-    { labelKey: "nav.nutrition", path: "/nutri-ia" },
-    { labelKey: "nav.monitoring", path: "/monitoramento" }
-  ];
+  // Determina qual aba está ativa baseado na rota atual
+  const isTabActive = (tab: typeof navTabs[0]) => {
+    const pathname = location.pathname;
+    
+    // Para a home, só é ativa se for exatamente "/" ou se começar com /serie ou /exercicio
+    if (tab.path === "/") {
+      // Verifica se não é nenhuma das outras rotas
+      const otherTabs = navTabs.filter(t => t.path !== "/");
+      const matchesOther = otherTabs.some(t => 
+        t.matchPrefixes.some(prefix => pathname.startsWith(prefix))
+      );
+      
+      if (matchesOther) return false;
+      
+      // É home se for "/" ou rotas relacionadas à home
+      return pathname === "/" || 
+             pathname.startsWith("/serie") || 
+             pathname.startsWith("/exercicio");
+    }
+    
+    // Para outras abas, verifica os prefixos
+    return tab.matchPrefixes.some(prefix => pathname.startsWith(prefix));
+  };
 
-  const handleTabClick = (tab: { labelKey: string; path: string }) => {
+  const handleTabClick = (tab: typeof navTabs[0]) => {
     if (!user && tab.path !== "/") {
       navigate("/auth");
       return;
     }
-    setActiveTab(tab.labelKey);
     navigate(tab.path);
   };
 
@@ -70,19 +94,25 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-8">
-            {tabs.map((tab) => (
-              <button
-                key={tab.labelKey}
-                onClick={() => handleTabClick(tab)}
-                className={`text-sm font-medium transition-colors hover:text-foreground ${
-                  activeTab === tab.labelKey
-                    ? "text-foreground"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {t(tab.labelKey)}
-              </button>
-            ))}
+            {navTabs.map((tab) => {
+              const isActive = isTabActive(tab);
+              return (
+                <button
+                  key={tab.labelKey}
+                  onClick={() => handleTabClick(tab)}
+                  className={`text-sm font-medium transition-colors relative pb-1 ${
+                    isActive
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t(tab.labelKey)}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+                  )}
+                </button>
+              );
+            })}
           </nav>
 
           {/* Desktop Actions */}
@@ -146,22 +176,28 @@ const Header = () => {
         {isMobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-border">
             <nav className="flex flex-col space-y-4">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.labelKey}
-                  onClick={() => {
-                    handleTabClick(tab);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`text-left text-sm font-medium transition-colors hover:text-foreground ${
-                    activeTab === tab.labelKey
-                      ? "text-foreground"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {t(tab.labelKey)}
-                </button>
-              ))}
+              {navTabs.map((tab) => {
+                const isActive = isTabActive(tab);
+                return (
+                  <button
+                    key={tab.labelKey}
+                    onClick={() => {
+                      handleTabClick(tab);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`text-left text-sm font-medium transition-colors flex items-center gap-2 ${
+                      isActive
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {isActive && (
+                      <span className="w-1 h-4 bg-primary rounded-full" />
+                    )}
+                    {t(tab.labelKey)}
+                  </button>
+                );
+              })}
             </nav>
             <div className="flex items-center space-x-4 mt-4 pt-4 border-t border-border">
               <div className="relative flex-1">
