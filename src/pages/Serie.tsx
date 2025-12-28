@@ -87,13 +87,13 @@ export default function SeriePage() {
         {/* Exercício em Destaque */}
         <div ref={featuredRef} className="mb-8">
           <div className="grid md:grid-cols-2 gap-8 items-start">
-            <div className="relative aspect-video rounded-lg overflow-hidden bg-black shadow-xl flex items-center justify-center">
+            {/* Mídia principal - visualização técnica */}
+            <div className="relative w-full max-h-[60vh] min-h-[300px] rounded-lg overflow-hidden bg-black shadow-xl flex items-center justify-center">
               <ExerciseImage
                 src={selectedExercise?.media_url || series.cover_url}
                 alt={selectedExercise?.name ?? selectedExercise?.slug ?? series.name ?? series.slug}
-                className="w-full h-full object-contain"
+                className="max-w-full max-h-[60vh] w-auto h-auto object-contain"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
               
               {/* Badge do exercício atual */}
               {selectedExercise && (
@@ -128,17 +128,6 @@ export default function SeriePage() {
                     <span>duração estimada</span>
                   </div>
                 )}
-              </div>
-              
-              {/* Botão de início */}
-              <div className="pt-4">
-                <Button 
-                  size="lg" 
-                  className="bg-white text-black hover:bg-white/90 font-semibold px-8 py-3 rounded-md"
-                >
-                  <Play className="w-5 h-5 mr-2 fill-black" />
-                  Iniciar Treino
-                </Button>
               </div>
             </div>
           </div>
