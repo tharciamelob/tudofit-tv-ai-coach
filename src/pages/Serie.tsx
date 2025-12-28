@@ -87,13 +87,13 @@ export default function SeriePage() {
         {/* Exercício em Destaque */}
         <div ref={featuredRef} className="mb-8">
           <div className="grid md:grid-cols-2 gap-8 items-start">
-            <div className="relative aspect-video rounded-lg overflow-hidden bg-black shadow-xl">
+            <div className="relative aspect-video rounded-lg overflow-hidden bg-black shadow-xl flex items-center justify-center">
               <ExerciseImage
                 src={selectedExercise?.media_url || series.cover_url}
                 alt={selectedExercise?.name ?? selectedExercise?.slug ?? series.name ?? series.slug}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
               
               {/* Badge do exercício atual */}
               {selectedExercise && (
