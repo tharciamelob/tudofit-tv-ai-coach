@@ -88,13 +88,12 @@ export default function SeriePage() {
         <div ref={featuredRef} className="mb-8">
           <div className="grid md:grid-cols-2 gap-8 items-start">
             {/* Mídia principal - visualização técnica */}
-            <div className="relative w-full max-h-[60vh] min-h-[300px] rounded-lg overflow-hidden bg-black shadow-xl flex items-center justify-center">
-              <ExerciseImage
-                src={selectedExercise?.media_url || series.cover_url}
+            <div className="relative w-full rounded-lg bg-black shadow-xl flex items-center justify-center p-4">
+              <img
+                src={(selectedExercise?.media_url || series.cover_url) ?? undefined}
                 alt={selectedExercise?.name ?? selectedExercise?.slug ?? series.name ?? series.slug}
-                className="max-w-full max-h-[60vh] w-auto h-auto object-contain"
+                className="max-w-full max-h-[60vh] w-auto h-auto"
               />
-              
               {/* Badge do exercício atual */}
               {selectedExercise && (
                 <div className="absolute bottom-4 left-4 bg-primary/90 backdrop-blur-sm text-primary-foreground text-sm px-3 py-1 rounded-full font-medium">
