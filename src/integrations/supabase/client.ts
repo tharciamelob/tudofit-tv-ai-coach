@@ -5,6 +5,12 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://czbepdrjixrqrxeyfagc.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6YmVwZHJqaXhycXJ4ZXlmYWdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3NTcwMDMsImV4cCI6MjA3NDMzMzAwM30.H7Z1Ehi_5t12YHZwclZAuIeK3ME__I0_Bn_EYelxN7M";
 
+// DEBUG: Log Supabase config fingerprint on boot (safe - doesn't expose full key)
+const keyFingerprint = `${SUPABASE_ANON_KEY.substring(0, 10)}...${SUPABASE_ANON_KEY.substring(SUPABASE_ANON_KEY.length - 10)}`;
+console.log('[Supabase Debug] URL:', SUPABASE_URL);
+console.log('[Supabase Debug] Key fingerprint:', keyFingerprint);
+console.log('[Supabase Debug] Build timestamp:', new Date().toISOString());
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
@@ -14,4 +20,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     persistSession: true,
     autoRefreshToken: true,
   }
+
+});
+
+// DEBUG: Log auth state changes and API calls
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('[Supabase Debug] Auth event:', event, session ? 'session exists' : 'no session');
 });
