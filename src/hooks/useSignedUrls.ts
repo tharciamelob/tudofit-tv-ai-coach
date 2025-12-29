@@ -92,12 +92,31 @@ export const useSignedUrl = (bucket: string, path: string | null, ttl = 3600) =>
   return { url, loading, error, revalidate };
 };
 
+// Batch fetch function - single request for multiple URLs
+const fetchSignedUrlsBatch = async (
+  items: Array<{ bucket: string; path: string; expiresIn?: number }>
+): Promise<Array<{ index: number; signedUrl: string | null; error?: string }>> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session?.access_token) {
+    throw new Error('No active session');
+  }
+
+  const { data, error } = await supabase.functions.invoke('get-signed-url', {
+    body: { items },
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
+
+  if (error) throw error;
+  return data?.results || [];
+};
+
 export const useSignedUrls = (items: Array<{ bucket: string; path: string | null }>, ttl = 3600) => {
   const [urls, setUrls] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Revalidate a specific index
+  // Revalidate a specific index (still uses single fetch for simplicity)
   const revalidateIndex = useCallback(async (index: number) => {
     const item = items[index];
     if (!item?.path) return;
@@ -123,30 +142,54 @@ export const useSignedUrls = (items: Array<{ bucket: string; path: string | null
       const newUrls: { [key: string]: string } = {};
       const now = Date.now();
 
+      // Separate cached vs uncached items
+      const uncachedItems: Array<{ index: number; bucket: string; path: string }> = [];
+      
+      items.forEach((item, index) => {
+        if (!item.path) return;
+        
+        const cacheKey = `${item.bucket}/${item.path}`;
+        if (cache[cacheKey] && cache[cacheKey].expiresAt > now) {
+          newUrls[index] = cache[cacheKey].url;
+        } else {
+          uncachedItems.push({ index, bucket: item.bucket, path: item.path });
+        }
+      });
+
+      // If all cached, we're done
+      if (uncachedItems.length === 0) {
+        setUrls(newUrls);
+        setLoading(false);
+        return;
+      }
+
       try {
-        await Promise.all(
-          items.map(async (item, index) => {
-            if (!item.path) return;
+        // Batch fetch uncached items in a single request
+        const batchItems = uncachedItems.map(item => ({
+          bucket: item.bucket,
+          path: item.path,
+          expiresIn: ttl
+        }));
 
-            const cacheKey = `${item.bucket}/${item.path}`;
-            
-            // Check cache first
-            if (cache[cacheKey] && cache[cacheKey].expiresAt > now) {
-              newUrls[index] = cache[cacheKey].url;
-              return;
-            }
+        console.log(`[useSignedUrls] Batch fetching ${batchItems.length} URLs`);
+        const results = await fetchSignedUrlsBatch(batchItems);
 
-            try {
-              const signedUrl = await fetchSignedUrl(item.bucket, item.path, ttl);
-              newUrls[index] = signedUrl;
-            } catch (err) {
-              console.warn(`[useSignedUrls] Failed to get URL for ${item.path}:`, err);
-            }
-          })
-        );
+        // Map results back to original indices
+        results.forEach((result, resultIndex) => {
+          const originalItem = uncachedItems[resultIndex];
+          if (result.signedUrl) {
+            const cacheKey = `${originalItem.bucket}/${originalItem.path}`;
+            cache[cacheKey] = {
+              url: result.signedUrl,
+              expiresAt: now + (ttl * 1000 * 0.9)
+            };
+            newUrls[originalItem.index] = result.signedUrl;
+          }
+        });
 
         setUrls(newUrls);
       } catch (err) {
+        console.error('[useSignedUrls] Batch fetch failed:', err);
         setError(err instanceof Error ? err.message : 'Failed to get signed URLs');
       } finally {
         setLoading(false);
