@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Play, ImageOff } from 'lucide-react';
+import { ImageOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface ExerciseImageProps {
@@ -12,6 +12,7 @@ interface ExerciseImageProps {
   loop?: boolean;
   muted?: boolean;
   playsInline?: boolean;
+  onExpiredUrl?: () => void; // Callback when URL appears expired (401/403)
 }
 
 // Helper to detect if URL is a video format
@@ -33,10 +34,17 @@ const logMediaError = (src: string, error: string) => {
   }
 };
 
+// Check if error likely indicates expired signed URL
+const isLikelyExpiredUrl = (src: string): boolean => {
+  // Signed URLs from Supabase contain token parameter
+  return src.includes('token=') || src.includes('sign');
+};
+
 /**
  * Component that handles exercise images/videos with:
  * - Skeleton loading state
  * - Retry with cache-buster on error
+ * - Auto-revalidation callback for expired signed URLs
  * - Informative placeholder on final failure
  * - Auto-detection of GIF vs video
  */
@@ -50,13 +58,15 @@ export const ExerciseImage: React.FC<ExerciseImageProps> = ({
   loop = true,
   muted = true,
   playsInline = true,
+  onExpiredUrl,
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [currentSrc, setCurrentSrc] = useState(src);
+  const [revalidationRequested, setRevalidationRequested] = useState(false);
 
-  const maxRetries = 1;
+  const maxRetries = 2; // Increased to allow for revalidation attempt
 
   // Reset state when src changes
   useEffect(() => {
@@ -64,11 +74,13 @@ export const ExerciseImage: React.FC<ExerciseImageProps> = ({
     setHasError(false);
     setRetryCount(0);
     setCurrentSrc(src);
+    setRevalidationRequested(false);
   }, [src]);
 
   const handleLoad = useCallback(() => {
     setIsLoading(false);
     setHasError(false);
+    setRevalidationRequested(false);
   }, []);
 
   const handleError = useCallback(() => {
@@ -80,11 +92,20 @@ export const ExerciseImage: React.FC<ExerciseImageProps> = ({
 
     logMediaError(src, `Attempt ${retryCount + 1} failed`);
 
+    // First failure on a signed URL - request revalidation
+    if (retryCount === 0 && isLikelyExpiredUrl(src) && onExpiredUrl && !revalidationRequested) {
+      logMediaError(src, 'Requesting URL revalidation (likely expired)');
+      setRevalidationRequested(true);
+      onExpiredUrl();
+      // Don't increment retry yet - wait for new URL from parent
+      return;
+    }
+
     if (retryCount < maxRetries) {
       // Retry with cache-buster
       const cacheBuster = `cb=${Date.now()}`;
-      const separator = src.includes('?') ? '&' : '?';
-      const newSrc = `${src}${separator}${cacheBuster}`;
+      const separator = currentSrc?.includes('?') ? '&' : '?';
+      const newSrc = `${currentSrc}${separator}${cacheBuster}`;
       
       setRetryCount(prev => prev + 1);
       setCurrentSrc(newSrc);
@@ -95,7 +116,7 @@ export const ExerciseImage: React.FC<ExerciseImageProps> = ({
       setIsLoading(false);
       setHasError(true);
     }
-  }, [src, retryCount]);
+  }, [src, currentSrc, retryCount, onExpiredUrl, revalidationRequested]);
 
   // No source provided - show placeholder immediately
   if (!src) {
