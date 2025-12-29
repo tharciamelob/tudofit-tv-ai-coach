@@ -2,8 +2,9 @@ import React, { useCallback, useRef, useEffect, useState, CSSProperties, ReactEl
 import { List } from 'react-window';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ExerciseImage } from '@/components/ExerciseImage';
+import { mediaLoadQueue } from '@/utils/mediaLoadQueue';
 
 interface Exercise {
   id: string;
@@ -26,6 +27,8 @@ interface VirtualizedExerciseGridProps {
 
 const ITEM_HEIGHT = 320;
 const GAP = 16;
+// Number of above-the-fold items to prioritize
+const ABOVE_FOLD_COUNT = 6;
 
 const getColumnCount = (containerWidth: number): number => {
   if (containerWidth < 640) return 1;
@@ -70,6 +73,7 @@ const RowComponent = (props: {
       {rowExercises.map((exercise, colIndex) => {
         const globalIndex = startIndex + colIndex;
         const previewUrl = previewUrls[globalIndex];
+        const isAboveFold = globalIndex < ABOVE_FOLD_COUNT;
 
         return (
           <Card 
@@ -79,28 +83,22 @@ const RowComponent = (props: {
             onClick={() => navigate(`/exercicio/${exercise.slug}`)}
           >
             <div className="relative aspect-video bg-muted overflow-hidden">
-              {previewUrl ? (
-                <video
-                  src={previewUrl}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover"
-                  onError={() => onRevalidateUrl?.(globalIndex)}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Play className="h-12 w-12 text-muted-foreground/40" />
-                </div>
-              )}
-              <div className="absolute top-2 right-2">
+              <ExerciseImage
+                src={previewUrl}
+                alt={exercise.name}
+                mediaId={exercise.id}
+                priority={isAboveFold ? 'high' : 'normal'}
+                loading={isAboveFold ? 'eager' : 'lazy'}
+                fetchPriorityHigh={isAboveFold}
+                onExpiredUrl={() => onRevalidateUrl?.(globalIndex)}
+              />
+              <div className="absolute top-2 right-2 z-10">
                 <Badge className={`${getDifficultyColor(exercise.difficulty)} text-white text-xs`}>
                   {exercise.difficulty || 'N/A'}
                 </Badge>
               </div>
               {exercise.duration_seconds && (
-                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                <div className="absolute bottom-2 right-2 z-10 bg-black/70 text-white text-xs px-2 py-1 rounded">
                   {Math.floor(exercise.duration_seconds / 60)}:{(exercise.duration_seconds % 60).toString().padStart(2, '0')}
                 </div>
               )}
@@ -140,6 +138,8 @@ export const VirtualizedExerciseGrid: React.FC<VirtualizedExerciseGridProps> = (
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
   const [columnCount, setColumnCount] = useState(1);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [visibleRange, setVisibleRange] = useState({ start: 0, stop: 0 });
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -161,15 +161,54 @@ export const VirtualizedExerciseGrid: React.FC<VirtualizedExerciseGridProps> = (
 
   const rowCount = Math.ceil(exercises.length / columnCount);
 
-  // Handle load more when near bottom
+  // Handle load more when near bottom + track visible range for preload
   const handleRowsRendered = useCallback((
     visibleRows: { startIndex: number; stopIndex: number },
     allRows: { startIndex: number; stopIndex: number }
   ) => {
+    // Update visible range for preload logic
+    setVisibleRange({
+      start: visibleRows.startIndex * columnCount,
+      stop: visibleRows.stopIndex * columnCount + columnCount
+    });
+
     if (hasMore && onLoadMore && allRows.stopIndex >= rowCount - 2) {
       onLoadMore();
     }
-  }, [hasMore, onLoadMore, rowCount]);
+
+    // Clear existing scroll timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Preload next items after scroll stops (1s delay)
+    scrollTimeoutRef.current = setTimeout(() => {
+      const endVisible = (visibleRows.stopIndex + 1) * columnCount;
+      const nextItems: string[] = [];
+      
+      // Get next 4 items to preload
+      for (let i = endVisible; i < Math.min(endVisible + 4, exercises.length); i++) {
+        if (exercises[i] && previewUrls[i]) {
+          nextItems.push(exercises[i].id);
+        }
+      }
+
+      if (nextItems.length > 0) {
+        mediaLoadQueue.preload(nextItems, () => {
+          // Items will be ready when their turn comes
+        });
+      }
+    }, 1000);
+  }, [hasMore, onLoadMore, rowCount, columnCount, exercises, previewUrls]);
+
+  // Cleanup scroll timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (exercises.length === 0) {
     return (
