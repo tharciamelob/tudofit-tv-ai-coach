@@ -30,9 +30,9 @@ const ExerciseDetail = () => {
     }
   };
   
-  // Get signed URLs for media with 1 hour TTL
-  const { url: videoUrl, loading: videoLoading } = useSignedUrl('workouts', exercise?.video_path || null, 3600);
-  const { url: previewUrl } = useSignedUrl('previews', exercise?.preview_path || null, 3600);
+  // Get signed URLs for media with 1 hour TTL - with revalidation support
+  const { url: videoUrl, loading: videoLoading, revalidate: revalidateVideo } = useSignedUrl('workouts', exercise?.video_path || null, 3600);
+  const { url: previewUrl, revalidate: revalidatePreview } = useSignedUrl('previews', exercise?.preview_path || null, 3600);
 
   const getDifficultyColor = (difficulty: string | null) => {
     switch (difficulty) {
@@ -123,6 +123,7 @@ const ExerciseDetail = () => {
                       loop={false}
                       muted={false}
                       playsInline={true}
+                      onExpiredUrl={revalidateVideo}
                     />
                   ) : previewUrl ? (
                     <ExerciseImage
@@ -134,6 +135,7 @@ const ExerciseDetail = () => {
                       loop={true}
                       muted={true}
                       playsInline={true}
+                      onExpiredUrl={revalidatePreview}
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">

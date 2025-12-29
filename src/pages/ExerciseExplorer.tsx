@@ -11,7 +11,15 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Filter, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const ExerciseCard = ({ exercise, previewUrl }: { exercise: any; previewUrl?: string }) => {
+const ExerciseCard = ({ 
+  exercise, 
+  previewUrl,
+  onExpiredUrl 
+}: { 
+  exercise: any; 
+  previewUrl?: string;
+  onExpiredUrl?: () => void;
+}) => {
   const navigate = useNavigate();
 
   const getDifficultyColor = (difficulty: string | null) => {
@@ -35,9 +43,9 @@ const ExerciseCard = ({ exercise, previewUrl }: { exercise: any; previewUrl?: st
             muted
             playsInline
             className="w-full h-full object-cover"
-            onError={(e) => {
-              console.error('Video load error:', e);
-              e.currentTarget.style.display = 'none';
+            onError={() => {
+              // Request URL revalidation on error
+              onExpiredUrl?.();
             }}
           />
         ) : (
@@ -97,7 +105,7 @@ const ExerciseExplorer = () => {
     bucket: 'previews',
     path: exercise.preview_path
   }));
-  const { urls: previewUrls } = useSignedUrls(urlItems, 60);
+  const { urls: previewUrls, revalidateIndex } = useSignedUrls(urlItems, 60);
 
   if (authLoading || guardLoading || loading) {
     return (
@@ -217,6 +225,7 @@ const ExerciseExplorer = () => {
                 key={exercise.id} 
                 exercise={exercise} 
                 previewUrl={previewUrls[index]}
+                onExpiredUrl={() => revalidateIndex(index)}
               />
             ))}
           </div>
