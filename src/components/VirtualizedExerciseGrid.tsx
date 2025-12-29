@@ -182,7 +182,7 @@ export const VirtualizedExerciseGrid: React.FC<VirtualizedExerciseGridProps> = (
   return (
     <div ref={containerRef} className="w-full">
       {dimensions.width > 0 && (
-        <List<RowPropsData>
+        <List
           rowComponent={RowComponent}
           rowCount={rowCount}
           rowHeight={ITEM_HEIGHT + GAP}
@@ -193,7 +193,7 @@ export const VirtualizedExerciseGrid: React.FC<VirtualizedExerciseGridProps> = (
             containerWidth: dimensions.width,
             navigate,
             onRevalidateUrl,
-          }}
+          } as RowPropsData}
           overscanCount={2}
           onRowsRendered={handleRowsRendered}
           style={{ height: dimensions.height, width: dimensions.width }}
